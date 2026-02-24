@@ -41,6 +41,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.voyager.navigator)
+            implementation(libs.voyager.transitions)
             // API & JSON (Gantinya Retrofit & Gson)
             implementation("io.ktor:ktor-client-core:2.3.12")
 

@@ -1,5 +1,6 @@
 package com.example.autoglazecustomer.data.network
 
+import com.example.autoglazecustomer.data.model.ChekKendaraanResponse
 import com.example.autoglazecustomer.data.model.LoginResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -36,12 +37,22 @@ class AuthService {
         return client.submitForm(
             url = "https://autoglaze-rewrite.digiponic.co.id/api/login",
             formParameters = parameters {
-                append("email", email.trim()) // Gunakan trim untuk hapus spasi typo
+                append("email", email.trim())
                 append("password", password.trim())
             }
         ) {
             // Tambahkan header ini agar server tidak bingung
             header(HttpHeaders.Accept, "application/json")
         }.body()
+    }
+
+    suspend fun cekKendaraan(nopol: String): ChekKendaraanResponse {
+        return client.submitForm(
+            url = "https://autoglaze-rewrite.digiponic.co.id/api/cek-kendaraan",
+            formParameters = parameters {
+                append("search_type", "nopol")
+                append("search_value", nopol)
+            }
+        ).body()
     }
 }
