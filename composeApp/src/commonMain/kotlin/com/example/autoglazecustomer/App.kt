@@ -17,9 +17,9 @@ import cafe.adriel.voyager.transitions.SlideTransition
 @Composable
 fun App() {
     MaterialTheme {
-        // Navigator dimulai dengan halaman CheckVehicleScreen
-        Navigator(CheckVehicleScreen()) { navigator ->
-            // Opsional: Tambahkan animasi transisi antar halaman
+        // Navigator sekarang dimulai dengan SplashScreen
+        Navigator(SplashScreen()) { navigator ->
+            // Memberikan animasi transisi geser antar halaman
             SlideTransition(navigator)
         }
     }

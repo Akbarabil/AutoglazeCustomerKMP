@@ -30,7 +30,6 @@ class CheckVehicleScreen : Screen {
 
     @Composable
     override fun Content() {
-        // Navigator digunakan untuk berpindah halaman
         val navigator = LocalNavigator.currentOrThrow
         val authService = remember { AuthService() }
 
