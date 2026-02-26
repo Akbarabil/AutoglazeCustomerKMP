@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer
+package com.example.autoglazecustomer.ui
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween

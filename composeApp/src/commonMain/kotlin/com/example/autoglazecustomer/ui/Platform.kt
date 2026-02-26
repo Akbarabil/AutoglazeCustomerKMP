@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer
+package com.example.autoglazecustomer.ui
 
 interface Platform {
     val name: String

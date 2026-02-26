@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer
+package com.example.autoglazecustomer.ui
 
 class Greeting {
     private val platform = getPlatform()

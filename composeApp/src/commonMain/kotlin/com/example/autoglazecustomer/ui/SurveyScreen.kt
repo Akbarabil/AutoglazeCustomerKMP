@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer
+package com.example.autoglazecustomer.ui
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -110,8 +110,17 @@ class SurveyScreen(val dataRegistrasi: DaftarData) : Screen {
                                     .fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFD53B1E),
-                                    unfocusedBorderColor = Color(0xFFF5F5F5)
+                                    focusedBorderColor = Color.DarkGray,     // Garis saat diklik
+                                    unfocusedBorderColor = Color.DarkGray,   // Garis saat diam
+                                    focusedLabelColor = Color.DarkGray,      // Warna label saat di atas
+                                    unfocusedLabelColor = Color.DarkGray,    // Warna label saat di tengah
+                                    cursorColor = Color.DarkGray,            // Warna kursor (meskipun readOnly)
+                                    focusedTextColor = Color.Black,          // Warna teks saat aktif
+                                    unfocusedTextColor = Color.Black,        // Warna teks saat diam
+                                    disabledBorderColor = Color.LightGray,   // Warna saat dropdown mati (tipe sebelum pilih merek)
+                                    disabledLabelColor = Color.LightGray,
+                                    focusedTrailingIconColor = Color.DarkGray, // Warna panah dropdown
+                                    unfocusedTrailingIconColor = Color.DarkGray
                                 )
                             )
 
@@ -192,11 +201,6 @@ class SurveyScreen(val dataRegistrasi: DaftarData) : Screen {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // Kamu bisa ganti icon ini dengan image centang jika ada
-                            Text(
-                                "🎉",
-                                fontSize = 50.sp
-                            )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Pendaftaran Berhasil",
@@ -211,7 +215,7 @@ class SurveyScreen(val dataRegistrasi: DaftarData) : Screen {
                         Text(
                             text = "Akun Anda telah berhasil dibuat. Silakan masuk menggunakan email dan kata sandi Anda.",
                             fontFamily = satoshiMedium,
-                            fontSize = 14.sp,
+                            fontSize = 20.sp,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )

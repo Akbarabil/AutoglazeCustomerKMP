@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer
+package com.example.autoglazecustomer.ui
 
 import androidx.compose.ui.window.ComposeUIViewController
 

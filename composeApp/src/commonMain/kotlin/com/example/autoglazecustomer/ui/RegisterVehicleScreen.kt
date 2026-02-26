@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer
+package com.example.autoglazecustomer.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.*
@@ -144,7 +145,21 @@ class RegisterVehicleScreen(val dataRegistrasi: DaftarData) : Screen {
                             onSelected = { nama ->
                                 merekTerpilih = listMerek.find { it.namaMerek == nama }
                             },
-                            satoshiMedium = satoshiMedium
+                            satoshiMedium = satoshiMedium,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.DarkGray,     // Garis saat diklik
+                                unfocusedBorderColor = Color.DarkGray,   // Garis saat diam
+                                focusedLabelColor = Color.DarkGray,      // Warna label saat di atas
+                                unfocusedLabelColor = Color.DarkGray,    // Warna label saat di tengah
+                                cursorColor = Color.DarkGray,            // Warna kursor (meskipun readOnly)
+                                focusedTextColor = Color.Black,          // Warna teks saat aktif
+                                unfocusedTextColor = Color.Black,        // Warna teks saat diam
+                                disabledBorderColor = Color.LightGray,   // Warna saat dropdown mati (tipe sebelum pilih merek)
+                                disabledLabelColor = Color.LightGray,
+                                focusedTrailingIconColor = Color.DarkGray, // Warna panah dropdown
+                                unfocusedTrailingIconColor = Color.DarkGray
+                            )
+
                         )
 
                         // Row untuk Tipe dan Tahun
@@ -158,6 +173,19 @@ class RegisterVehicleScreen(val dataRegistrasi: DaftarData) : Screen {
                                         tipeTerpilih = listTipe.find { it.namaTipeKendaraan == nama }
                                     },
                                     satoshiMedium = satoshiMedium,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = Color.DarkGray,     // Garis saat diklik
+                                        unfocusedBorderColor = Color.DarkGray,   // Garis saat diam
+                                        focusedLabelColor = Color.DarkGray,      // Warna label saat di atas
+                                        unfocusedLabelColor = Color.DarkGray,    // Warna label saat di tengah
+                                        cursorColor = Color.DarkGray,            // Warna kursor (meskipun readOnly)
+                                        focusedTextColor = Color.Black,          // Warna teks saat aktif
+                                        unfocusedTextColor = Color.Black,        // Warna teks saat diam
+                                        disabledBorderColor = Color.LightGray,   // Warna saat dropdown mati (tipe sebelum pilih merek)
+                                        disabledLabelColor = Color.LightGray,
+                                        focusedTrailingIconColor = Color.DarkGray, // Warna panah dropdown
+                                        unfocusedTrailingIconColor = Color.DarkGray
+                                    ),
                                     enabled = merekTerpilih != null
                                 )
                             }
@@ -169,6 +197,19 @@ class RegisterVehicleScreen(val dataRegistrasi: DaftarData) : Screen {
                                     options = (2000..2026).map { it.toString() }.reversed(),
                                     onSelected = { tahun = it },
                                     satoshiMedium = satoshiMedium,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = Color.DarkGray,     // Garis saat diklik
+                                        unfocusedBorderColor = Color.DarkGray,   // Garis saat diam
+                                        focusedLabelColor = Color.DarkGray,      // Warna label saat di atas
+                                        unfocusedLabelColor = Color.DarkGray,    // Warna label saat di tengah
+                                        cursorColor = Color.DarkGray,            // Warna kursor (meskipun readOnly)
+                                        focusedTextColor = Color.Black,          // Warna teks saat aktif
+                                        unfocusedTextColor = Color.Black,        // Warna teks saat diam
+                                        disabledBorderColor = Color.LightGray,   // Warna saat dropdown mati (tipe sebelum pilih merek)
+                                        disabledLabelColor = Color.LightGray,
+                                        focusedTrailingIconColor = Color.DarkGray, // Warna panah dropdown
+                                        unfocusedTrailingIconColor = Color.DarkGray
+                                    ),
                                     enabled = tipeTerpilih != null
                                 )
                             }
@@ -197,8 +238,10 @@ class RegisterVehicleScreen(val dataRegistrasi: DaftarData) : Screen {
                             ),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = redPrimer,
-                                unfocusedBorderColor = Color(0xFFF5F5F5)
+                                focusedBorderColor = Color.DarkGray,
+                                unfocusedBorderColor = Color.DarkGray,
+                                focusedLabelColor = Color.DarkGray,
+                                cursorColor = Color.DarkGray
                             )
                         )
 
@@ -220,8 +263,10 @@ class RegisterVehicleScreen(val dataRegistrasi: DaftarData) : Screen {
                             shape = RoundedCornerShape(10.dp),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = redPrimer,
-                                unfocusedBorderColor = Color(0xFFF5F5F5)
+                                focusedBorderColor = Color.DarkGray,
+                                unfocusedBorderColor = Color.DarkGray,
+                                focusedLabelColor = Color.DarkGray,
+                                cursorColor = Color.DarkGray
                             )
                         )
 
@@ -320,7 +365,17 @@ fun VehicleDropdownField(
     options: List<String>,
     onSelected: (String) -> Unit,
     satoshiMedium: FontFamily,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    // Tambahkan parameter colors di sini agar bisa menerima input warna dari luar
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = Color.DarkGray,
+        unfocusedBorderColor = Color.DarkGray,
+        focusedLabelColor = Color.DarkGray,
+        unfocusedLabelColor = Color.DarkGray,
+        cursorColor = Color.DarkGray,
+        disabledBorderColor = Color(0xFFEEEEEE),
+        disabledLabelColor = Color.LightGray
+    )
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -340,12 +395,8 @@ fun VehicleDropdownField(
                 .menuAnchor()
                 .fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFFD53B1E),
-                unfocusedBorderColor = Color(0xFFF5F5F5),
-                disabledBorderColor = Color(0xFFEEEEEE),
-                disabledLabelColor = Color.LightGray
-            )
+            // Gunakan parameter colors yang dikirim
+            colors = colors
         )
         ExposedDropdownMenu(
             expanded = expanded && enabled,
@@ -376,19 +427,23 @@ fun WarnaItem(
             .widthIn(min = 100.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
+        // Garis pinggir: Grey saat diam, Dark Gray saat dipilih
         border = BorderStroke(
             width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) Color(0xFFD53B1E) else Color(0xFFEEEEEE)
+            color = if (isSelected) Color.DarkGray else Color.LightGray
         ),
-        color = if (isSelected) Color(0xFFFFF5F4) else Color.White
+        // Background: Putih atau abu-abu sangat muda
+        color = Color.White
     ) {
         Text(
             text = warnaObj.namaWarna,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             fontFamily = satoshiMedium,
-            color = if (isSelected) Color(0xFFD53B1E) else Color.Black,
+            // Warna Teks: Grey saat diam, Dark Gray/Hitam saat dipilih
+            color = if (isSelected) Color.DarkGray else Color.Gray,
             fontSize = 14.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            textAlign = TextAlign.Center
         )
     }
 }

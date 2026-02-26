@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer
+package com.example.autoglazecustomer.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -137,9 +137,10 @@ fun LoginUI(
                                 shape = RoundedCornerShape(10.dp),
                                 singleLine = true,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = redPrimer,
-                                    unfocusedBorderColor = Color(0xFFF5F5F5),
-                                    cursorColor = redPrimer
+                                    focusedBorderColor = Color.DarkGray,
+                                    unfocusedBorderColor = Color.DarkGray,
+                                    focusedLabelColor = Color.DarkGray,
+                                    cursorColor = Color.DarkGray
                                 )
                             )
 
@@ -174,9 +175,10 @@ fun LoginUI(
                                 shape = RoundedCornerShape(10.dp),
                                 singleLine = true,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = redPrimer,
-                                    unfocusedBorderColor = Color(0xFFF5F5F5),
-                                    cursorColor = redPrimer
+                                    focusedBorderColor = Color.DarkGray,
+                                    unfocusedBorderColor = Color.DarkGray,
+                                    focusedLabelColor = Color.DarkGray,
+                                    cursorColor = Color.DarkGray
                                 )
                             )
 

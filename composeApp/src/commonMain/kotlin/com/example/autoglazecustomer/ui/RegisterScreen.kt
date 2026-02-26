@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer
+package com.example.autoglazecustomer.ui
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -79,7 +80,6 @@ fun RegisterUI(
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // --- PENGGUNAAN onBackToLogin (Tombol Back Atas) ---
             IconButton(
                 onClick = onBackToLogin,
                 modifier = Modifier.padding(start = 8.dp, top = 8.dp)
@@ -131,8 +131,15 @@ fun RegisterUI(
                             label = { Text("Tanggal Lahir", fontFamily = satoshiMedium) },
                             readOnly = true,
                             leadingIcon = { Icon(Icons.Default.DateRange, null) },
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.DarkGray,
+                                unfocusedBorderColor = Color.DarkGray,
+                                focusedLabelColor = Color.DarkGray,
+                                cursorColor = Color.DarkGray
+                            )
                         )
+
                         Box(modifier = Modifier.matchParentSize().clickable { showDatePicker = true })
                     }
 
@@ -143,7 +150,13 @@ fun RegisterUI(
                         label = { Text("Nomor WhatsApp (812...)", fontFamily = satoshiMedium) },
                         leadingIcon = { Text("+62  ", modifier = Modifier.padding(start = 12.dp), fontWeight = FontWeight.Bold, fontFamily = satoshiMedium) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.DarkGray,
+                            unfocusedBorderColor = Color.DarkGray,
+                            focusedLabelColor = Color.DarkGray,
+                            cursorColor = Color.DarkGray
+                        )
                     )
 
                     OutlinedTextField(
@@ -158,7 +171,13 @@ fun RegisterUI(
                             }
                         },
                         visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.DarkGray,
+                            unfocusedBorderColor = Color.DarkGray,
+                            focusedLabelColor = Color.DarkGray,
+                            cursorColor = Color.DarkGray
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(30.dp))
@@ -239,7 +258,7 @@ fun RegisterTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     keyboardType: KeyboardType = KeyboardType.Text,
     satoshiMedium: FontFamily
 ) {
@@ -251,7 +270,13 @@ fun RegisterTextField(
         leadingIcon = { Icon(icon, null) },
         shape = RoundedCornerShape(10.dp),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        singleLine = true
+        singleLine = true,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.DarkGray,
+            unfocusedBorderColor = Color.DarkGray,
+            focusedLabelColor = Color.DarkGray,
+            cursorColor = Color.DarkGray
+        )
     )
 }
 
