@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import autoglazecustomer.composeapp.generated.resources.*
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -217,14 +218,18 @@ fun CheckVehicleUI(
         }
 
         if (vehicleData != null) {
-            Dialog(onDismissRequest = { vehicleData = null }) {
+            Dialog(onDismissRequest = { vehicleData = null },properties = DialogProperties(
+                usePlatformDefaultWidth = false
+            )
+            ) {
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    modifier = Modifier.fillMaxWidth(0.92f).wrapContentHeight().padding(vertical = 16.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(24.dp),
+                        modifier = Modifier.padding(28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text("Data Ditemukan", fontFamily = satoshiMedium, fontWeight = FontWeight.Bold, fontSize = 20.sp)
@@ -235,6 +240,8 @@ fun CheckVehicleUI(
                         VehicleInfoItem("Nomor Polisi", vehicleData?.nopol ?: "-", satoshiMedium)
                         VehicleInfoItem("Nomor Rangka", vehicleData?.noRangka ?: "-", satoshiMedium)
                         VehicleInfoItem("Email", vehicleData?.email ?: "-", satoshiMedium)
+                        VehicleInfoItem("Telepon", vehicleData?.telepon ?: "-", satoshiMedium)
+
 
                         Spacer(modifier = Modifier.height(24.dp))
 
@@ -244,7 +251,7 @@ fun CheckVehicleUI(
                                 vehicleData = null
                                 onNavigateToLogin(email)
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
                             shape = RoundedCornerShape(8.dp)
                         ) {
@@ -296,7 +303,7 @@ fun LoadingDialog(color: Color) {
 fun VehicleInfoItem(label: String, value: String, fontFamily: FontFamily) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
         Text(text = label, fontSize = 12.sp, color = Color.Gray, fontFamily = fontFamily)
-        Text(text = value, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black, fontFamily = fontFamily)
+        Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black, fontFamily = fontFamily)
         HorizontalDivider(modifier = Modifier.padding(top = 4.dp), thickness = 0.5.dp, color = Color(0xFFEEEEEE))
     }
 }

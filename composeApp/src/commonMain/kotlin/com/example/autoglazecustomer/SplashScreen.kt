@@ -71,7 +71,7 @@ class SplashScreen : Screen {
 
             // 4. BERPINDAH KE HALAMAN BERIKUTNYA
             // Ganti ke OnboardingScreen() jika sudah siap, sementara ke CheckVehicleScreen()
-            navigator.replace(CheckVehicleScreen())
+            navigator.replace(OnboardingScreen())
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
