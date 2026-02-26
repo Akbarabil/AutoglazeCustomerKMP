@@ -52,6 +52,7 @@ kotlin {
 
             // Image Loading (Gantinya Glide)
             implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha01")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
 
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
         }

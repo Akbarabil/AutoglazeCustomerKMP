@@ -57,8 +57,6 @@ fun CheckVehicleUI(
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    // Warna & Font sesuai permintaan
     val redPrimer = Color(0xFFD53B1E)
     val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
 
@@ -282,19 +280,6 @@ fun CheckVehicleUI(
                     }
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun LoadingDialog(color: Color) {
-    Dialog(onDismissRequest = {}) {
-        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-            Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(color = color)
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Mencari data kendaraan...")
-            }
         }
     }
 }

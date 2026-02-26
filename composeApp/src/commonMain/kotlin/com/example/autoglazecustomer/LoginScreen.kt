@@ -2,37 +2,14 @@ package com.example.autoglazecustomer
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,14 +20,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
-import autoglazecustomer.composeapp.generated.resources.ic_email
-import autoglazecustomer.composeapp.generated.resources.ic_password
-import autoglazecustomer.composeapp.generated.resources.ic_visibility
-import autoglazecustomer.composeapp.generated.resources.ic_visibility_off
-import autoglazecustomer.composeapp.generated.resources.img_hello
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
+import autoglazecustomer.composeapp.generated.resources.*
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -59,17 +29,18 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
-data class LoginScreen(val initialEmail: String) : Screen {
+data class LoginScreen(val initialEmail: String = "") : Screen {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val authService = remember { AuthService() }
 
-        // Memanggil UI Login
+        // Memanggil UI Login dengan menyertakan fungsi navigasi
         LoginUI(
             emailParam = initialEmail,
             onBack = { navigator.pop() },
+            onNavigateToRegister = { navigator.push(RegisterScreen()) },
             authService = authService
         )
     }
@@ -79,6 +50,7 @@ data class LoginScreen(val initialEmail: String) : Screen {
 fun LoginUI(
     emailParam: String,
     onBack: () -> Unit,
+    onNavigateToRegister: () -> Unit,
     authService: AuthService
 ) {
     val scope = rememberCoroutineScope()
@@ -93,7 +65,7 @@ fun LoginUI(
     val redPrimer = Color(0xFFD53B1E)
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Layer 1: Background
+        // Background
         Image(
             painter = painterResource(Res.drawable.bg_pattern_grey),
             contentDescription = null,
@@ -106,15 +78,12 @@ fun LoginUI(
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
 
-            // Layer 2: Kontainer Utama
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-
-                // --- KONTEN TENGAH (STRUKTUR HARUS SAMA DENGAN CHECKVEHICLE) ---
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Logo (Padding top 60dp agar identik dengan halaman sebelumnya)
+                    // Header Image
                     Image(
                         painter = painterResource(Res.drawable.img_hello),
                         contentDescription = null,
@@ -131,7 +100,7 @@ fun LoginUI(
                     ) {
                         Column(
                             modifier = Modifier
-                                .padding(18.dp)
+                                .padding(20.dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
                             Text(
@@ -140,6 +109,14 @@ fun LoginUI(
                                 fontSize = 29.sp,
                                 color = Color(0xFF9E9E9E),
                                 fontWeight = FontWeight.Medium
+                            )
+
+                            Text(
+                                text = "Silakan masuk ke akun Anda",
+                                fontFamily = satoshiMedium,
+                                fontSize = 16.sp,
+                                color = Color.Black,
+                                modifier = Modifier.padding(top = 4.dp)
                             )
 
                             Spacer(modifier = Modifier.height(32.dp))
@@ -160,10 +137,9 @@ fun LoginUI(
                                 shape = RoundedCornerShape(10.dp),
                                 singleLine = true,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color.DarkGray,
-                                    unfocusedBorderColor = Color.DarkGray,
-                                    focusedLabelColor = Color.DarkGray,
-                                    cursorColor = Color.DarkGray
+                                    focusedBorderColor = redPrimer,
+                                    unfocusedBorderColor = Color(0xFFF5F5F5),
+                                    cursorColor = redPrimer
                                 )
                             )
 
@@ -198,10 +174,9 @@ fun LoginUI(
                                 shape = RoundedCornerShape(10.dp),
                                 singleLine = true,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color.DarkGray,
-                                    unfocusedBorderColor = Color.DarkGray,
-                                    focusedLabelColor = Color.DarkGray,
-                                    cursorColor = Color.DarkGray
+                                    focusedBorderColor = redPrimer,
+                                    unfocusedBorderColor = Color(0xFFF5F5F5),
+                                    cursorColor = redPrimer
                                 )
                             )
 
@@ -213,7 +188,8 @@ fun LoginUI(
                                     .clickable { /* Aksi Lupa Password */ },
                                 fontFamily = satoshiMedium,
                                 color = redPrimer,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
                             )
 
                             Spacer(modifier = Modifier.height(32.dp))
@@ -231,11 +207,12 @@ fun LoginUI(
                                             val response = authService.login(email, password)
                                             if (response.success) {
                                                 snackbarHostState.showSnackbar("Selamat Datang!")
+                                                // navigator.replaceAll(HomeScreen()) // Contoh jika sudah ada Home
                                             } else {
                                                 snackbarHostState.showSnackbar(response.message)
                                             }
                                         } catch (e: Exception) {
-                                            snackbarHostState.showSnackbar("Login Gagal")
+                                            snackbarHostState.showSnackbar("Login Gagal: ${e.message}")
                                         } finally {
                                             isLoading = false
                                         }
@@ -253,21 +230,34 @@ fun LoginUI(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(32.dp))
 
-                            Text(
-                                text = "Daftar Akun Baru",
-                                fontFamily = satoshiMedium,
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .clickable { /* Aksi Daftar */ },
-                                color = redPrimer,
-                                fontWeight = FontWeight.Bold
-                            )
+                            // --- NAVIGASI KE REGISTER ---
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Belum punya akun? ",
+                                    fontFamily = satoshiMedium,
+                                    color = Color(0xFFBDBDBD),
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    text = "Daftar",
+                                    modifier = Modifier.clickable { onNavigateToRegister() },
+                                    fontFamily = satoshiMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = redPrimer,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                 }
 
+                // Tombol Back di pojok kiri atas
                 IconButton(
                     onClick = onBack,
                     modifier = Modifier
