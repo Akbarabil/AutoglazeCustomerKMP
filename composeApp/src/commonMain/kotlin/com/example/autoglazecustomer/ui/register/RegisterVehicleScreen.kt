@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer.ui
+package com.example.autoglazecustomer.ui.register
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image

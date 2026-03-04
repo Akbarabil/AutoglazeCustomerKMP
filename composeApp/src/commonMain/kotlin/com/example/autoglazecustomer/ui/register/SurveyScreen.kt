@@ -1,4 +1,4 @@
-package com.example.autoglazecustomer.ui
+package com.example.autoglazecustomer.ui.register
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -20,6 +20,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.*
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.LoginScreen
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource

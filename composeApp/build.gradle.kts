@@ -43,6 +43,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.transitions)
+            implementation("cafe.adriel.voyager:voyager-screenmodel:1.1.0-beta02")
             // API & JSON (Gantinya Retrofit & Gson)
             implementation("io.ktor:ktor-client-core:2.3.12")
 
@@ -55,6 +56,7 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
 
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+
         }
 
         iosMain.dependencies {
