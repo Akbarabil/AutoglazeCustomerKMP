@@ -2,7 +2,10 @@ package com.example.autoglazecustomer.ui
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material3.*
@@ -23,6 +26,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.GetCekKendaraan
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.login.LoginScreen
+import com.example.autoglazecustomer.ui.register.RegisterScreen
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
@@ -34,10 +39,8 @@ class CheckVehicleScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val authService = remember { AuthService() }
 
-        // Memanggil UI Content
         CheckVehicleUI(
             onNavigateToLogin = { email ->
-                // Navigator push akan menumpuk halaman Login di atas halaman Cek Kendaraan
                 navigator.push(LoginScreen(initialEmail = email))
             },
             authService = authService
@@ -50,6 +53,9 @@ fun CheckVehicleUI(
     onNavigateToLogin: (String) -> Unit,
     authService: AuthService
 ) {
+    // Memanggil navigator agar tersedia di dalam fungsi ini
+    val navigator = LocalNavigator.currentOrThrow
+
     var nopol by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var vehicleData by remember { mutableStateOf<GetCekKendaraan?>(null) }
@@ -59,6 +65,21 @@ fun CheckVehicleUI(
     val snackbarHostState = remember { SnackbarHostState() }
     val redPrimer = Color(0xFFD53B1E)
     val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+
+    // Konfigurasi warna seragam (Tanpa Ungu)
+    val commonTextFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = Color.DarkGray,
+        unfocusedBorderColor = Color.DarkGray,
+        focusedLabelColor = Color.DarkGray,
+        unfocusedLabelColor = Color.Gray,
+        cursorColor = Color.DarkGray,
+        selectionColors = TextSelectionColors(
+            handleColor = Color.DarkGray,
+            backgroundColor = Color.DarkGray.copy(alpha = 0.4f)
+        ),
+        focusedTextColor = Color.Black,
+        unfocusedTextColor = Color.Black
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -117,7 +138,7 @@ fun CheckVehicleUI(
                             onValueChange = { nopol = it.uppercase() },
                             modifier = Modifier.fillMaxWidth(),
                             label = { Text("Nomor Polisi", fontFamily = satoshiMedium) },
-                            placeholder = { Text("Contoh: B 1234 ABC", fontFamily = satoshiMedium) },
+                            placeholder = { Text("Contoh: AG1234KBV", fontFamily = satoshiMedium, color = Color.LightGray) },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.DirectionsCar,
@@ -128,12 +149,7 @@ fun CheckVehicleUI(
                             },
                             shape = RoundedCornerShape(10.dp),
                             singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.DarkGray,
-                                unfocusedBorderColor = Color.DarkGray,
-                                focusedLabelColor = Color.DarkGray,
-                                cursorColor = Color.DarkGray
-                            )
+                            colors = commonTextFieldColors
                         )
 
                         Spacer(modifier = Modifier.height(32.dp))
@@ -198,7 +214,7 @@ fun CheckVehicleUI(
                             Text("Belum punya akun? ", fontFamily = satoshiMedium, color = Color(0xFFBDBDBD), fontSize = 16.sp)
                             Text(
                                 text = "Daftar",
-                                modifier = Modifier.clickable { /* Aksi Daftar */ },
+                                modifier = Modifier.clickable { navigator.push(RegisterScreen()) },
                                 fontFamily = satoshiMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = redPrimer,
@@ -210,15 +226,14 @@ fun CheckVehicleUI(
             }
         }
 
-        // --- DIALOGS (LOADING, FOUND, NOT FOUND) ---
         if (isLoading) {
             LoadingDialog(redPrimer)
         }
 
         if (vehicleData != null) {
-            Dialog(onDismissRequest = { vehicleData = null },properties = DialogProperties(
-                usePlatformDefaultWidth = false
-            )
+            Dialog(
+                onDismissRequest = { vehicleData = null },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
             ) {
                 Card(
                     modifier = Modifier.fillMaxWidth(0.92f).wrapContentHeight().padding(vertical = 16.dp),
@@ -239,7 +254,6 @@ fun CheckVehicleUI(
                         VehicleInfoItem("Nomor Rangka", vehicleData?.noRangka ?: "-", satoshiMedium)
                         VehicleInfoItem("Email", vehicleData?.email ?: "-", satoshiMedium)
                         VehicleInfoItem("Telepon", vehicleData?.telepon ?: "-", satoshiMedium)
-
 
                         Spacer(modifier = Modifier.height(24.dp))
 
@@ -267,16 +281,23 @@ fun CheckVehicleUI(
         if (showNotFoundDialog) {
             AlertDialog(
                 onDismissRequest = { showNotFoundDialog = false },
+                containerColor = Color.White,
                 title = { Text("Data Tidak Ditemukan", fontFamily = satoshiMedium) },
                 text = { Text("Nomor polisi belum terdaftar. Silakan daftar akun baru.", fontFamily = satoshiMedium) },
                 confirmButton = {
-                    Button(onClick = { showNotFoundDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = redPrimer)) {
-                        Text("Daftar Sekarang", fontFamily = satoshiMedium)
+                    Button(
+                        onClick = {
+                            showNotFoundDialog = false
+                            navigator.push(RegisterScreen())
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+                    ) {
+                        Text("Daftar Sekarang", fontFamily = satoshiMedium, color = Color.White)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showNotFoundDialog = false }) {
-                        Text("Batal", fontFamily = satoshiMedium)
+                        Text("Batal", fontFamily = satoshiMedium, color = Color.Gray)
                     }
                 }
             )
@@ -287,8 +308,23 @@ fun CheckVehicleUI(
 @Composable
 fun VehicleInfoItem(label: String, value: String, fontFamily: FontFamily) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text(text = label, fontSize = 12.sp, color = Color.Gray, fontFamily = fontFamily)
-        Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black, fontFamily = fontFamily)
-        HorizontalDivider(modifier = Modifier.padding(top = 4.dp), thickness = 0.5.dp, color = Color(0xFFEEEEEE))
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color.Gray,
+            fontFamily = fontFamily
+        )
+        Text(
+            text = value,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black,
+            fontFamily = fontFamily
+        )
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 4.dp),
+            thickness = 0.5.dp,
+            color = Color(0xFFEEEEEE)
+        )
     }
 }

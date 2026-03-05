@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -49,7 +50,7 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
 
         val yearList = remember {
             (2000..2026).map { it.toString() }.reversed()
-        }
+        } //Tahun masih manual karena transisi library clock
 
         // Definisi warna seragam untuk semua input
         val commonColors = OutlinedTextFieldDefaults.colors(
@@ -57,7 +58,11 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
             unfocusedBorderColor = Color.DarkGray,
             focusedLabelColor = Color.DarkGray,
             unfocusedLabelColor = Color.Gray,
-            cursorColor = Color.DarkGray,
+            cursorColor = Color.DarkGray, // Fix warna kursor
+            selectionColors = TextSelectionColors(
+                handleColor = Color.DarkGray,
+                backgroundColor = Color.DarkGray.copy(alpha = 0.4f)
+            ),
             errorBorderColor = redPrimer,
             errorLabelColor = redPrimer,
             focusedTextColor = Color.Black,

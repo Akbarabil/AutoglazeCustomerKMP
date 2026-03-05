@@ -3,7 +3,10 @@ package com.example.autoglazecustomer.ui.register
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.*
@@ -24,7 +27,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.DaftarData
 import com.example.autoglazecustomer.data.network.AuthService
-import com.example.autoglazecustomer.ui.LoginScreen
+import com.example.autoglazecustomer.ui.login.LoginScreen
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -46,6 +49,23 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
         // Load data survey saat masuk layar
         LaunchedEffect(Unit) { screenModel.initData() }
 
+        // Definisi warna seragam (Sama dengan Register & Login)
+        val commonTextFieldColors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.DarkGray,
+            unfocusedBorderColor = Color.DarkGray,
+            focusedLabelColor = Color.DarkGray,
+            unfocusedLabelColor = Color.Gray,
+            cursorColor = Color.DarkGray,
+            selectionColors = TextSelectionColors(
+                handleColor = Color.DarkGray,
+                backgroundColor = Color.DarkGray.copy(alpha = 0.4f)
+            ),
+            errorBorderColor = redPrimer,
+            errorLabelColor = redPrimer,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black
+        )
+
         Box(modifier = Modifier.fillMaxSize()) {
             // 1. Background Pattern
             Image(
@@ -62,7 +82,7 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Header Image (Jarak disamakan 80.dp agar konsisten)
+                        // Header Image (80.dp)
                         Image(
                             painter = painterResource(Res.drawable.img_berpikir),
                             contentDescription = null,
@@ -107,20 +127,13 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                                             .menuAnchor()
                                             .fillMaxWidth(),
                                         shape = RoundedCornerShape(10.dp),
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color.DarkGray,
-                                            unfocusedBorderColor = Color.DarkGray,
-                                            focusedLabelColor = Color.DarkGray,
-                                            unfocusedLabelColor = Color.DarkGray,
-                                            errorBorderColor = redPrimer,
-                                            focusedTextColor = Color.Black,
-                                            unfocusedTextColor = Color.Black
-                                        )
+                                        colors = commonTextFieldColors // Menggunakan warna seragam
                                     )
 
                                     ExposedDropdownMenu(
                                         expanded = expanded,
-                                        onDismissRequest = { expanded = false }
+                                        onDismissRequest = { expanded = false },
+                                        modifier = Modifier.background(Color.White)
                                     ) {
                                         state.asalTahuList.forEach { item ->
                                             DropdownMenuItem(
@@ -161,7 +174,7 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                         }
                     }
 
-                    // Back Arrow (Posisinya di pojok kiri atas)
+                    // Back Arrow
                     IconButton(
                         onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 12.dp, top = 12.dp)
@@ -204,7 +217,6 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                     confirmButton = {
                         Button(
                             onClick = {
-                                // Ganti semua screen dengan LoginScreen agar alur navigasi bersih
                                 navigator.replaceAll(LoginScreen(initialEmail = dataRegistrasi.email))
                             },
                             modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -238,7 +250,6 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
             }
         }
 
-        // Auto-clear error snackbar setelah 4 detik
         LaunchedEffect(state.errorMessage) {
             if (state.errorMessage != null) {
                 kotlinx.coroutines.delay(4000)

@@ -8,23 +8,13 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -35,28 +25,8 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -103,8 +73,24 @@ class RegisterScreen : Screen {
         var showDatePicker by remember { mutableStateOf(false) }
         var showCountryPicker by remember { mutableStateOf(false) }
 
+        // Konfigurasi warna input seragam (Tanpa Ungu)
+        val commonTextFieldColors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.DarkGray,
+            unfocusedBorderColor = Color.DarkGray,
+            focusedLabelColor = Color.DarkGray,
+            unfocusedLabelColor = Color.Gray,
+            cursorColor = Color.DarkGray, // Fix Kursor Ungu
+            selectionColors = TextSelectionColors(
+                handleColor = Color.DarkGray,
+                backgroundColor = Color.DarkGray.copy(alpha = 0.4f)
+            ),
+            errorBorderColor = redPrimer,
+            errorLabelColor = redPrimer,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black
+        )
+
         Box(modifier = Modifier.fillMaxSize()) {
-            // 1. Background
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
@@ -112,21 +98,18 @@ class RegisterScreen : Screen {
                 contentScale = ContentScale.Crop
             )
 
-            // 2. Scaffold (Identik dengan Login)
             Scaffold(containerColor = Color.Transparent) { paddingValues ->
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Header Image (Padding top 80.dp)
                         Image(
                             painter = painterResource(Res.drawable.img_catat),
                             contentDescription = null,
                             modifier = Modifier.padding(top = 80.dp).size(193.dp)
                         )
 
-                        // Form Container
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
@@ -145,7 +128,8 @@ class RegisterScreen : Screen {
                                     label = "Nama Lengkap",
                                     icon = Icons.Default.Person,
                                     satoshiMedium = satoshiMedium,
-                                    isError = state.errorField == "nama"
+                                    isError = state.errorField == "nama",
+                                    colors = commonTextFieldColors
                                 )
 
                                 // Email
@@ -156,7 +140,8 @@ class RegisterScreen : Screen {
                                     icon = Icons.Default.Email,
                                     keyboardType = KeyboardType.Email,
                                     satoshiMedium = satoshiMedium,
-                                    isError = state.errorField == "email"
+                                    isError = state.errorField == "email",
+                                    colors = commonTextFieldColors
                                 )
 
                                 // Tanggal Lahir
@@ -170,13 +155,7 @@ class RegisterScreen : Screen {
                                         readOnly = true,
                                         leadingIcon = { Icon(Icons.Default.DateRange, null) },
                                         shape = RoundedCornerShape(10.dp),
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color.DarkGray,
-                                            unfocusedBorderColor = Color.DarkGray,
-                                            focusedLabelColor = Color.DarkGray,
-                                            cursorColor = Color.DarkGray,
-                                            errorBorderColor = redPrimer
-                                        )
+                                        colors = commonTextFieldColors
                                     )
                                     Box(modifier = Modifier.matchParentSize().clickable { showDatePicker = true })
                                 }
@@ -203,13 +182,7 @@ class RegisterScreen : Screen {
                                     },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                                     shape = RoundedCornerShape(10.dp),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color.DarkGray,
-                                        unfocusedBorderColor = Color.DarkGray,
-                                        focusedLabelColor = Color.DarkGray,
-                                        cursorColor = Color.DarkGray,
-                                        errorBorderColor = redPrimer
-                                    )
+                                    colors = commonTextFieldColors
                                 )
 
                                 // Password
@@ -227,13 +200,7 @@ class RegisterScreen : Screen {
                                     },
                                     visualTransformation = if (state.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                     shape = RoundedCornerShape(10.dp),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color.DarkGray,
-                                        unfocusedBorderColor = Color.DarkGray,
-                                        focusedLabelColor = Color.DarkGray,
-                                        cursorColor = Color.DarkGray,
-                                        errorBorderColor = redPrimer
-                                    )
+                                    colors = commonTextFieldColors
                                 )
 
                                 Spacer(modifier = Modifier.height(30.dp))
@@ -258,20 +225,19 @@ class RegisterScreen : Screen {
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text("Sudah punya akun? ", fontFamily = satoshiMedium, color = Color(0xFFBDBDBD))
-                                    Text("Masuk", modifier = Modifier.clickable { navigator.pop() }, fontWeight = FontWeight.Bold)
+                                    Text("Masuk", modifier = Modifier.clickable { navigator.pop() }, fontWeight = FontWeight.Bold, color = redPrimer)
                                 }
                             }
                         }
                     }
 
-                    // 3. Back Button (Floating)
-                    IconButton(onClick = { navigator.pop() }, modifier = Modifier.padding(start = 8.dp, top = 8.dp)) {
+                    IconButton(onClick = { navigator.pop() }, modifier = Modifier.align(Alignment.TopStart).padding(start = 8.dp, top = 8.dp)) {
                         Icon(Icons.Default.ArrowBackIosNew, "Back", tint = Color.DarkGray, modifier = Modifier.size(20.dp))
                     }
                 }
             }
 
-            // 4. Snackbar (Atas)
+            // SNACKBAR (Atas)
             AnimatedVisibility(
                 visible = state.errorMessage != null,
                 enter = slideInVertically { -it } + fadeIn(),
@@ -287,7 +253,7 @@ class RegisterScreen : Screen {
                 }
             }
 
-            // 5. Country Picker Dialog
+            // Country Picker
             if (showCountryPicker) {
                 CountryPickerDialog(
                     onDismiss = { showCountryPicker = false },
@@ -298,7 +264,7 @@ class RegisterScreen : Screen {
                 )
             }
 
-            // 6. Date Picker
+            // Date Picker (Background Putih)
             if (showDatePicker) {
                 DatePickerDialog(
                     onDismissRequest = { showDatePicker = false },
@@ -306,9 +272,26 @@ class RegisterScreen : Screen {
                         TextButton(onClick = {
                             datePickerState.selectedDateMillis?.let { screenModel.onTglLahirChange(formatMillisToDate(it)) }
                             showDatePicker = false
-                        }) { Text("Pilih") }
-                    }
-                ) { DatePicker(state = datePickerState) }
+                        }) { Text("Pilih", color = redPrimer) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) { Text("Batal", color = Color.Gray) }
+                    },
+                    colors = DatePickerDefaults.colors(containerColor = Color.White)
+                ) {
+                    DatePicker(
+                        state = datePickerState,
+                        colors = DatePickerDefaults.colors(
+                            containerColor = Color.White,
+                            titleContentColor = Color.DarkGray,
+                            headlineContentColor = Color.DarkGray,
+                            selectedDayContainerColor = redPrimer,
+                            selectedDayContentColor = Color.White,
+                            todayContentColor = redPrimer,
+                            todayDateBorderColor = redPrimer
+                        )
+                    )
+                }
             }
         }
     }
@@ -319,7 +302,7 @@ fun CountryPickerDialog(onDismiss: () -> Unit, onCountrySelected: (Country) -> U
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = RoundedCornerShape(16.dp), color = Color.White, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Pilih Negara", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text("Pilih Negara", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.DarkGray)
                 Spacer(Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
                     items(allCountries) { country ->
@@ -329,7 +312,7 @@ fun CountryPickerDialog(onDismiss: () -> Unit, onCountrySelected: (Country) -> U
                         ) {
                             Text(country.flag, fontSize = 24.sp)
                             Spacer(Modifier.width(12.dp))
-                            Text(country.name, modifier = Modifier.weight(1f))
+                            Text(country.name, modifier = Modifier.weight(1f), color = Color.DarkGray)
                             Text("+${country.phoneCode}", color = Color.Gray)
                         }
                     }
@@ -342,7 +325,8 @@ fun CountryPickerDialog(onDismiss: () -> Unit, onCountrySelected: (Country) -> U
 @Composable
 fun RegisterTextField(
     value: String, onValueChange: (String) -> Unit, label: String, icon: ImageVector,
-    keyboardType: KeyboardType = KeyboardType.Text, satoshiMedium: FontFamily, isError: Boolean = false
+    keyboardType: KeyboardType = KeyboardType.Text, satoshiMedium: FontFamily,
+    isError: Boolean = false, colors: androidx.compose.material3.TextFieldColors
 ) {
     OutlinedTextField(
         value = value, onValueChange = onValueChange, isError = isError,
@@ -352,14 +336,7 @@ fun RegisterTextField(
         shape = RoundedCornerShape(10.dp),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         singleLine = true,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.DarkGray,
-            unfocusedBorderColor = Color.DarkGray,
-            focusedLabelColor = Color.DarkGray,
-            cursorColor = Color.DarkGray,
-            errorBorderColor = Color(0xFFD53B1E),
-            errorLabelColor = Color(0xFFD53B1E)
-        )
+        colors = colors
     )
 }
 
