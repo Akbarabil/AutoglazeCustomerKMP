@@ -1,15 +1,15 @@
 package com.example.autoglazecustomer.ui.register
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,85 +18,58 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.*
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.DaftarData
-import com.example.autoglazecustomer.data.model.MerkKendaraanResponse
-import com.example.autoglazecustomer.data.model.TipeKendaraanResponse
 import com.example.autoglazecustomer.data.model.WarnaKendaraanResponse
 import com.example.autoglazecustomer.data.network.AuthService
-import kotlinx.coroutines.launch
+import com.example.autoglazecustomer.ui.LoadingDialog
+import com.example.autoglazecustomer.ui.SearchableDropdown
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
-class RegisterVehicleScreen(val dataRegistrasi: DaftarData) : Screen {
+class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+
         val navigator = LocalNavigator.currentOrThrow
-        val scope = rememberCoroutineScope()
         val authService = remember { AuthService() }
+        val screenModel = rememberScreenModel { RegisterVehicleScreenModel(authService) }
+        val state = screenModel.state
 
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
 
-        // API Data States
-        var listMerek by remember { mutableStateOf(emptyList<MerkKendaraanResponse>()) }
-        var listTipe by remember { mutableStateOf(emptyList<TipeKendaraanResponse>()) }
-        var listWarna by remember { mutableStateOf(emptyList<WarnaKendaraanResponse>()) }
-
-        // Form States
-        var merekTerpilih by remember { mutableStateOf<MerkKendaraanResponse?>(null) }
-        var tipeTerpilih by remember { mutableStateOf<TipeKendaraanResponse?>(null) }
-        var tahun by remember { mutableStateOf("") }
-        var nopol by remember { mutableStateOf("") }
-        var noRangka by remember { mutableStateOf("") }
-        var warnaTerpilih by remember { mutableStateOf<WarnaKendaraanResponse?>(null) }
-
-        var isLoading by remember { mutableStateOf(false) }
-        var errorMessage by remember { mutableStateOf<String?>(null) }
-
-        // 1. Load Merek & Warna saat layar dibuka
-        LaunchedEffect(Unit) {
-            try {
-                // Load Merek
-                val resMerek = authService.getMerek()
-                listMerek = resMerek
-                println("DEBUG_AUTOGLAZE: Jumlah Merek = ${listMerek.size}")
-
-                // Load Warna (Sangat Penting agar LazyRow tidak kosong)
-                val resWarna = authService.getWarna()
-                listWarna = resWarna
-                println("DEBUG_AUTOGLAZE: Jumlah Warna = ${listWarna.size}")
-            } catch (e: Exception) {
-                println("DEBUG_AUTOGLAZE: Error Init = ${e.message}")
-                errorMessage = "Gagal memuat data awal dari server"
-            }
+        val yearList = remember {
+            (2000..2026).map { it.toString() }.reversed()
         }
 
-        // 2. Cascading: Load Tipe saat Merek berubah
-        LaunchedEffect(merekTerpilih) {
-            merekTerpilih?.let {
-                tipeTerpilih = null // Reset pilihan tipe setiap kali merek diganti
-                try {
-                    listTipe = authService.getTipe(it.idMerek)
-                    println("DEBUG_AUTOGLAZE: Jumlah Tipe untuk merek ${it.namaMerek} = ${listTipe.size}")
-                } catch (e: Exception) {
-                    errorMessage = "Gagal memuat tipe mobil"
-                }
-            }
+        // Definisi warna seragam untuk semua input
+        val commonColors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.DarkGray,
+            unfocusedBorderColor = Color.DarkGray,
+            focusedLabelColor = Color.DarkGray,
+            unfocusedLabelColor = Color.Gray,
+            cursorColor = Color.DarkGray,
+            errorBorderColor = redPrimer,
+            errorLabelColor = redPrimer,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black
+        )
+
+        LaunchedEffect(Unit) {
+            screenModel.initData()
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            // Layer 1: Background
+
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
@@ -104,346 +77,299 @@ class RegisterVehicleScreen(val dataRegistrasi: DaftarData) : Screen {
                 contentScale = ContentScale.Crop
             )
 
-            // Layer 2: Main UI
-            Column(modifier = Modifier.fillMaxSize()) {
-                // Image Header
-                Image(
-                    painter = painterResource(Res.drawable.img_vehicle_check),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(top = 40.dp)
-                        .size(193.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
+            Scaffold(containerColor = Color.Transparent) { paddingValues ->
 
-                Surface(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 20.dp),
-                    shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                    color = Color.White
+                        .padding(paddingValues)
                 ) {
+
                     Column(
-                        modifier = Modifier
-                            .padding(20.dp)
-                            .verticalScroll(rememberScrollState())
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "Isi data kendaraanmu",
-                            fontFamily = satoshiMedium,
-                            fontSize = 28.sp,
-                            color = Color(0xFF9E9E9E)
+
+                        Image(
+                            painter = painterResource(Res.drawable.img_vehicle_check),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(top = 80.dp)
+                                .size(193.dp)
                         )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
+                            color = Color.White
+                        ) {
 
-                        // Dropdown Merk
-                        VehicleDropdownField(
-                            label = "Merk Mobil",
-                            value = merekTerpilih?.namaMerek ?: "",
-                            options = listMerek.map { it.namaMerek },
-                            onSelected = { nama ->
-                                merekTerpilih = listMerek.find { it.namaMerek == nama }
-                            },
-                            satoshiMedium = satoshiMedium,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.DarkGray,     // Garis saat diklik
-                                unfocusedBorderColor = Color.DarkGray,   // Garis saat diam
-                                focusedLabelColor = Color.DarkGray,      // Warna label saat di atas
-                                unfocusedLabelColor = Color.DarkGray,    // Warna label saat di tengah
-                                cursorColor = Color.DarkGray,            // Warna kursor (meskipun readOnly)
-                                focusedTextColor = Color.Black,          // Warna teks saat aktif
-                                unfocusedTextColor = Color.Black,        // Warna teks saat diam
-                                disabledBorderColor = Color.LightGray,   // Warna saat dropdown mati (tipe sebelum pilih merek)
-                                disabledLabelColor = Color.LightGray,
-                                focusedTrailingIconColor = Color.DarkGray, // Warna panah dropdown
-                                unfocusedTrailingIconColor = Color.DarkGray
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .padding(24.dp)
+                                    .verticalScroll(rememberScrollState())
+                            ) {
 
-                        )
+                                Text(
+                                    text = "Isi data kendaraanmu",
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 28.sp,
+                                    color = Color(0xFF9E9E9E)
+                                )
 
-                        // Row untuk Tipe dan Tahun
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Box(modifier = Modifier.weight(1.2f)) {
-                                VehicleDropdownField(
-                                    label = "Tipe",
-                                    value = tipeTerpilih?.namaTipeKendaraan ?: "",
-                                    options = listTipe.map { it.namaTipeKendaraan },
-                                    onSelected = { nama ->
-                                        tipeTerpilih = listTipe.find { it.namaTipeKendaraan == nama }
+                                Spacer(modifier = Modifier.height(24.dp))
+
+                                // MERK MOBIL
+                                SearchableDropdown(
+                                    label = "Merk Mobil",
+                                    items = state.listMerek,
+                                    selectedItem = state.merekTerpilih,
+                                    getLabel = { it.namaMerek },
+                                    onItemSelected = { selected ->
+                                        screenModel.onMerekSelected(selected.namaMerek)
+                                    },
+                                    onTextChanged = { text ->
+                                        if (text.isEmpty()) {
+                                            screenModel.clearMerek()
+                                        }
                                     },
                                     satoshiMedium = satoshiMedium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color.DarkGray,     // Garis saat diklik
-                                        unfocusedBorderColor = Color.DarkGray,   // Garis saat diam
-                                        focusedLabelColor = Color.DarkGray,      // Warna label saat di atas
-                                        unfocusedLabelColor = Color.DarkGray,    // Warna label saat di tengah
-                                        cursorColor = Color.DarkGray,            // Warna kursor (meskipun readOnly)
-                                        focusedTextColor = Color.Black,          // Warna teks saat aktif
-                                        unfocusedTextColor = Color.Black,        // Warna teks saat diam
-                                        disabledBorderColor = Color.LightGray,   // Warna saat dropdown mati (tipe sebelum pilih merek)
-                                        disabledLabelColor = Color.LightGray,
-                                        focusedTrailingIconColor = Color.DarkGray, // Warna panah dropdown
-                                        unfocusedTrailingIconColor = Color.DarkGray
-                                    ),
-                                    enabled = merekTerpilih != null
+                                    isLoading = state.isLoadingMerek,
+                                    isError = state.errorField == "merek"
                                 )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(modifier = Modifier.weight(0.8f)) {
-                                VehicleDropdownField(
-                                    label = "Tahun",
-                                    value = tahun,
-                                    options = (2000..2026).map { it.toString() }.reversed(),
-                                    onSelected = { tahun = it },
-                                    satoshiMedium = satoshiMedium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color.DarkGray,     // Garis saat diklik
-                                        unfocusedBorderColor = Color.DarkGray,   // Garis saat diam
-                                        focusedLabelColor = Color.DarkGray,      // Warna label saat di atas
-                                        unfocusedLabelColor = Color.DarkGray,    // Warna label saat di tengah
-                                        cursorColor = Color.DarkGray,            // Warna kursor (meskipun readOnly)
-                                        focusedTextColor = Color.Black,          // Warna teks saat aktif
-                                        unfocusedTextColor = Color.Black,        // Warna teks saat diam
-                                        disabledBorderColor = Color.LightGray,   // Warna saat dropdown mati (tipe sebelum pilih merek)
-                                        disabledLabelColor = Color.LightGray,
-                                        focusedTrailingIconColor = Color.DarkGray, // Warna panah dropdown
-                                        unfocusedTrailingIconColor = Color.DarkGray
-                                    ),
-                                    enabled = tipeTerpilih != null
-                                )
-                            }
-                        }
 
-                        // Nomor Polisi
-                        OutlinedTextField(
-                            value = nopol,
-                            onValueChange = { nopol = it.uppercase().replace(" ", "") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 14.dp),
-                            label = { Text("Nomor Polisi", fontFamily = satoshiMedium) },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(Res.drawable.ic_plat_nomer),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            },
-                            placeholder = { Text("Contoh: B1234ABC", color = Color.LightGray) },
-                            shape = RoundedCornerShape(10.dp),
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.Characters,
-                                keyboardType = KeyboardType.Text
-                            ),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.DarkGray,
-                                unfocusedBorderColor = Color.DarkGray,
-                                focusedLabelColor = Color.DarkGray,
-                                cursorColor = Color.DarkGray
-                            )
-                        )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
 
-                        // Nomor Rangka
-                        OutlinedTextField(
-                            value = noRangka,
-                            onValueChange = { noRangka = it.uppercase() },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 20.dp),
-                            label = { Text("Nomor Rangka", fontFamily = satoshiMedium) },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(Res.drawable.ic_nomer_rangka),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            },
-                            shape = RoundedCornerShape(10.dp),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.DarkGray,
-                                unfocusedBorderColor = Color.DarkGray,
-                                focusedLabelColor = Color.DarkGray,
-                                cursorColor = Color.DarkGray
-                            )
-                        )
+                                    Box(modifier = Modifier.weight(1.2f)) {
 
-                        Text("Warna Kendaraan", fontFamily = satoshiMedium, fontSize = 16.sp)
+                                        SearchableDropdown(
+                                            label = "Tipe",
+                                            items = state.listTipe,
+                                            selectedItem = state.tipeTerpilih,
+                                            getLabel = { it.namaTipeKendaraan },
+                                            onItemSelected = { selected ->
+                                                screenModel.onTipeSelected(selected.namaTipeKendaraan)
+                                            },
+                                            satoshiMedium = satoshiMedium,
+                                            enabled = state.merekTerpilih != null,
+                                            isLoading = state.isLoadingTipe,
+                                            autoExpand = true,
+                                            isError = state.errorField == "tipe"
+                                        )
+                                    }
 
-                        // Horizontal List Warna
-                        LazyRow(
-                            contentPadding = PaddingValues(vertical = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(listWarna) { warna ->
-                                WarnaItem(
-                                    warnaObj = warna,
-                                    isSelected = warna == warnaTerpilih,
-                                    onClick = { warnaTerpilih = warna },
-                                    satoshiMedium = satoshiMedium
-                                )
-                            }
-                        }
+                                    Spacer(modifier = Modifier.width(8.dp))
 
-                        Spacer(modifier = Modifier.height(30.dp))
+                                    Box(modifier = Modifier.weight(0.8f)) {
 
-                        // Tombol Selanjutnya
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    isLoading = true
-                                    try {
-                                        val nopolTersedia = authService.cekNopol(nopol)
-                                        isLoading = false
-
-                                        if (nopolTersedia) {
-                                            // Gabungkan data profil dengan data kendaraan
-                                            val dataLengkap = dataRegistrasi.copy(
-                                                idMerek = merekTerpilih?.idMerek ?: 0,
-                                                idTipe = tipeTerpilih?.idTipeKendaraan ?: 0,
-                                                idWarna = warnaTerpilih?.idWarna ?: 0,
-                                                tahun = tahun,
-                                                nopol = nopol,
-                                                noRangka = noRangka
-                                            )
-                                            navigator.push(SurveyScreen(dataLengkap))
-                                        } else {
-                                            errorMessage = "Maaf, nomor polisi ini sudah terdaftar."
-                                        }
-                                    } catch (e: Exception) {
-                                        isLoading = false
-                                        errorMessage = "Terjadi kesalahan koneksi"
+                                        SearchableDropdown(
+                                            label = "Tahun",
+                                            items = yearList,
+                                            selectedItem = state.tahun.ifEmpty { null },
+                                            getLabel = { it },
+                                            onItemSelected = { selected ->
+                                                screenModel.onTahunSelected(selected)
+                                            },
+                                            satoshiMedium = satoshiMedium,
+                                            isError = state.errorField == "tahun"
+                                        )
                                     }
                                 }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
-                            enabled = !isLoading && warnaTerpilih != null && nopol.isNotBlank() && tipeTerpilih != null
-                        ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                            } else {
-                                Text(
-                                    "Selanjutnya",
-                                    fontFamily = satoshiMedium,
-                                    fontSize = 20.sp,
-                                    color = Color.White
+
+                                // NOMOR POLISI
+                                OutlinedTextField(
+                                    value = state.nopol,
+                                    onValueChange = {
+                                        screenModel.onNopolChange(it)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 14.dp),
+                                    label = {
+                                        Text("Nomor Polisi", fontFamily = satoshiMedium)
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(Res.drawable.ic_plat_nomer),
+                                            null,
+                                            Modifier.size(24.dp)
+                                        )
+                                    },
+                                    placeholder = {
+                                        Text("B1234ABC", color = Color.LightGray)
+                                    },
+                                    isError = state.errorField == "nopol",
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = commonColors,
+                                    singleLine = true
                                 )
+
+                                // NOMOR RANGKA
+                                OutlinedTextField(
+                                    value = state.noRangka,
+                                    onValueChange = {
+                                        screenModel.onNoRangkaChange(it)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 20.dp),
+                                    label = {
+                                        Text("Nomor Rangka", fontFamily = satoshiMedium)
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(Res.drawable.ic_nomer_rangka),
+                                            null,
+                                            Modifier.size(24.dp)
+                                        )
+                                    },
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = commonColors,
+                                    singleLine = true
+                                )
+
+                                Text(
+                                    "Warna Kendaraan",
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 16.sp
+                                )
+
+                                LazyRow(
+                                    contentPadding = PaddingValues(vertical = 12.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+
+                                    items(state.listWarna) { warna ->
+
+                                        WarnaItem(
+                                            warnaObj = warna,
+                                            isSelected = warna == state.warnaTerpilih,
+                                            onClick = {
+                                                screenModel.onWarnaSelected(warna)
+                                            },
+                                            satoshiMedium = satoshiMedium
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(30.dp))
+
+                                Button(
+                                    onClick = {
+
+                                        screenModel.validateAndCheckNopol(
+                                            onSuccess = {
+                                                navigator.push(SurveyScreen(it))
+                                            },
+                                            dataRegistrasi = dataRegistrasi
+                                        )
+
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(56.dp),
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                    enabled = !state.isLoading
+                                ) {
+
+                                    if (state.isLoading) {
+
+                                        CircularProgressIndicator(
+                                            color = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+
+                                    } else {
+
+                                        Text(
+                                            "Selanjutnya",
+                                            fontFamily = satoshiMedium,
+                                            fontSize = 20.sp,
+                                            color = Color.White
+                                        )
+
+                                    }
+                                }
                             }
                         }
+                    }
+
+                    IconButton(
+                        onClick = { navigator.pop() },
+                        modifier = Modifier.padding(start = 12.dp, top = 12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBackIosNew,
+                            contentDescription = "Kembali",
+                            tint = Color.DarkGray,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
 
-            // Snackbar Notification
-            errorMessage?.let { msg ->
-                Snackbar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    action = {
-                        TextButton(onClick = { errorMessage = null }) {
-                            Text("OK", color = Color.White)
+            if (state.isLoading) {
+                LoadingDialog(color = redPrimer)
+            }
+
+            AnimatedVisibility(
+                visible = state.errorMessage != null,
+                enter = slideInVertically { -it } + fadeIn(),
+                exit = slideOutVertically { -it } + fadeOut(),
+                modifier = Modifier.align(Alignment.TopCenter)
+            ) {
+
+                state.errorMessage?.let { msg ->
+
+                    Snackbar(
+                        modifier = Modifier.padding(
+                            top = 40.dp,
+                            start = 16.dp,
+                            end = 16.dp
+                        ),
+                        containerColor = redPrimer,
+                        action = {
+                            TextButton(
+                                onClick = { screenModel.clearError() }
+                            ) {
+                                Text("OK", color = Color.White)
+                            }
                         }
+                    ) {
+                        Text(msg, color = Color.White)
                     }
-                ) { Text(msg) }
+                }
+            }
+        }
+
+        LaunchedEffect(state.errorMessage) {
+            if (state.errorMessage != null) {
+                kotlinx.coroutines.delay(4000)
+                screenModel.clearError()
             }
         }
     }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun VehicleDropdownField(
-    label: String,
-    value: String,
-    options: List<String>,
-    onSelected: (String) -> Unit,
-    satoshiMedium: FontFamily,
-    enabled: Boolean = true,
-    // Tambahkan parameter colors di sini agar bisa menerima input warna dari luar
-    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = Color.DarkGray,
-        unfocusedBorderColor = Color.DarkGray,
-        focusedLabelColor = Color.DarkGray,
-        unfocusedLabelColor = Color.DarkGray,
-        cursorColor = Color.DarkGray,
-        disabledBorderColor = Color(0xFFEEEEEE),
-        disabledLabelColor = Color.LightGray
-    )
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded && enabled,
-        onExpandedChange = { if (enabled) expanded = !expanded },
-        modifier = Modifier.padding(bottom = 14.dp)
-    ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            enabled = enabled,
-            label = { Text(label, fontFamily = satoshiMedium) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
-            // Gunakan parameter colors yang dikirim
-            colors = colors
-        )
-        ExposedDropdownMenu(
-            expanded = expanded && enabled,
-            onDismissRequest = { expanded = false }
+    @Composable
+    fun WarnaItem( warnaObj: WarnaKendaraanResponse, isSelected: Boolean, onClick: () -> Unit, satoshiMedium: FontFamily ) {
+        Surface(
+            modifier = Modifier .widthIn(min = 100.dp) .clickable { onClick() },
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke( width = if (isSelected) 2.dp else 1.dp, color = if (isSelected) Color.DarkGray else Color.LightGray ),
+            color = Color.White
         ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option, fontFamily = satoshiMedium) },
-                    onClick = {
-                        onSelected(option)
-                        expanded = false
-                    }
-                )
-            }
+            Text(
+                text = warnaObj.namaWarna,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                fontFamily = satoshiMedium,
+                color = if (isSelected) Color.DarkGray else Color.Gray,
+                fontSize = 14.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                textAlign = TextAlign.Center
+            )
         }
-    }
-}
-
-@Composable
-fun WarnaItem(
-    warnaObj: WarnaKendaraanResponse,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    satoshiMedium: FontFamily
-) {
-    Surface(
-        modifier = Modifier
-            .widthIn(min = 100.dp)
-            .clickable { onClick() },
-        shape = RoundedCornerShape(8.dp),
-        // Garis pinggir: Grey saat diam, Dark Gray saat dipilih
-        border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) Color.DarkGray else Color.LightGray
-        ),
-        // Background: Putih atau abu-abu sangat muda
-        color = Color.White
-    ) {
-        Text(
-            text = warnaObj.namaWarna,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            fontFamily = satoshiMedium,
-            // Warna Teks: Grey saat diam, Dark Gray/Hitam saat dipilih
-            color = if (isSelected) Color.DarkGray else Color.Gray,
-            fontSize = 14.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            textAlign = TextAlign.Center
-        )
     }
 }

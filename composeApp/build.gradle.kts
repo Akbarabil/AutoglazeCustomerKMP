@@ -43,7 +43,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.transitions)
-            implementation("cafe.adriel.voyager:voyager-screenmodel:1.1.0-beta02")
+            implementation(libs.voyager.screenmodel)
             // API & JSON (Gantinya Retrofit & Gson)
             implementation("io.ktor:ktor-client-core:2.3.12")
 
