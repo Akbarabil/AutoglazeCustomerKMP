@@ -31,7 +31,7 @@ class RegisterVehicleScreenModel(
                 )
             } catch (e: Exception) {
                 state = state.copy(
-                    errorMessage = "Gagal memuat data awal",
+                    errorMessage = "Gagal memuat data awal: ${e.message}",
                     isLoadingMerek = false
                 )
             }
@@ -133,10 +133,13 @@ class RegisterVehicleScreenModel(
         }
 
         screenModelScope.launch {
-            state = state.copy(isLoading = true)
+            state = state.copy(isLoading = true, errorMessage = null)
             try {
-                val isTersedia = authService.cekNopol(s.nopol)
-                if (isTersedia) {
+                // response adalah objek DaftarResponse
+                val response = authService.cekNopol(s.nopol)
+
+                // Menggunakan helper isSuccessful dari data class DaftarResponse kamu
+                if (response.isSuccessful) {
                     val finalData = dataRegistrasi.copy(
                         idMerek = s.merekTerpilih?.idMerek ?: 0,
                         idTipe = s.tipeTerpilih?.idTipeKendaraan ?: 0,
@@ -147,13 +150,14 @@ class RegisterVehicleScreenModel(
                     )
                     onSuccess(finalData)
                 } else {
+                    // Ambil pesan dari server jika ada, jika tidak pakai default
                     state = state.copy(
-                        errorMessage = "Nomor polisi sudah terdaftar",
+                        errorMessage = response.message ?: "Nomor polisi sudah terdaftar",
                         errorField = "nopol"
                     )
                 }
             } catch (e: Exception) {
-                state = state.copy(errorMessage = "Koneksi bermasalah")
+                state = state.copy(errorMessage = "Terjadi gangguan koneksi")
             } finally {
                 state = state.copy(isLoading = false)
             }

@@ -44,6 +44,8 @@ kotlin {
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.transitions)
             implementation(libs.voyager.screenmodel)
+            implementation(libs.voyager.tab)
+            implementation(libs.multiplatform.settings)
             // API & JSON (Gantinya Retrofit & Gson)
             implementation("io.ktor:ktor-client-core:2.3.12")
 
@@ -52,7 +54,10 @@ kotlin {
             implementation("io.ktor:ktor-client-logging:2.3.12")
 
             // Image Loading (Gantinya Glide)
-            implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha01")
+            implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha08")
+
+            // GANTI OkHttp dengan Ktor agar iOS bisa build
+            implementation("io.coil-kt.coil3:coil-network-ktor:3.0.0-alpha08")
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
 
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")

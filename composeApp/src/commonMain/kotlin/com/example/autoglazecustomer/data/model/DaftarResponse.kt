@@ -6,11 +6,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DaftarResponse(
     @SerialName("status")
-    val status: String? = null, // Gunakan String karena API biasanya mengirim "success" atau "error"
+    val status: String? = null,
     @SerialName("message")
     val message: String? = null,
     @SerialName("success")
-    val success: Boolean? = null // Beberapa API menggunakan key 'success' secara langsung
+    val success: Boolean? = null
 ) {
     // Helper property untuk mengecek keberhasilan secara aman
     val isSuccessful: Boolean

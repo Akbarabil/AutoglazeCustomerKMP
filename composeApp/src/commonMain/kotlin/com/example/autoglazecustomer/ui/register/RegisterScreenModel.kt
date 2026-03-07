@@ -66,13 +66,19 @@ class RegisterScreenModel(private val authService: AuthService) : ScreenModel {
         screenModelScope.launch {
             state = state.copy(isLoading = true, errorField = null)
             try {
-                val (isAvailable, message) = authService.cekEmail(s.email)
-                if (isAvailable) {
+                // 1. Ambil objek response utuh
+                val response = authService.cekEmail(s.email)
+
+                // 2. Gunakan helper .isSuccessful yang sudah kamu buat di DaftarResponse
+                if (response.isSuccessful) {
                     val fullPhone = if (s.selectedCountry.phoneCode.isEmpty()) s.phone else "+${s.selectedCountry.phoneCode}${s.phone}"
                     onSuccess(DaftarData(s.nama, s.email, s.tglLahir, fullPhone, s.password))
                 } else {
-                    // Jika email sudah terdaftar, tandai field email sebagai error
-                    state = state.copy(errorMessage = message, errorField = "email")
+                    // 3. Jika gagal, ambil pesan error dari properti .message
+                    state = state.copy(
+                        errorMessage = response.message ?: "Email sudah terdaftar",
+                        errorField = "email"
+                    )
                 }
             } catch (e: Exception) {
                 state = state.copy(errorMessage = "Gagal menghubungi server: ${e.message}")

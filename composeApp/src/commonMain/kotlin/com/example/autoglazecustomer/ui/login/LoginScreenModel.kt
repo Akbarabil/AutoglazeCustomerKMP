@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.example.autoglazecustomer.data.local.TokenManager // Pastikan import ini ada
 import com.example.autoglazecustomer.data.network.AuthService
 import kotlinx.coroutines.launch
 
@@ -53,8 +54,20 @@ class LoginScreenModel(
             isLoading = true
             try {
                 val response = authService.login(email, password)
+
                 if (response.success) {
-                    onSuccess("Selamat Datang!")
+                    val token = response.token
+                    val user = response.user
+
+                    if (token != null && user != null) {
+                        TokenManager.saveToken(token)
+                        TokenManager.saveCustomerId(user.id)
+                        TokenManager.saveUserName(user.name)
+
+                        onSuccess(user.name)
+                    } else {
+                        errorMessage = "Data login tidak lengkap"
+                    }
                 } else {
                     errorMessage = response.message
                 }
