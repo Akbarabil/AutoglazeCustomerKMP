@@ -59,7 +59,8 @@ fun <T> SearchableDropdown(
     isLoading: Boolean = false,
     autoExpand: Boolean = false,
     isError: Boolean = false,
-    onTextChanged: ((String) -> Unit)? = null
+    onTextChanged: ((String) -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null // <-- TAMBAHKAN INI
 ) {
     var expanded by remember { mutableStateOf(false) }
     var searchText by rememberSaveable { mutableStateOf("") }
@@ -68,26 +69,23 @@ fun <T> SearchableDropdown(
     var textFieldWidth by remember { mutableStateOf(0) }
     val density = LocalDensity.current
 
-    // Sinkronisasi teks input dengan item yang terpilih di ViewModel
     LaunchedEffect(selectedItem) {
         if (selectedItem != null) {
-            val label = getLabel(selectedItem)
-            if (searchText != label) {
-                searchText = label
+            val labelStr = getLabel(selectedItem)
+            if (searchText != labelStr) {
+                searchText = labelStr
             }
         } else {
             searchText = ""
         }
     }
 
-    // Membuka otomatis dropdown jika data (seperti Tipe) baru saja masuk
     LaunchedEffect(items) {
         if (autoExpand && items.isNotEmpty() && enabled) {
             expanded = true
         }
     }
 
-    // Menyaring item berdasarkan teks yang diketik
     val filteredItems = remember(searchText, items) {
         if (searchText.isBlank()) {
             items
@@ -118,6 +116,7 @@ fun <T> SearchableDropdown(
                     textFieldWidth = it.size.width
                 },
             label = { Text(label, fontFamily = satoshiMedium) },
+            leadingIcon = leadingIcon, // <-- PASANG DI SINI
             trailingIcon = {
                 if (searchText.isNotEmpty() && enabled) {
                     IconButton(onClick = {
@@ -150,7 +149,6 @@ fun <T> SearchableDropdown(
             )
         )
 
-        // Dropdown menu yang menempel pada lebar TextField
         DropdownMenu(
             expanded = expanded && enabled,
             onDismissRequest = { expanded = false },

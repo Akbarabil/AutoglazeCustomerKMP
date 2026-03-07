@@ -10,7 +10,8 @@ import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.home.HomeScreen
 import org.jetbrains.compose.resources.painterResource
 
-object HomeTab : Tab {
+// Hapus (private val authService: AuthService) dari constructor
+class HomeTab : Tab {
     override val options: TabOptions
         @Composable
         get() = TabOptions(
@@ -21,9 +22,9 @@ object HomeTab : Tab {
 
     @Composable
     override fun Content() {
-        // 1. Inisialisasi AuthService
         val authService = remember { AuthService() }
-        val homeScreen = remember { HomeScreen(authService) }
+        val homeScreen = remember(authService) { HomeScreen(authService) }
+
         homeScreen.Content()
     }
 }

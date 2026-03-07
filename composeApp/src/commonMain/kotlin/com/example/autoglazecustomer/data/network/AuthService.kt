@@ -1,6 +1,7 @@
 package com.example.autoglazecustomer.data.network
 
 import com.example.autoglazecustomer.data.model.*
+import com.example.autoglazecustomer.data.model.HistoryResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -13,7 +14,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 class AuthService {
-    private val BASE_URL = "https://autoglaze-rewrite.digiponic.co.id/api/"
+    private val BASE_URL = "https://autoglaze-canary.digiponic.co.id/api/"
 
     val client = HttpClient {
         defaultRequest {
@@ -149,5 +150,14 @@ class AuthService {
     suspend fun getAsalTahu(): List<AsalTahuResponse> {
         val response = client.get("general/asal-tahu").body<ApiResponse<List<AsalTahuResponse>>>()
         return response.data
+    }
+
+    suspend fun getHistoryPesanan(idCustomer: Int, idKendaraan: Int): HistoryResponse {
+        return client.get("history-pesanan") {
+            url {
+                parameters.append("id_customer", idCustomer.toString())
+                parameters.append("id_kendaraan", idKendaraan.toString())
+            }
+        }.body()
     }
 }

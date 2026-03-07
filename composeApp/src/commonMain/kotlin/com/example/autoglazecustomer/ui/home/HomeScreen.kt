@@ -236,25 +236,34 @@ class HomeScreen(private val authService: AuthService) : Screen {
             shape = RoundedCornerShape(20.dp)
         ) {
             Box {
-                // Gunakan SubcomposeAsyncImage agar tetap halus
-                SubcomposeAsyncImage(
-                    model = promo.gambarUrl,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    loading = { ShimmerBox() },
-                    error = {
-                        Image(
-                            painter = painterResource(Res.drawable.dummy_promo_dark),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    },
-                    success = { SubcomposeAsyncImageContent() }
-                )
+                // LOGIC: Jika URL kosong, langsung gunakan Image lokal (mencegah crash di Coil)
+                if (promo.gambarUrl.isNullOrEmpty()) {
+                    Image(
+                        painter = painterResource(Res.drawable.dummy_promo_dark),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    SubcomposeAsyncImage(
+                        model = promo.gambarUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        loading = { ShimmerBox() },
+                        error = {
+                            Image(
+                                painter = painterResource(Res.drawable.dummy_promo_dark),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        },
+                        success = { SubcomposeAsyncImageContent() }
+                    )
+                }
 
-
+                // Overlay Gradasi
                 Box(
                     Modifier
                         .fillMaxSize()
@@ -370,7 +379,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
                 Icon(
                     painter = painterResource(iconRes),
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp), // Ukuran ikon diperkecil agar pas
+                    modifier = Modifier.size(32.dp),
                     tint = Color.Unspecified
                 )
                 Spacer(modifier = Modifier.height(8.dp))

@@ -53,6 +53,8 @@ kotlin {
             implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
             implementation("io.ktor:ktor-client-logging:2.3.12")
 
+            implementation("io.github.alexzhirkevich:qrose:1.0.1")
+
             // Image Loading (Gantinya Glide)
             implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha08")
 

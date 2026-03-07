@@ -1,16 +1,33 @@
 package com.example.autoglazecustomer.ui.tabs
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import autoglazecustomer.composeapp.generated.resources.*
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.cart.CartScreen
 import org.jetbrains.compose.resources.painterResource
-import autoglazecustomer.composeapp.generated.resources.*
-import androidx.compose.material3.Text
 
-object CartTab : Tab {
+// Hapus parameter dari constructor class agar objek Tab ini "ringan"
+// dan tidak mengandung HttpClient (Ktor) yang merusak Serialization Android.
+class CartTab : Tab {
+
     override val options: TabOptions
-        @Composable get() = TabOptions(index = 2u, title = "Cart", icon = painterResource(Res.drawable.ic_cart))
+        @Composable
+        get() = TabOptions(
+            index = 2u,
+            title = "Transaction",
+            icon = painterResource(Res.drawable.ic_cart)
+        )
 
     @Composable
-    override fun Content() { Text("Halaman Keranjang") }
+    override fun Content() {
+        // Pindahkan pembuatan AuthService ke sini.
+        // Menggunakan remember memastikan service tidak dibuat ulang saat recomposition.
+        val authService = remember { AuthService() }
+        val cartScreen = remember(authService) { CartScreen(authService) }
+
+        cartScreen.Content()
+    }
 }
