@@ -54,7 +54,11 @@ class MainTabScreen : Screen {
                     }
                 }
             ) { paddingValues ->
-                Box(modifier = Modifier.padding(paddingValues)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = paddingValues.calculateBottomPadding())
+                ) {
                     CurrentTab()
                 }
             }

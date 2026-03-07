@@ -46,144 +46,135 @@ class HomeScreen(private val authService: AuthService) : Screen {
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
 
-        Scaffold(
-            containerColor = Color(0xFFFBFBFB)
-        ) { paddingValues ->
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    // --- 1. HEADER SECTION ---
-                    HeaderSection(screenModel.userName, redPrimer, satoshiMedium)
+        Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFBFBFB))) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // --- 1. HEADER SECTION ---
+                HeaderSection(screenModel.userName, redPrimer, satoshiBold, satoshiMedium)
 
-                    // --- 2. SLIDER / BANNER (With LazyItemScope Fix) ---
-                    if (screenModel.sliderList.isNotEmpty()) {
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.fillMaxWidth().height(190.dp).offset(y = (-25).dp)
-                        ) {
-                            items(screenModel.sliderList) { slider ->
-                                SliderItemUI(slider.gambar)
-                            }
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.height(10.dp))
-                    }
-
-                    // --- 3. MENU INFORMASI ---
-                    Text(
-                        text = "Menu Informasi",
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        fontSize = 18.sp,
-                        fontFamily = satoshiMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    // Gunakan Row dengan padding horizontal yang pas
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp) // Jarak antar kotak
+                // --- 2. SLIDER / BANNER ---
+                if (screenModel.sliderList.isNotEmpty()) {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(180.dp).offset(y = (-35).dp)
                     ) {
-                        // Setiap item diberi weight(1f) agar terbagi rata secara otomatis
-                        HomeMenuItem(
-                            iconRes = Res.drawable.ic_home_service,
-                            label = "Home Service",
-                            font = satoshiMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        HomeMenuItem(
-                            iconRes = Res.drawable.ic_home_layanan,
-                            label = "Transaksi",
-                            font = satoshiMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        HomeMenuItem(
-                            iconRes = Res.drawable.ic_home_location,
-                            label = "Lokasi Cabang",
-                            font = satoshiMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    // --- 4. MOBIL SAYA ---
-                    SectionHeader("Mobil Saya", satoshiMedium)
-                    if (screenModel.vehicleList.isEmpty() && !screenModel.isLoading) {
-                        EmptyState("Belum ada kendaraan terdaftar", satoshiMedium)
-                    } else {
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = 24.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(screenModel.vehicleList) { vehicle ->
-                                VehicleItem(vehicle, satoshiBold, satoshiMedium)
-                            }
+                        items(screenModel.sliderList) { slider ->
+                            SliderItemUI(slider.gambar)
                         }
                     }
+                } else {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
 
-                    // --- 5. PROMO BERLANGSUNG ---
-                    SectionHeader("Promo Berlangsung", satoshiMedium)
+                // --- 3. MENU INFORMASI ---
+                Text(
+                    text = "Layanan Utama",
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    fontSize = 17.sp,
+                    fontFamily = satoshiBold,
+                    color = Color.Black
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    HomeMenuItem(Res.drawable.ic_home_service, "Home Service", satoshiMedium, Modifier.weight(1f))
+                    HomeMenuItem(Res.drawable.ic_home_layanan, "Transaksi", satoshiMedium, Modifier.weight(1f))
+                    HomeMenuItem(Res.drawable.ic_home_location, "Lokasi Cabang", satoshiMedium, Modifier.weight(1f))
+                }
+
+                // --- 4. MOBIL SAYA ---
+                SectionHeader("Mobil Saya", satoshiBold)
+                if (screenModel.vehicleList.isEmpty() && !screenModel.isLoading) {
+                    EmptyState("Belum ada kendaraan terdaftar", satoshiMedium)
+                } else {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 24.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(screenModel.promoList) { promo ->
-                            PromoItem(promo, satoshiBold, satoshiMedium)
-                        }
-                    }
-
-                    // --- 6. BERITA TERBARU ---
-                    SectionHeader("Berita Terbaru", satoshiMedium, true)
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(bottom = 40.dp)
-                    ) {
-                        items(screenModel.beritaList) { berita ->
-                            BeritaItemUI(berita, screenModel, satoshiBold, satoshiMedium)
+                        items(screenModel.vehicleList) { vehicle ->
+                            VehicleItem(vehicle, satoshiBold, satoshiMedium)
                         }
                     }
                 }
 
-                // Global Loading Overlay
-                if (screenModel.isLoading) {
-                    Box(Modifier.fillMaxSize().background(Color.White.copy(0.6f)), Alignment.Center) {
-                        CircularProgressIndicator(color = redPrimer, strokeWidth = 3.dp)
+                // --- 5. PROMO ---
+                SectionHeader("Promo Berlangsung", satoshiBold)
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(screenModel.promoList) { promo ->
+                        PromoItem(promo, satoshiBold, satoshiMedium)
                     }
+                }
+
+                // --- 6. BERITA ---
+                SectionHeader("Berita Terbaru", satoshiBold, true)
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(bottom = 100.dp)
+                ) {
+                    items(screenModel.beritaList) { berita ->
+                        BeritaItemUI(berita, screenModel, satoshiBold, satoshiMedium)
+                    }
+                }
+            }
+
+            if (screenModel.isLoading) {
+                Box(Modifier.fillMaxSize().background(Color.White.copy(0.6f)), Alignment.Center) {
+                    CircularProgressIndicator(color = redPrimer, strokeWidth = 3.dp)
                 }
             }
         }
     }
 
     @Composable
-    private fun HeaderSection(name: String, bgColor: Color, font: FontFamily) {
+    private fun HeaderSection(name: String, bgColor: Color, boldFont: FontFamily, medFont: FontFamily) {
+        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(bgColor, RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 56.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(Modifier.size(52.dp), shape = CircleShape, color = Color.White.copy(0.2f)) {
-                    Image(painterResource(Res.drawable.ic_profile_white), null, Modifier.padding(12.dp))
+            Row(
+                modifier = Modifier
+                    .padding(top = statusBarHeight, start = 24.dp, end = 24.dp, bottom = 64.dp)
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    modifier = Modifier.size(50.dp),
+                    shape = CircleShape,
+                    color = Color.White.copy(0.2f),
+                    border = BorderStroke(1.dp, Color.White.copy(0.3f))
+                ) {
+                    Image(painterResource(Res.drawable.ic_profile_white), null, Modifier.padding(10.dp))
                 }
-                Spacer(Modifier.width(16.dp))
+                Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Selamat Datang,", color = Color.White.copy(0.8f), fontSize = 12.sp, fontFamily = font)
-                    Text(name, color = Color.White, fontSize = 20.sp, fontFamily = font, fontWeight = FontWeight.Bold)
+                    Text("Selamat Datang,", color = Color.White.copy(0.7f), fontSize = 12.sp, fontFamily = medFont)
+                    Text(name, color = Color.White, fontSize = 19.sp, fontFamily = boldFont)
                 }
-                IconButton(onClick = { }, modifier = Modifier.background(Color.White.copy(0.1f), CircleShape)) {
-                    Icon(Icons.Default.Notifications, null, tint = Color.White)
+                IconButton(
+                    onClick = { },
+                    modifier = Modifier.background(Color.White.copy(0.1f), CircleShape)
+                ) {
+                    Icon(Icons.Default.Notifications, null, tint = Color.White, modifier = Modifier.size(22.dp))
                 }
             }
         }
     }
 
-    // FIX: Ditambahkan receiver LazyItemScope agar fillParentMaxWidth bisa diakses
     @Composable
     private fun LazyItemScope.SliderItemUI(imageUrl: String?) {
         Card(
@@ -231,64 +222,28 @@ class HomeScreen(private val authService: AuthService) : Screen {
 
     @Composable
     private fun PromoItem(promo: VoucherItem, bold: FontFamily, medium: FontFamily) {
-        Card(
-            modifier = Modifier.width(280.dp).height(160.dp),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Box {
-                // LOGIC: Jika URL kosong, langsung gunakan Image lokal (mencegah crash di Coil)
-                if (promo.gambarUrl.isNullOrEmpty()) {
-                    Image(
-                        painter = painterResource(Res.drawable.dummy_promo_dark),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    SubcomposeAsyncImage(
-                        model = promo.gambarUrl,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        loading = { ShimmerBox() },
-                        error = {
-                            Image(
-                                painter = painterResource(Res.drawable.dummy_promo_dark),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        },
-                        success = { SubcomposeAsyncImageContent() }
-                    )
-                }
-
-                // Overlay Gradasi
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(Color.Transparent, Color.Black.copy(0.7f))
-                            )
+        Card(modifier = Modifier.width(280.dp).height(160.dp), shape = RoundedCornerShape(20.dp)) {
+            Box(Modifier.fillMaxSize()) {
+                SubcomposeAsyncImage(
+                    model = promo.gambarUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    loading = { ShimmerBox() },
+                    error = {
+                        Image(
+                            painter = painterResource(Res.drawable.dummy_promo_dark),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
+                    },
+                    success = { SubcomposeAsyncImageContent() }
                 )
-
+                Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(0.7f)))))
                 Column(Modifier.align(Alignment.BottomStart).padding(16.dp)) {
-                    Text(
-                        text = promo.namaVoucher ?: "Promo Spesial",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontFamily = bold,
-                        maxLines = 1
-                    )
-                    Text(
-                        text = promo.keterangan ?: "Klik untuk detail lebih lanjut",
-                        color = Color.White.copy(0.8f),
-                        fontSize = 12.sp,
-                        fontFamily = medium,
-                        maxLines = 1
-                    )
+                    Text(promo.namaVoucher ?: "Promo", color = Color.White, fontSize = 16.sp, fontFamily = bold, maxLines = 1)
+                    Text(promo.keterangan ?: "", color = Color.White.copy(0.8f), fontSize = 12.sp, fontFamily = medium, maxLines = 1)
                 }
             }
         }
@@ -314,12 +269,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun ProfessionalImage(
-        url: String?,
-        modifier: Modifier = Modifier.fillMaxSize(),
-        contentScale: ContentScale = ContentScale.Crop,
-        errorRes: DrawableResource? = null
-    ) {
+    private fun ProfessionalImage(url: String?, modifier: Modifier = Modifier.fillMaxSize(), contentScale: ContentScale = ContentScale.Crop, errorRes: DrawableResource? = null) {
         SubcomposeAsyncImage(
             model = url,
             contentDescription = null,
@@ -328,11 +278,8 @@ class HomeScreen(private val authService: AuthService) : Screen {
             loading = { ShimmerBox() },
             error = {
                 Box(Modifier.fillMaxSize().background(Color(0xFFF5F5F5)), Alignment.Center) {
-                    if (errorRes != null) {
-                        Image(painterResource(errorRes), null, Modifier.alpha(0.5f))
-                    } else {
-                        Icon(Icons.Default.BrokenImage, null, tint = Color.LightGray)
-                    }
+                    if (errorRes != null) Image(painterResource(errorRes), null, Modifier.alpha(0.5f))
+                    else Icon(Icons.Default.BrokenImage, null, tint = Color.LightGray)
                 }
             },
             success = { SubcomposeAsyncImageContent() }
@@ -355,21 +302,15 @@ class HomeScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun HomeMenuItem(
-        iconRes: DrawableResource,
-        label: String,
-        font: FontFamily,
-        modifier: Modifier = Modifier
-    ) {
-        // Surface sebagai kotak utama
+    private fun HomeMenuItem(iconRes: DrawableResource, label: String, font: FontFamily, modifier: Modifier = Modifier) {
         Surface(
             modifier = modifier
-                .height(100.dp) // Atur tinggi kotak agar seragam
+                .height(100.dp)
                 .clickable { /* Action klik */ },
             shape = RoundedCornerShape(16.dp),
             color = Color.White,
-            border = BorderStroke(1.dp, Color(0xFFEEEEEE)), // Border abu-abu tipis
-            shadowElevation = 0.dp // Matikan shadow jika ingin flat seperti gambar
+            border = BorderStroke(1.dp, Color(0xFFEEEEEE)),
+            shadowElevation = 0.dp
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

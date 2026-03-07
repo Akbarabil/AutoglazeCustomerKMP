@@ -6,10 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +26,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import com.example.autoglazecustomer.data.model.HistoryItem
 import com.example.autoglazecustomer.data.network.AuthService
-import com.example.autoglazecustomer.ui.SearchableDropdown // Pastikan import ini sesuai path Anda
+import com.example.autoglazecustomer.ui.SearchableDropdown
 import io.github.alexzhirkevich.qrose.options.*
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import org.jetbrains.compose.resources.Font
@@ -37,35 +35,46 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 class CartScreen(private val authService: AuthService) : Screen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val screenModel = rememberScreenModel { CartScreenModel(authService) }
         val redPrimer = Color(0xFFD53B1E)
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
 
-        // State untuk Dialog QR
         var showQrDialog by remember { mutableStateOf(false) }
         var selectedItemForQr by remember { mutableStateOf<HistoryItem?>(null) }
 
-        Scaffold(
-            containerColor = Color(0xFFFBFBFB),
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            "Riwayat Pesanan",
-                            fontFamily = satoshiMedium,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFBFBFB))
+        ) {
+            // --- HEADER CUSTOM (DITAMBAHKAN STATUSBARSPADDING AGAR TIDAK NABRAK NOTCH) ---
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.White,
+                shadowElevation = 0.5.dp
+            ) {
+                Text(
+                    text = "Riwayat Pesanan",
+                    modifier = Modifier
+                        .statusBarsPadding() // INI KUNCINYA: Memberikan jarak aman di bawah Notch
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontFamily = satoshiMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.Black
                 )
             }
-        ) { padding ->
-            Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
 
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                // --- 1. DROPDOWN KENDARAAN ---
                 SearchableDropdown(
                     label = "Pilih Kendaraan",
                     items = screenModel.vehicleList,
@@ -86,8 +95,9 @@ class CartScreen(private val authService: AuthService) : Screen {
                     }
                 )
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(16.dp))
 
+                // --- 2. KONTEN LOGIC ---
                 when {
                     screenModel.isHistoryLoading -> {
                         Box(Modifier.fillMaxSize(), Alignment.Center) {
@@ -103,7 +113,7 @@ class CartScreen(private val authService: AuthService) : Screen {
                     else -> {
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(bottom = 20.dp)
+                            contentPadding = PaddingValues(bottom = 100.dp)
                         ) {
                             items(screenModel.historyList) { item ->
                                 HistoryCardItem(item, redPrimer, satoshiMedium) {
@@ -117,7 +127,7 @@ class CartScreen(private val authService: AuthService) : Screen {
             }
         }
 
-        // --- 3. QR Dialog ---
+        // --- 3. QR DIALOG ---
         if (showQrDialog && selectedItemForQr != null) {
             QrCodeDialog(
                 item = selectedItemForQr!!,
@@ -159,7 +169,8 @@ class CartScreen(private val authService: AuthService) : Screen {
                             fontFamily = satoshiMedium,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
-                        )
+                        ),
+                        textAlign = TextAlign.Center
                     )
 
                     Text(
@@ -170,7 +181,8 @@ class CartScreen(private val authService: AuthService) : Screen {
                             fontSize = 12.sp,
                             color = accentColor
                         ),
-                        modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
+                        modifier = Modifier.padding(top = 4.dp, bottom = 20.dp),
+                        textAlign = TextAlign.Center
                     )
 
                     val painter = rememberQrCodePainter(encodedPayload) {
@@ -183,7 +195,10 @@ class CartScreen(private val authService: AuthService) : Screen {
                     }
 
                     Box(
-                        modifier = Modifier.size(210.dp).background(Color(0xFFF9F9F9), RoundedCornerShape(16.dp)).padding(12.dp),
+                        modifier = Modifier
+                            .size(210.dp)
+                            .background(Color(0xFFF9F9F9), RoundedCornerShape(16.dp))
+                            .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(painter = painter, contentDescription = "QR Code", modifier = Modifier.fillMaxSize())
@@ -193,10 +208,13 @@ class CartScreen(private val authService: AuthService) : Screen {
 
                     Text(
                         text = item.kodePenjualan,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp
+                            fontSize = 15.sp,
+                            color = Color.Black
                         )
                     )
 
@@ -213,7 +231,6 @@ class CartScreen(private val authService: AuthService) : Screen {
         }
     }
 
-    // --- CARD ITEM PREMIUM ---
     @Composable
     private fun HistoryCardItem(
         item: HistoryItem,
@@ -322,7 +339,6 @@ class CartScreen(private val authService: AuthService) : Screen {
         }
     }
 
-    // --- HELPER FORMATTING ---
     private fun formatRupiah(amount: Double): String {
         val formatted = amount.toLong().toString().reversed().chunked(3).joinToString(".").reversed()
         return "Rp$formatted"
