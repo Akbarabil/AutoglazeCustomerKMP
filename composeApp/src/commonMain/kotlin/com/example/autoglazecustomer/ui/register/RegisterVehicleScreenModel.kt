@@ -115,12 +115,12 @@ class RegisterVehicleScreenModel(
     ) {
         val s = state
         val validation = when {
-            s.merekTerpilih == null -> "merek" to "Pilih merek mobil Anda"
-            s.tipeTerpilih == null -> "tipe" to "Pilih tipe mobil Anda"
+            s.merekTerpilih == null -> "merek" to "Pilih merek mobil anda"
+            s.tipeTerpilih == null -> "tipe" to "Pilih tipe mobil anda"
             s.tahun.isBlank() -> "tahun" to "Pilih tahun kendaraan"
             s.nopol.isBlank() -> "nopol" to "Nomor polisi tidak boleh kosong"
             s.nopol.length < 3 -> "nopol" to "Nomor polisi minimal 3 karakter"
-            s.warnaTerpilih == null -> "warna" to "Pilih warna kendaraan Anda"
+            s.warnaTerpilih == null -> "warna" to "Pilih warna kendaraan anda"
             else -> null
         }
 

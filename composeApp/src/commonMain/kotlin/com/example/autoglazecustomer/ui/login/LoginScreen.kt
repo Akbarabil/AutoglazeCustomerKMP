@@ -142,7 +142,7 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                 )
 
                                 Text(
-                                    text = "Silakan masuk ke akun Anda",
+                                    text = "Silakan masuk ke akun anda",
                                     fontFamily = satoshiMedium,
                                     fontSize = 16.sp,
                                     color = Color.Black,

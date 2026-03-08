@@ -160,4 +160,18 @@ class AuthService {
             }
         }.body()
     }
+
+    suspend fun getPoint(idCustomer: Int): PointResponse {
+        return client.get("get-point") {
+            url {
+                parameters.append("id_customer", idCustomer.toString())
+            }
+        }.body()
+    }
+
+    suspend fun getVoucherSaya(token: String): VoucherUmumResponse {
+        return client.get("list-voucher-customer") {
+            header(HttpHeaders.Authorization, token)
+        }.body()
+    }
 }

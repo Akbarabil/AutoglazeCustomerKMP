@@ -66,7 +66,7 @@ class OnboardingScreen : Screen {
             OnboardingItem(
                 Res.drawable.img_onboard3,
                 "Layanan Home Service",
-                "Mau perawatan mobil di rumah? Kami datang langsung ke lokasi Anda! Praktis, fleksibel, dan tetap berkualitas."
+                "Mau perawatan mobil di rumah? Kami datang langsung ke lokasi anda! Praktis, fleksibel, dan tetap berkualitas."
             )
         )
 

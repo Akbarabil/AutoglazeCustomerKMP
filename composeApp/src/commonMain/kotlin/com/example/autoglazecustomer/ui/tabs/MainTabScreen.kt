@@ -20,19 +20,20 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.tabs.ProfileTab
+
 
 class MainTabScreen : Screen {
     @Composable
     override fun Content() {
-        // 1. Inisialisasi AuthService tunggal
-        val authService = remember { AuthService() }
-
-        // 2. Inisialisasi Tab (Home & Cart sudah Class, sisanya Placeholder)
+        // 1. Inisialisasi Tab (Semua pakai remember agar stabil)
         val homeTab = remember { HomeTab() }
         val cartTab = remember { CartTab() }
+        val profileTab = remember { ProfileTab() } // Class ProfileTab Anda
         val placeholderTab = remember { PlaceholderTab }
 
+        // 2. PERBAIKAN: TabNavigator hanya menerima satu argumen (tab awal)
+        // Jangan tambahkan variabel di dalam { } agar tidak dianggap DeepRecursiveFunction
         TabNavigator(homeTab) {
             Scaffold(
                 bottomBar = {
@@ -40,20 +41,14 @@ class MainTabScreen : Screen {
                         containerColor = Color.White,
                         tonalElevation = 8.dp
                     ) {
-                        // Menu 1: Home (Index 0)
                         TabNavigationItem(homeTab)
-
-                        // Menu 2: Transaction (Index 1) - Sementara Placeholder
                         TabNavigationItem(placeholderTab.copyOptions(1u, "Transaction"))
-
-                        // Menu 3: Riwayat/Cart (Index 2) - Fokus Kita
                         TabNavigationItem(cartTab)
-
-                        // Menu 4: Profile (Index 3) - Sementara Placeholder
-                        TabNavigationItem(placeholderTab.copyOptions(3u, "Profile"))
+                        TabNavigationItem(profileTab)
                     }
                 }
             ) { paddingValues ->
+                // Solusi Anti-Jidad
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -68,7 +63,6 @@ class MainTabScreen : Screen {
     @Composable
     private fun RowScope.TabNavigationItem(tab: Tab) {
         val tabNavigator = LocalTabNavigator.current
-        // Cek seleksi berdasarkan index agar akurat
         val isSelected = tabNavigator.current.options.index == tab.options.index
         val redPrimer = Color(0xFFD53B1E)
 
@@ -77,11 +71,11 @@ class MainTabScreen : Screen {
             onClick = { tabNavigator.current = tab },
             label = { Text(tab.options.title) },
             icon = {
-                if (tab.options.icon != null) {
+                val iconPainter = tab.options.icon
+                if (iconPainter != null) {
                     Icon(
-                        painter = tab.options.icon!!,
+                        painter = iconPainter,
                         contentDescription = tab.options.title,
-                        // Warna manual jika ingin kontrol penuh, atau biarkan mengikuti colors
                         tint = if (isSelected) redPrimer else Color.Gray
                     )
                 } else {

@@ -207,7 +207,7 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                     },
                     text = {
                         Text(
-                            text = "Akun Anda telah berhasil dibuat. Silakan masuk menggunakan email dan kata sandi Anda.",
+                            text = "Akun anda telah berhasil dibuat. Silakan masuk menggunakan email dan kata sandi anda.",
                             fontFamily = satoshiMedium,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center,

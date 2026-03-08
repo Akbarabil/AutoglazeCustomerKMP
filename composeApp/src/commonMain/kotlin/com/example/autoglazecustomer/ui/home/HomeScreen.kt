@@ -44,7 +44,11 @@ class HomeScreen(private val authService: AuthService) : Screen {
         val screenModel = rememberScreenModel { HomeScreenModel(authService) }
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+
+        // Warna Gradient Merah Autoglaze
         val redPrimer = Color(0xFFD53B1E)
+        val deepRed = Color(0xFFA62B14)
+        val headerGradient = listOf(redPrimer, deepRed)
 
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFBFBFB))) {
             Column(
@@ -52,8 +56,8 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // --- 1. HEADER SECTION ---
-                HeaderSection(screenModel.userName, redPrimer, satoshiBold, satoshiMedium)
+                // --- 1. HEADER SECTION (Updated with Gradient) ---
+                HeaderSection(screenModel.userName, headerGradient, satoshiBold, satoshiMedium)
 
                 // --- 2. SLIDER / BANNER ---
                 if (screenModel.sliderList.isNotEmpty()) {
@@ -138,18 +142,21 @@ class HomeScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun HeaderSection(name: String, bgColor: Color, boldFont: FontFamily, medFont: FontFamily) {
+    private fun HeaderSection(name: String, gradientColors: List<Color>, boldFont: FontFamily, medFont: FontFamily) {
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(bgColor, RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                .background(
+                    brush = Brush.verticalGradient(gradientColors),
+                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                )
         ) {
             Row(
                 modifier = Modifier
                     .padding(top = statusBarHeight, start = 24.dp, end = 24.dp, bottom = 64.dp)
-                    .padding(top = 8.dp),
+                    .padding(top = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
@@ -167,7 +174,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
                 }
                 IconButton(
                     onClick = { },
-                    modifier = Modifier.background(Color.White.copy(0.1f), CircleShape)
+                    modifier = Modifier.background(Color.White.copy(0.15f), CircleShape)
                 ) {
                     Icon(Icons.Default.Notifications, null, tint = Color.White, modifier = Modifier.size(22.dp))
                 }

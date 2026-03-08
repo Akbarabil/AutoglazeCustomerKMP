@@ -23,8 +23,6 @@ class CartTab : Tab {
 
     @Composable
     override fun Content() {
-        // Pindahkan pembuatan AuthService ke sini.
-        // Menggunakan remember memastikan service tidak dibuat ulang saat recomposition.
         val authService = remember { AuthService() }
         val cartScreen = remember(authService) { CartScreen(authService) }
 

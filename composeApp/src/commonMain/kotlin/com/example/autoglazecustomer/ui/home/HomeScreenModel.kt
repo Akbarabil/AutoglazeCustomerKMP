@@ -78,7 +78,7 @@ class HomeScreenModel(
 
             // Final check jika semua data kosong (opsional, untuk indikasi error koneksi total)
             if (sliderList.isEmpty() && vehicleList.isEmpty()) {
-                errorMessage = "Gagal memuat data. Periksa koneksi internet Anda."
+                errorMessage = "Gagal memuat data. Periksa koneksi internet anda."
             }
 
             isLoading = false

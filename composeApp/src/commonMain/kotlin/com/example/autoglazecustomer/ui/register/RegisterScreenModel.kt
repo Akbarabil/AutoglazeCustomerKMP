@@ -49,7 +49,7 @@ class RegisterScreenModel(private val authService: AuthService) : ScreenModel {
             s.nama.length < 3 -> "nama" to "Nama terlalu pendek"
             s.email.isBlank() -> "email" to "Email tidak boleh kosong"
             !isValidEmail(s.email) -> "email" to "Format email tidak valid"
-            s.tglLahir.isBlank() -> "tglLahir" to "Silakan pilih tanggal lahir Anda"
+            s.tglLahir.isBlank() -> "tglLahir" to "Silakan pilih tanggal lahir anda"
             s.phone.isBlank() -> "phone" to "Nomor WhatsApp tidak boleh kosong"
             s.phone.length < s.selectedCountry.minDigit -> "phone" to "Nomor ${s.selectedCountry.name} minimal ${s.selectedCountry.minDigit} digit"
             s.phone.length > s.selectedCountry.maxDigit -> "phone" to "Nomor ${s.selectedCountry.name} maksimal ${s.selectedCountry.maxDigit} digit"
