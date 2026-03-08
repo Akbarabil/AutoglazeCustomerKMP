@@ -45,7 +45,12 @@ class HomeScreen(private val authService: AuthService) : Screen {
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
 
-        // Warna Gradient Merah Autoglaze
+        // --- TRIGGER REFRESH OTOMATIS ---
+        // Setiap kali user kembali ke tab Home, data (Nama, Mobil, dll) akan di-update
+        LaunchedEffect(Unit) {
+            screenModel.loadAllHomeData()
+        }
+
         val redPrimer = Color(0xFFD53B1E)
         val deepRed = Color(0xFFA62B14)
         val headerGradient = listOf(redPrimer, deepRed)
@@ -56,7 +61,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // --- 1. HEADER SECTION (Updated with Gradient) ---
+                // --- 1. HEADER SECTION ---
                 HeaderSection(screenModel.userName, headerGradient, satoshiBold, satoshiMedium)
 
                 // --- 2. SLIDER / BANNER ---
@@ -74,7 +79,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                // --- 3. MENU INFORMASI ---
+                // --- 3. MENU LAYANAN ---
                 Text(
                     text = "Layanan Utama",
                     modifier = Modifier.padding(horizontal = 24.dp),
@@ -133,7 +138,8 @@ class HomeScreen(private val authService: AuthService) : Screen {
                 }
             }
 
-            if (screenModel.isLoading) {
+            // Silent Refresh: Indikator loading hanya muncul di awal (saat data benar-benar kosong)
+            if (screenModel.isLoading && screenModel.sliderList.isEmpty()) {
                 Box(Modifier.fillMaxSize().background(Color.White.copy(0.6f)), Alignment.Center) {
                     CircularProgressIndicator(color = redPrimer, strokeWidth = 3.dp)
                 }
@@ -144,7 +150,6 @@ class HomeScreen(private val authService: AuthService) : Screen {
     @Composable
     private fun HeaderSection(name: String, gradientColors: List<Color>, boldFont: FontFamily, medFont: FontFamily) {
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -170,7 +175,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Selamat Datang,", color = Color.White.copy(0.7f), fontSize = 12.sp, fontFamily = medFont)
-                    Text(name, color = Color.White, fontSize = 19.sp, fontFamily = boldFont)
+                    Text(name, color = Color.White, fontSize = 19.sp, fontFamily = boldFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 IconButton(
                     onClick = { },
@@ -198,7 +203,6 @@ class HomeScreen(private val authService: AuthService) : Screen {
         Card(
             modifier = Modifier.width(300.dp),
             shape = RoundedCornerShape(20.dp),
-            elevation = CardDefaults.cardElevation(2.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             border = BorderStroke(1.dp, Color(0xFFEEEEEE))
         ) {
@@ -214,7 +218,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     )
                 }
                 Spacer(Modifier.height(12.dp))
-                Text(vehicle.merek ?: "Tanpa Merek", fontSize = 20.sp, fontFamily = bold)
+                Text(vehicle.merek ?: "Mobil", fontSize = 20.sp, fontFamily = bold, maxLines = 1)
                 Text("${vehicle.tipe} • ${vehicle.nopol}", fontSize = 14.sp, color = Color.Gray, fontFamily = medium)
 
                 ProfessionalImage(
@@ -311,35 +315,15 @@ class HomeScreen(private val authService: AuthService) : Screen {
     @Composable
     private fun HomeMenuItem(iconRes: DrawableResource, label: String, font: FontFamily, modifier: Modifier = Modifier) {
         Surface(
-            modifier = modifier
-                .height(100.dp)
-                .clickable { /* Action klik */ },
+            modifier = modifier.height(100.dp).clickable { },
             shape = RoundedCornerShape(16.dp),
             color = Color.White,
-            border = BorderStroke(1.dp, Color(0xFFEEEEEE)),
-            shadowElevation = 0.dp
+            border = BorderStroke(1.dp, Color(0xFFEEEEEE))
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Icon(
-                    painter = painterResource(iconRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = Color.Unspecified
-                )
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.padding(8.dp)) {
+                Icon(painter = painterResource(iconRes), null, modifier = Modifier.size(32.dp), tint = Color.Unspecified)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = label,
-                    fontSize = 11.sp,
-                    fontFamily = font,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 14.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Medium
-                )
+                Text(label, fontSize = 11.sp, fontFamily = font, textAlign = TextAlign.Center, lineHeight = 14.sp, color = Color.Black)
             }
         }
     }

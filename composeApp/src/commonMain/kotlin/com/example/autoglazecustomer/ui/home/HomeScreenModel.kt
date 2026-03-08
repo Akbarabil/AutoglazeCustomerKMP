@@ -11,11 +11,8 @@ import com.example.autoglazecustomer.data.model.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-class HomeScreenModel(
-    private val authService: AuthService
-) : ScreenModel {
+class HomeScreenModel(private val authService: AuthService) : ScreenModel {
 
-    // --- UI State ---
     var userName by mutableStateOf(TokenManager.getUserName() ?: "Sobat Glaze")
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var sliderList by mutableStateOf<List<SliderItem>>(emptyList())
@@ -31,57 +28,54 @@ class HomeScreenModel(
 
     fun loadAllHomeData() {
         screenModelScope.launch {
-            isLoading = true
+            if (sliderList.isEmpty()) isLoading = true
             errorMessage = null
 
-            val token = "Bearer ${TokenManager.getToken()}"
-
-            // 1. Jalankan semua request secara paralel (Deferred)
-            val profileJob = async { authService.getProfileData(token) }
-            val sliderJob = async { authService.getSlider() }
-            val vehicleJob = async { authService.getVehicles(token) }
-            val beritaJob = async { authService.getBerita() }
-            val voucherJob = async { authService.getVoucherUmum() }
-
-            // 2. Eksekusi masing-masing dengan runCatching agar satu timeout tidak mematikan yang lain
-
-            // Profile & Name
-            runCatching { profileJob.await() }.onSuccess { res ->
-                if (res.success) {
-                    userName = res.data?.nama ?: userName
-                    res.data?.nama?.let { TokenManager.saveUserName(it) }
+            try {
+                val token = TokenManager.getToken()
+                if (token.isNullOrBlank()) {
+                    errorMessage = "Sesi berakhir, silakan login kembali."
+                    return@launch
                 }
-            }.onFailure { println("LOG_HOME: Profile failed -> ${it.message}") }
 
-            // Sliders
-            runCatching { sliderJob.await() }.onSuccess { res ->
-                if (res.status == "ok") sliderList = res.data
+                val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
+
+                // Jalankan Parallel
+                val profileJob = async { runCatching { authService.getProfileData(formattedToken) } }
+                val sliderJob = async { runCatching { authService.getSlider() } }
+                val vehicleJob = async { runCatching { authService.getVehicles(formattedToken) } }
+                val beritaJob = async { runCatching { authService.getBerita() } }
+                val voucherJob = async { runCatching { authService.getVoucherUmum() } }
+
+                // Evaluasi satu per satu agar error di satu API tidak mematikan yang lain
+                profileJob.await().onSuccess { res ->
+                    if (res.success) {
+                        userName = res.data?.nama ?: userName
+                        res.data?.nama?.let { TokenManager.saveUserName(it) }
+                    }
+                }
+
+                sliderJob.await().onSuccess { res ->
+                    if (res.status == "ok") sliderList = res.data
+                }
+
+                vehicleJob.await().onSuccess { res ->
+                    if (res.success) vehicleList = res.data
+                }
+
+                beritaJob.await().onSuccess { res ->
+                    if (res.statusCode == 200) beritaList = res.data
+                }
+
+                voucherJob.await().onSuccess { res ->
+                    if (res.status) promoList = res.data
+                }
+
+            } catch (e: Exception) {
+                errorMessage = "Gagal memuat data terbaru."
+            } finally {
+                isLoading = false
             }
-
-            // Vehicles
-            runCatching { vehicleJob.await() }.onSuccess { res ->
-                if (res.success) vehicleList = res.data
-            }
-
-            // News / Berita
-            runCatching { beritaJob.await() }.onSuccess { res ->
-                if (res.statusCode == 200) beritaList = res.data
-            }.onFailure {
-                // Jika berita timeout, kita bisa kasih log khusus
-                println("LOG_HOME: Berita timeout/error")
-            }
-
-            // Vouchers
-            runCatching { voucherJob.await() }.onSuccess { res ->
-                if (res.status) promoList = res.data
-            }
-
-            // Final check jika semua data kosong (opsional, untuk indikasi error koneksi total)
-            if (sliderList.isEmpty() && vehicleList.isEmpty()) {
-                errorMessage = "Gagal memuat data. Periksa koneksi internet anda."
-            }
-
-            isLoading = false
         }
     }
 
@@ -94,11 +88,9 @@ class HomeScreenModel(
         }.getOrDefault(timestamp)
     }
 
-    private fun getMonthName(month: Int): String {
-        return when (month) {
-            1 -> "Jan"; 2 -> "Feb"; 3 -> "Mar"; 4 -> "Apr"; 5 -> "Mei"; 6 -> "Jun"
-            7 -> "Jul"; 8 -> "Agu"; 9 -> "Sep"; 10 -> "Okt"; 11 -> "Nov"; 12 -> "Des"
-            else -> ""
-        }
+    private fun getMonthName(month: Int): String = when (month) {
+        1 -> "Jan"; 2 -> "Feb"; 3 -> "Mar"; 4 -> "Apr"; 5 -> "Mei"; 6 -> "Jun"
+        7 -> "Jul"; 8 -> "Agu"; 9 -> "Sep"; 10 -> "Okt"; 11 -> "Nov"; 12 -> "Des"
+        else -> ""
     }
 }

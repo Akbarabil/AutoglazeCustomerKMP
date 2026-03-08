@@ -7,7 +7,7 @@ import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.local.TokenManager
 import io.ktor.client.plugins.* import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.* // Tambahkan ini untuk parsing manual
+import kotlinx.serialization.json.*
 
 class EditProfileScreenModel(private val authService: AuthService) : ScreenModel {
     var nama by mutableStateOf("")
@@ -62,7 +62,6 @@ class EditProfileScreenModel(private val authService: AuthService) : ScreenModel
                     errorMessage = response.message
                 }
             } catch (e: ClientRequestException) {
-                // Menangani error 4xx (terutama 422 Unprocessable Entity)
                 try {
                     val responseBody = e.response.bodyAsText()
                     val json = Json { ignoreUnknownKeys = true }
@@ -71,16 +70,12 @@ class EditProfileScreenModel(private val authService: AuthService) : ScreenModel
                     val firstError = errorObj["errors"]?.jsonObject?.values?.firstOrNull()
                         ?.jsonArray?.firstOrNull()?.jsonPrimitive?.content
 
-                    // Jika ada detail error pakai itu, jika tidak pakai message umum dari server
                     errorMessage = firstError ?: errorObj["message"]?.jsonPrimitive?.content ?: "Data tidak valid"
-
-                    println("KTOR_LOG: DETAIL ERROR SERVER -> $responseBody")
                 } catch (parseEx: Exception) {
                     errorMessage = "Gagal memproses data server. Silakan cek koneksi Anda."
                 }
             } catch (e: Exception) {
                 errorMessage = "Gagal terhubung ke server. Pastikan internet Anda stabil."
-                println("ERROR_GENERAL_DEBUG: ${e.message}")
             } finally {
                 isLoading = false
             }

@@ -56,7 +56,7 @@ class OnboardingScreen : Screen {
             OnboardingItem(
                 Res.drawable.img_onboard1,
                 "Berbagai Perawatan Mobil",
-                "Autoglaze hadir dengan berbagai layanan perawatan kendaraan seperti carwash, detailing, fogging, hingga interior cleaning—semuanya dalam satu aplikasi."
+                "Autoglaze hadir dengan berbagai layanan perawatan kendaraan seperti carwash, detailing, fogging, hingga interior cleaning semuanya dalam satu aplikasi."
             ),
             OnboardingItem(
                 Res.drawable.img_onboard2,
