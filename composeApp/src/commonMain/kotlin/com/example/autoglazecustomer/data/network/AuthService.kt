@@ -210,4 +210,26 @@ class AuthService {
             ))
         }.body()
     }
+
+    suspend fun addVehicle(
+        token: String,
+        idMerek: Int,
+        idTipe: Int,
+        tahun: Int,
+        nopol: String,
+        noRangka: String,
+        idWarna: Int
+    ): AddVehicleResponse {
+        return client.post("kendaraan") {
+            header(HttpHeaders.Authorization, token)
+            setBody(FormDataContent(parameters {
+                append("id_merek", idMerek.toString())
+                append("id_tipe", idTipe.toString())
+                append("tahun", tahun.toString())
+                append("nopol", nopol)
+                append("no_rangka", noRangka)
+                append("id_warna", idWarna.toString())
+            }))
+        }.body()
+    }
 }

@@ -31,7 +31,7 @@ class RegisterVehicleScreenModel(
                 )
             } catch (e: Exception) {
                 state = state.copy(
-                    errorMessage = "Gagal memuat data awal: ${e.message}",
+                    errorMessage = "Gagal memuat data awal",
                     isLoadingMerek = false
                 )
             }
@@ -43,7 +43,8 @@ class RegisterVehicleScreenModel(
 
         state = state.copy(
             merekTerpilih = merek,
-            tipeTerpilih = null,
+            tipeTerpilih = null, // Cascading Reset
+            tahun = "",          // Cascading Reset
             listTipe = emptyList(),
             isLoadingTipe = true,
             errorField = null
@@ -71,6 +72,7 @@ class RegisterVehicleScreenModel(
         val tipe = state.listTipe.find { it.namaTipeKendaraan == nama }
         state = state.copy(
             tipeTerpilih = tipe,
+            tahun = "", // Reset tahun jika tipe berubah
             errorField = null
         )
     }
@@ -105,6 +107,7 @@ class RegisterVehicleScreenModel(
         state = state.copy(
             merekTerpilih = null,
             tipeTerpilih = null,
+            tahun = "",
             listTipe = emptyList()
         )
     }
@@ -115,12 +118,12 @@ class RegisterVehicleScreenModel(
     ) {
         val s = state
         val validation = when {
-            s.merekTerpilih == null -> "merek" to "Pilih merek mobil anda"
-            s.tipeTerpilih == null -> "tipe" to "Pilih tipe mobil anda"
-            s.tahun.isBlank() -> "tahun" to "Pilih tahun kendaraan"
+            s.merekTerpilih == null -> "merek" to "Silakan pilih merk dari daftar"
+            s.tipeTerpilih == null -> "tipe" to "Silakan pilih tipe dari daftar"
+            s.tahun.isBlank() -> "tahun" to "Silakan pilih tahun kendaraan dari daftar"
             s.nopol.isBlank() -> "nopol" to "Nomor polisi tidak boleh kosong"
             s.nopol.length < 3 -> "nopol" to "Nomor polisi minimal 3 karakter"
-            s.warnaTerpilih == null -> "warna" to "Pilih warna kendaraan anda"
+            s.warnaTerpilih == null -> "warna" to "Pilih warna kendaraan"
             else -> null
         }
 
@@ -135,10 +138,8 @@ class RegisterVehicleScreenModel(
         screenModelScope.launch {
             state = state.copy(isLoading = true, errorMessage = null)
             try {
-                // response adalah objek DaftarResponse
                 val response = authService.cekNopol(s.nopol)
 
-                // Menggunakan helper isSuccessful dari data class DaftarResponse kamu
                 if (response.isSuccessful) {
                     val finalData = dataRegistrasi.copy(
                         idMerek = s.merekTerpilih?.idMerek ?: 0,
@@ -150,7 +151,6 @@ class RegisterVehicleScreenModel(
                     )
                     onSuccess(finalData)
                 } else {
-                    // Ambil pesan dari server jika ada, jika tidak pakai default
                     state = state.copy(
                         errorMessage = response.message ?: "Nomor polisi sudah terdaftar",
                         errorField = "nopol"

@@ -31,6 +31,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.profile.myvehicle.addvehicle.AddVehicleScreen
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -39,9 +40,14 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { MyVehicleScreenModel(authService) }
-
+        LaunchedEffect(navigator.lastItem) {
+            if (navigator.lastItem is MyVehicleScreen) {
+                screenModel.fetchVehicles()
+            }
+        }
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
 
@@ -127,7 +133,7 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 20.dp)
                         .clickable {
-                            // navigator.push(AddVehicleScreen(authService))
+                             navigator.push(AddVehicleScreen(authService))
                         },
                     shape = RoundedCornerShape(16.dp),
                     color = Color.White,

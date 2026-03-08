@@ -11,7 +11,7 @@ data class VehicleResponse(
 
 @Serializable
 data class VehicleData(
-    @SerialName("id_kendaraan") val idKendaraan: Int,
+    @SerialName("id_kendaraan") val idKendaraan: Int? = null,
     @SerialName("merek") val merek: String? = null,
     @SerialName("tipe") val tipe: String? = null,
     @SerialName("tahun") val tahun: Int? = null,

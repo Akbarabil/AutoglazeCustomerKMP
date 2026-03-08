@@ -30,13 +30,30 @@ class CartScreenModel(private val authService: AuthService) : ScreenModel {
             isLoadingVehicles = true
             val token = "Bearer ${TokenManager.getToken()}"
             runCatching { authService.getVehicles(token) }
-                .onSuccess { res -> if (res.success) vehicleList = res.data }
+                .onSuccess { res ->
+                    if (res.success) {
+                        vehicleList = res.data
+                        // JOSJIS TIPS: Jika user cuma punya 1 mobil, langsung pilihkan saja
+                        if (vehicleList.size == 1) {
+                            val singleVehicle = vehicleList.first()
+                            selectedVehicle = singleVehicle
+                            fetchHistory(singleVehicle.idKendaraan)
+                        }
+                    }
+                }
                 .onFailure { errorMessage = "Gagal memuat daftar kendaraan" }
             isLoadingVehicles = false
         }
     }
 
-    fun fetchHistory(idKendaraan: Int) {
+    // UBAH: Parameter idKendaraan sekarang menjadi Int?
+    fun fetchHistory(idKendaraan: Int?) {
+        // Guard Clause: Jika id null, jangan tembak API
+        if (idKendaraan == null) {
+            historyList = emptyList()
+            return
+        }
+
         screenModelScope.launch {
             isHistoryLoading = true
             errorMessage = null

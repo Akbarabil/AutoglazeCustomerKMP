@@ -1,16 +1,15 @@
-package com.example.autoglazecustomer.ui.register
+package com.example.autoglazecustomer.ui.profile.myvehicle.addvehicle
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,25 +26,26 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.example.autoglazecustomer.data.model.DaftarData
 import com.example.autoglazecustomer.data.model.WarnaKendaraanResponse
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.LoadingDialog
 import com.example.autoglazecustomer.ui.SearchableDropdown
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
-class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
+class AddVehicleScreen(private val authService: AuthService) : Screen {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val authService = remember { AuthService() }
-        val screenModel = rememberScreenModel { RegisterVehicleScreenModel(authService) }
+        val screenModel = rememberScreenModel { AddVehicleScreenModel(authService) }
         val state = screenModel.state
 
+        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
+
         val yearList = remember { (2000..2026).map { it.toString() }.reversed() }
 
         val commonColors = OutlinedTextFieldDefaults.colors(
@@ -74,8 +74,8 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                 contentScale = ContentScale.Crop
             )
 
-            Scaffold(containerColor = Color.Transparent) { paddingValues ->
-                Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Scaffold(containerColor = Color.Transparent) { padding ->
+                Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -99,7 +99,7 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                     .verticalScroll(rememberScrollState())
                             ) {
                                 Text(
-                                    text = "Isi data kendaraanmu",
+                                    text = "Tambah kendaraan baru",
                                     fontFamily = satoshiMedium,
                                     fontSize = 28.sp,
                                     color = Color(0xFF9E9E9E)
@@ -107,14 +107,13 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
 
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                // MERK MOBIL
                                 SearchableDropdown(
                                     label = "Merk Mobil",
                                     items = state.listMerek,
                                     selectedItem = state.merekTerpilih,
                                     getLabel = { it.namaMerek },
-                                    onItemSelected = { selected -> screenModel.onMerekSelected(selected.namaMerek) },
-                                    onTextChanged = { text -> if (text.isEmpty()) screenModel.clearMerek() },
+                                    onItemSelected = { screenModel.onMerekSelected(it.namaMerek) },
+                                    onTextChanged = { if (it.isEmpty()) screenModel.clearMerek() },
                                     satoshiMedium = satoshiMedium,
                                     isLoading = state.isLoadingMerek,
                                     isError = state.errorField == "merek"
@@ -127,7 +126,7 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                             items = state.listTipe,
                                             selectedItem = state.tipeTerpilih,
                                             getLabel = { it.namaTipeKendaraan },
-                                            onItemSelected = { selected -> screenModel.onTipeSelected(selected.namaTipeKendaraan) },
+                                            onItemSelected = { screenModel.onTipeSelected(it.namaTipeKendaraan) },
                                             satoshiMedium = satoshiMedium,
                                             enabled = state.merekTerpilih != null,
                                             isLoading = state.isLoadingTipe,
@@ -142,9 +141,9 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                             items = yearList,
                                             selectedItem = state.tahun.ifEmpty { null },
                                             getLabel = { it },
-                                            onItemSelected = { selected -> screenModel.onTahunSelected(selected) },
+                                            onItemSelected = { screenModel.onTahunSelected(it) },
                                             satoshiMedium = satoshiMedium,
-                                            enabled = state.tipeTerpilih != null, // Baru aktif jika tipe dipilih
+                                            enabled = state.tipeTerpilih != null,
                                             isError = state.errorField == "tahun"
                                         )
                                     }
@@ -153,31 +152,25 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                 // SPACING KONSISTEN
                                 Spacer(modifier = Modifier.height(14.dp))
 
-                                // NOMOR POLISI
-                                OutlinedTextField(
+                                VehicleInputField(
+                                    label = "Nomor Polisi",
                                     value = state.nopol,
-                                    onValueChange = { screenModel.onNopolChange(it) },
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp),
-                                    label = { Text("Nomor Polisi", fontFamily = satoshiMedium) },
-                                    leadingIcon = { Icon(painterResource(Res.drawable.ic_plat_nomer), null, Modifier.size(24.dp)) },
-                                    placeholder = { Text("B1234ABC", color = Color.LightGray) },
+                                    icon = Res.drawable.ic_plat_nomer,
                                     isError = state.errorField == "nopol",
-                                    shape = RoundedCornerShape(10.dp),
+                                    font = satoshiMedium,
                                     colors = commonColors,
-                                    singleLine = true
+                                    onValueChange = { screenModel.onNopolChange(it) }
                                 )
 
-                                // NOMOR RANGKA
-                                OutlinedTextField(
+                                VehicleInputField(
+                                    label = "Nomor Rangka",
                                     value = state.noRangka,
-                                    onValueChange = { screenModel.onNoRangkaChange(it) },
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
-                                    label = { Text("Nomor Rangka", fontFamily = satoshiMedium) },
-                                    leadingIcon = { Icon(painterResource(Res.drawable.ic_nomer_rangka), null, Modifier.size(24.dp)) },
+                                    icon = Res.drawable.ic_nomer_rangka,
                                     isError = state.errorField == "rangka",
-                                    shape = RoundedCornerShape(10.dp),
+                                    font = satoshiMedium,
                                     colors = commonColors,
-                                    singleLine = true
+                                    modifier = Modifier.padding(bottom = 20.dp),
+                                    onValueChange = { screenModel.onNoRangkaChange(it) }
                                 )
 
                                 Text("Warna Kendaraan", fontFamily = satoshiMedium, fontSize = 16.sp)
@@ -187,24 +180,18 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     items(state.listWarna) { warna ->
-                                        WarnaItem(
-                                            warnaObj = warna,
-                                            isSelected = warna == state.warnaTerpilih,
-                                            onClick = { screenModel.onWarnaSelected(warna) },
-                                            satoshiMedium = satoshiMedium
-                                        )
+                                        WarnaItemUI(
+                                            warna = warna,
+                                            isSelected = (warna == state.warnaTerpilih),
+                                            font = satoshiMedium
+                                        ) { screenModel.onWarnaSelected(warna) }
                                     }
                                 }
 
                                 Spacer(modifier = Modifier.height(30.dp))
 
                                 Button(
-                                    onClick = {
-                                        screenModel.validateAndCheckNopol(
-                                            onSuccess = { navigator.push(SurveyScreen(it)) },
-                                            dataRegistrasi = dataRegistrasi
-                                        )
-                                    },
+                                    onClick = { screenModel.validateAndSave { } },
                                     modifier = Modifier.fillMaxWidth().height(56.dp),
                                     shape = RoundedCornerShape(10.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
@@ -213,7 +200,7 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                     if (state.isLoading) {
                                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                                     } else {
-                                        Text("Selanjutnya", fontFamily = satoshiMedium, fontSize = 20.sp, color = Color.White)
+                                        Text("Simpan Kendaraan", fontFamily = satoshiMedium, fontSize = 20.sp, color = Color.White)
                                     }
                                 }
                             }
@@ -230,6 +217,27 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
             }
 
             if (state.isLoading) LoadingDialog(color = redPrimer)
+
+            if (state.isSuccess) {
+                AlertDialog(
+                    onDismissRequest = { },
+                    icon = { Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(64.dp)) },
+                    title = { Text("Berhasil!", fontFamily = satoshiBold, fontSize = 20.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+                    text = { Text("Kendaraan berhasil ditambahkan ke akun anda.", fontFamily = satoshiMedium, fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+                    confirmButton = {
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            Button(
+                                onClick = { navigator.pop() },
+                                modifier = Modifier.fillMaxWidth(0.7f).height(48.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                shape = RoundedCornerShape(12.dp)
+                            ) { Text("Selesai", color = Color.White, fontFamily = satoshiBold, fontSize = 16.sp) }
+                        }
+                    },
+                    shape = RoundedCornerShape(24.dp),
+                    containerColor = Color.White
+                )
+            }
 
             AnimatedVisibility(
                 visible = state.errorMessage != null,
@@ -256,7 +264,17 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
     }
 
     @Composable
-    fun WarnaItem(warnaObj: WarnaKendaraanResponse, isSelected: Boolean, onClick: () -> Unit, satoshiMedium: FontFamily) {
+    private fun VehicleInputField(label: String, value: String, icon: DrawableResource, isError: Boolean, font: FontFamily, colors: TextFieldColors, modifier: Modifier = Modifier.padding(bottom = 14.dp), onValueChange: (String) -> Unit) {
+        OutlinedTextField(
+            value = value, onValueChange = onValueChange, modifier = modifier.fillMaxWidth(),
+            label = { Text(label, fontFamily = font) },
+            leadingIcon = { Icon(painterResource(icon), null, Modifier.size(24.dp)) },
+            isError = isError, shape = RoundedCornerShape(10.dp), singleLine = true, colors = colors
+        )
+    }
+
+    @Composable
+    private fun WarnaItemUI(warna: WarnaKendaraanResponse, isSelected: Boolean, font: FontFamily, onClick: () -> Unit) {
         Surface(
             modifier = Modifier.widthIn(min = 100.dp).clickable { onClick() },
             shape = RoundedCornerShape(8.dp),
@@ -264,13 +282,9 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
             color = Color.White
         ) {
             Text(
-                text = warnaObj.namaWarna,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                fontFamily = satoshiMedium,
-                color = if (isSelected) Color.DarkGray else Color.Gray,
-                fontSize = 14.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                textAlign = TextAlign.Center
+                text = warna.namaWarna, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                fontFamily = font, color = if (isSelected) Color.DarkGray else Color.Gray,
+                fontSize = 14.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, textAlign = TextAlign.Center
             )
         }
     }
