@@ -5,7 +5,9 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.local.TokenManager
+import io.ktor.client.plugins.* import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.* // Tambahkan ini untuk parsing manual
 
 class EditProfileScreenModel(private val authService: AuthService) : ScreenModel {
     var nama by mutableStateOf("")
@@ -19,7 +21,6 @@ class EditProfileScreenModel(private val authService: AuthService) : ScreenModel
     var showSuccessDialog by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
 
-    // Fungsi Validasi Profesional
     private fun validateInputs(): Boolean {
         if (nama.length < 3) {
             errorMessage = "Nama terlalu pendek (minimal 3 karakter)"
@@ -44,8 +45,10 @@ class EditProfileScreenModel(private val authService: AuthService) : ScreenModel
             errorMessage = null
             try {
                 val token = TokenManager.getToken() ?: ""
+                val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
+
                 val response = authService.updateProfile(
-                    token = if (token.startsWith("Bearer ")) token else "Bearer $token",
+                    token = formattedToken,
                     nama = nama,
                     email = email,
                     telepon = telepon,
@@ -58,9 +61,26 @@ class EditProfileScreenModel(private val authService: AuthService) : ScreenModel
                 } else {
                     errorMessage = response.message
                 }
+            } catch (e: ClientRequestException) {
+                // Menangani error 4xx (terutama 422 Unprocessable Entity)
+                try {
+                    val responseBody = e.response.bodyAsText()
+                    val json = Json { ignoreUnknownKeys = true }
+                    val errorObj = json.parseToJsonElement(responseBody).jsonObject
+
+                    val firstError = errorObj["errors"]?.jsonObject?.values?.firstOrNull()
+                        ?.jsonArray?.firstOrNull()?.jsonPrimitive?.content
+
+                    // Jika ada detail error pakai itu, jika tidak pakai message umum dari server
+                    errorMessage = firstError ?: errorObj["message"]?.jsonPrimitive?.content ?: "Data tidak valid"
+
+                    println("KTOR_LOG: DETAIL ERROR SERVER -> $responseBody")
+                } catch (parseEx: Exception) {
+                    errorMessage = "Gagal memproses data server. Silakan cek koneksi Anda."
+                }
             } catch (e: Exception) {
-                // Handling error network/server secara general
-                errorMessage = "Gagal terhubung ke server. Silakan coba lagi nanti."
+                errorMessage = "Gagal terhubung ke server. Pastikan internet Anda stabil."
+                println("ERROR_GENERAL_DEBUG: ${e.message}")
             } finally {
                 isLoading = false
             }

@@ -26,6 +26,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.model.ProfileData
 import com.example.autoglazecustomer.data.network.AuthService
+import com.preat.peekaboo.image.picker.ResizeOptions
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import org.jetbrains.compose.resources.Font
@@ -60,12 +61,18 @@ class EditProfileScreen(
         val imagePicker = rememberImagePickerLauncher(
             selectionMode = SelectionMode.Single,
             scope = scope,
+            resizeOptions = ResizeOptions( 
+                width = 1000,
+                height = 1000,
+                compressionQuality = 0.8
+            ),
             onResult = { byteArrays ->
                 byteArrays.firstOrNull()?.let { bytes ->
                     screenModel.selectedImageBytes = bytes
                 }
             }
         )
+
 
         Scaffold(
             topBar = {

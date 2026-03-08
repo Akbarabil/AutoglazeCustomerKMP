@@ -17,6 +17,7 @@ class AuthService {
     private val BASE_URL = "https://autoglaze-canary.digiponic.co.id/api/"
 
     val client = HttpClient {
+        expectSuccess = true
         defaultRequest {
             url(BASE_URL)
             header(HttpHeaders.Accept, "application/json")
@@ -181,26 +182,32 @@ class AuthService {
         nama: String,
         email: String,
         telepon: String,
-        imageBytes: ByteArray? = null // Foto dalam bentuk byte agar KMP-friendly
+        imageBytes: ByteArray? = null
     ): UpdateProfileResponse {
-        return client.submitFormWithBinaryData(
-            url = "profile",
-            formData = formData {
-                append("_method", "PUT")
-                append("nama", nama)
-                append("email", email)
-                append("telepon", telepon)
-
-                // Jika ada gambar yang dipilih
-                if (imageBytes != null) {
-                    append("photo", imageBytes, Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=\"profile.jpg\"")
-                    })
-                }
-            }
-        ) {
+        return client.post("profile") { // Gunakan POST manual dengan body MultiPart
             header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.Accept, "application/json")
+            header("X-HTTP-Method-Override", "PUT") // Spoofing via header
+
+            setBody(MultiPartFormDataContent(
+                formData {
+                    // Laravel Spoofing di body
+                    append("_method", "PUT")
+
+                    append("nama", nama)
+                    append("email", email)
+                    append("telepon", telepon)
+
+                    if (imageBytes != null) {
+                        // JURUS JOSJIS: Tambahkan Content-Length agar iOS tidak korupsi datanya
+                        append("photo", imageBytes, Headers.build {
+                            append(HttpHeaders.ContentType, "image/jpeg")
+                            // Format Content-Disposition yang paling standar untuk Laravel
+                            append(HttpHeaders.ContentDisposition, "form-data; name=\"photo\"; filename=\"profile.jpg\"")
+                        })
+                    }
+                }
+            ))
         }.body()
     }
 }
