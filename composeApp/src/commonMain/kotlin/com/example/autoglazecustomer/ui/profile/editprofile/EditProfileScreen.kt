@@ -76,14 +76,26 @@ class EditProfileScreen(
 
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("Edit Profil", fontFamily = satoshiBold, fontSize = 19.sp) },
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            "Edit Profil",
+                            fontFamily = satoshiBold,
+                            fontSize = 19.sp
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.Default.ArrowBackIosNew, null, modifier = Modifier.size(20.dp))
+                            Icon(
+                                imageVector = Icons.Default.ArrowBackIosNew,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.White
+                    )
                 )
             }
         ) { padding ->

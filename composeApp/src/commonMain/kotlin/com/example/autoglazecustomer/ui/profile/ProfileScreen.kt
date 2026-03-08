@@ -31,6 +31,7 @@ import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.ui.login.LoginScreen
 import com.example.autoglazecustomer.ui.profile.editprofile.EditProfileScreen
+import com.example.autoglazecustomer.ui.profile.myvehicle.MyVehicleScreen
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -89,15 +90,23 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                     // --- 3. INFO PENGGUNA (NAVIGASI AKTIF) ---
                     ProfileGroup(title = "Info Pengguna", font = satoshiBold) {
+                        // Menu Edit Profil
                         ProfileMenuItem(Icons.Default.Edit, "Edit Profil", satoshiMedium) {
-                            // navigator.parent akan mendorong screen ke Navigator utama (di atas Bottom Bar)
-                            // jika parent null, dia akan menggunakan navigator saat ini.
                             val mainNavigator = navigator.parent ?: navigator
                             mainNavigator.push(EditProfileScreen(authService, screenModel.profileData))
                         }
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = Color(0xFFEEEEEE))
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 0.5.dp,
+                            color = Color(0xFFEEEEEE)
+                        )
+
+                        // Menu Kendaraan Saya (DISESUAIKAN)
                         ProfileMenuItem(Icons.Default.DirectionsCar, "Kendaraan Saya", satoshiMedium) {
-                            // navigator.push(MyVehicleScreen())
+                            // Gunakan parent navigator agar screen MyVehicle menutupi Bottom Bar (Full Screen)
+                            val mainNavigator = navigator.parent ?: navigator
+                            mainNavigator.push(MyVehicleScreen(authService))
                         }
                     }
 
