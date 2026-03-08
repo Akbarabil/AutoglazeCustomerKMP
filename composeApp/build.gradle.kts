@@ -54,6 +54,9 @@ kotlin {
             implementation("io.ktor:ktor-client-logging:2.3.12")
 
             implementation("io.github.alexzhirkevich:qrose:1.0.1")
+            // peekaboo-ui
+            implementation("io.github.onseok:peekaboo-ui:0.5.2")
+            implementation("io.github.onseok:peekaboo-image-picker:0.5.2")
 
             // Image Loading (Gantinya Glide)
             implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha08")

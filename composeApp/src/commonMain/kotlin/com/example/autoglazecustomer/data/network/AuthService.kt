@@ -174,4 +174,33 @@ class AuthService {
             header(HttpHeaders.Authorization, token)
         }.body()
     }
+
+    // --- EDIT PROFILE (MULTIPART) ---
+    suspend fun updateProfile(
+        token: String,
+        nama: String,
+        email: String,
+        telepon: String,
+        imageBytes: ByteArray? = null // Foto dalam bentuk byte agar KMP-friendly
+    ): UpdateProfileResponse {
+        return client.submitFormWithBinaryData(
+            url = "profile",
+            formData = formData {
+                append("_method", "PUT")
+                append("nama", nama)
+                append("email", email)
+                append("telepon", telepon)
+
+                // Jika ada gambar yang dipilih
+                if (imageBytes != null) {
+                    append("photo", imageBytes, Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=\"profile.jpg\"")
+                    })
+                }
+            }
+        ) {
+            header(HttpHeaders.Authorization, token)
+        }.body()
+    }
 }

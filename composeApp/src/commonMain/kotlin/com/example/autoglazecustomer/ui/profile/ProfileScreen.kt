@@ -30,6 +30,7 @@ import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.ui.login.LoginScreen
+import com.example.autoglazecustomer.ui.profile.editprofile.EditProfileScreen
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -48,13 +49,18 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
         var showLogoutDialog by remember { mutableStateOf(false) }
 
+        // --- REFRESH DATA OTOMATIS SAAT MASUK HALAMAN ---
+        LaunchedEffect(Unit) {
+            screenModel.fetchProfileAndPoints()
+        }
+
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFBFBFB))) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // --- 1. HEADER PROFILE (Gradient Menarik) ---
+                // --- 1. HEADER PROFILE ---
                 ProfileHeader(
                     name = screenModel.profileData?.nama ?: "User Autoglaze",
                     email = screenModel.profileData?.email ?: "...",
@@ -66,7 +72,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                 Column(modifier = Modifier.padding(24.dp)) {
 
-                    // --- 2. MEMBERSHIP ---
+                    // --- 2. MEMBERSHIP / POINTS ---
                     ProfileGroup(title = "Point Umum", font = satoshiBold) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -81,11 +87,18 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // --- 3. INFO PENGGUNA ---
+                    // --- 3. INFO PENGGUNA (NAVIGASI AKTIF) ---
                     ProfileGroup(title = "Info Pengguna", font = satoshiBold) {
-                        ProfileMenuItem(Icons.Default.Edit, "Edit Profil", satoshiMedium) { }
+                        ProfileMenuItem(Icons.Default.Edit, "Edit Profil", satoshiMedium) {
+                            // navigator.parent akan mendorong screen ke Navigator utama (di atas Bottom Bar)
+                            // jika parent null, dia akan menggunakan navigator saat ini.
+                            val mainNavigator = navigator.parent ?: navigator
+                            mainNavigator.push(EditProfileScreen(authService, screenModel.profileData))
+                        }
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = Color(0xFFEEEEEE))
-                        ProfileMenuItem(Icons.Default.DirectionsCar, "Kendaraan Saya", satoshiMedium) { }
+                        ProfileMenuItem(Icons.Default.DirectionsCar, "Kendaraan Saya", satoshiMedium) {
+                            // navigator.push(MyVehicleScreen())
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(18.dp))
@@ -125,10 +138,11 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
 
+            // LOADING OVERLAY
             if (screenModel.isLoading) {
                 Box(Modifier.fillMaxSize().background(Color.White.copy(0.4f)), Alignment.Center) {
                     CircularProgressIndicator(color = redPrimer)
@@ -136,7 +150,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
             }
         }
 
-        // --- DIALOG LOGOUT PROFESIONAL ---
+        // --- DIALOG LOGOUT ---
         if (showLogoutDialog) {
             AlertDialog(
                 onDismissRequest = { showLogoutDialog = false },
@@ -158,6 +172,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                         onClick = {
                             showLogoutDialog = false
                             TokenManager.clearAll()
+                            // Gunakan parent navigator untuk keluar dari Tab dan masuk ke Login
                             navigator.parent?.replaceAll(LoginScreen())
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
