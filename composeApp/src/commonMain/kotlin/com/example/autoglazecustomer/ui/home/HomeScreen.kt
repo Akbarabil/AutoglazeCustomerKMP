@@ -62,7 +62,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     .verticalScroll(rememberScrollState())
             ) {
                 // --- 1. HEADER SECTION ---
-                HeaderSection(screenModel.userName, headerGradient, satoshiBold, satoshiMedium)
+                HeaderSection(screenModel.userName, screenModel.userAvatar, headerGradient, satoshiBold, satoshiMedium)
 
                 // --- 2. SLIDER / BANNER ---
                 if (screenModel.sliderList.isNotEmpty()) {
@@ -148,7 +148,13 @@ class HomeScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun HeaderSection(name: String, gradientColors: List<Color>, boldFont: FontFamily, medFont: FontFamily) {
+    private fun HeaderSection(
+        name: String,
+        avatarUrl: String?, // Tambahkan ini
+        gradientColors: List<Color>,
+        boldFont: FontFamily,
+        medFont: FontFamily
+    ) {
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         Box(
             modifier = Modifier
@@ -160,23 +166,31 @@ class HomeScreen(private val authService: AuthService) : Screen {
         ) {
             Row(
                 modifier = Modifier
-                    .padding(top = statusBarHeight, start = 24.dp, end = 24.dp, bottom = 64.dp)
+                    .padding(top = statusBarHeight + 40.dp, start = 24.dp, end = 24.dp, bottom = 64.dp)
                     .padding(top = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // --- BAGIAN FOTO PROFIL ---
                 Surface(
                     modifier = Modifier.size(50.dp),
                     shape = CircleShape,
                     color = Color.White.copy(0.2f),
                     border = BorderStroke(1.dp, Color.White.copy(0.3f))
                 ) {
-                    Image(painterResource(Res.drawable.ic_profile_white), null, Modifier.padding(10.dp))
+                    ProfessionalImage(
+                        url = avatarUrl,
+                        modifier = Modifier.fillMaxSize(),
+                        errorRes = Res.drawable.ic_profile_white // Fallback jika URL null/error
+                    )
                 }
+
                 Spacer(Modifier.width(12.dp))
+
                 Column(Modifier.weight(1f)) {
                     Text("Selamat Datang,", color = Color.White.copy(0.7f), fontSize = 12.sp, fontFamily = medFont)
                     Text(name, color = Color.White, fontSize = 19.sp, fontFamily = boldFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
+
                 IconButton(
                     onClick = { },
                     modifier = Modifier.background(Color.White.copy(0.15f), CircleShape)

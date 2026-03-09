@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 class HomeScreenModel(private val authService: AuthService) : ScreenModel {
 
     var userName by mutableStateOf(TokenManager.getUserName() ?: "Sobat Glaze")
+    var userAvatar by mutableStateOf<String?>(null)
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var sliderList by mutableStateOf<List<SliderItem>>(emptyList())
     var beritaList by mutableStateOf<List<BeritaItem>>(emptyList())
@@ -51,6 +52,7 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
                 profileJob.await().onSuccess { res ->
                     if (res.success) {
                         userName = res.data?.nama ?: userName
+                        userAvatar = res.data?.photo
                         res.data?.nama?.let { TokenManager.saveUserName(it) }
                     }
                 }

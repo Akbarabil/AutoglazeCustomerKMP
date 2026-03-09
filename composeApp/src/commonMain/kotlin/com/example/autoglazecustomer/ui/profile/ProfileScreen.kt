@@ -1,5 +1,7 @@
 package com.example.autoglazecustomer.ui.profile
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -11,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -32,6 +35,7 @@ import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.ui.login.LoginScreen
 import com.example.autoglazecustomer.ui.profile.editprofile.EditProfileScreen
 import com.example.autoglazecustomer.ui.profile.myvehicle.MyVehicleScreen
+import com.example.autoglazecustomer.ui.profile.myvoucher.MyVoucherScreen
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -49,8 +53,9 @@ class ProfileScreen(private val authService: AuthService) : Screen {
         val deepRed = Color(0xFFA62B14)
 
         var showLogoutDialog by remember { mutableStateOf(false) }
+        val shimmerBrush = rememberShimmerBrush()
 
-        // --- REFRESH DATA OTOMATIS SAAT MASUK HALAMAN ---
+        // --- REFRESH DATA OTOMATIS ---
         LaunchedEffect(Unit) {
             screenModel.fetchProfileAndPoints()
         }
@@ -61,36 +66,48 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // --- 1. HEADER PROFILE ---
-                ProfileHeader(
-                    name = screenModel.profileData?.nama ?: "User Autoglaze",
-                    email = screenModel.profileData?.email ?: "...",
-                    photoUrl = screenModel.profileData?.photo,
-                    gradientColors = listOf(redPrimer, deepRed),
-                    boldFont = satoshiBold,
-                    medFont = satoshiMedium
-                )
+                // --- 1. HEADER PROFILE (WITH SHIMMER LOGIC) ---
+                if (screenModel.isLoading && screenModel.profileData == null) {
+                    ProfileHeaderShimmer(shimmerBrush)
+                } else {
+                    ProfileHeader(
+                        name = screenModel.profileData?.nama ?: "User Autoglaze",
+                        email = screenModel.profileData?.email ?: "...",
+                        photoUrl = screenModel.profileData?.photo,
+                        gradientColors = listOf(redPrimer, deepRed),
+                        boldFont = satoshiBold,
+                        medFont = satoshiMedium
+                    )
+                }
 
                 Column(modifier = Modifier.padding(24.dp)) {
 
-                    // --- 2. MEMBERSHIP / POINTS ---
+                    // --- 2. MEMBERSHIP / POINTS (WITH SHIMMER LOGIC) ---
                     ProfileGroup(title = "Point Umum", font = satoshiBold) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Glaze Points", modifier = Modifier.weight(1f), fontFamily = satoshiMedium, fontSize = 16.sp)
-                            Text(text = formatNumber(screenModel.points), fontFamily = satoshiBold, fontSize = 16.sp)
-                            Spacer(Modifier.width(8.dp))
-                            Image(painterResource(Res.drawable.ag_coin_small), null, Modifier.size(20.dp))
+                        if (screenModel.isLoading && screenModel.points == 0) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(60.dp)
+                                    .background(shimmerBrush)
+                            )
+                        } else {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Glaze Points", modifier = Modifier.weight(1f), fontFamily = satoshiMedium, fontSize = 16.sp)
+                                Text(text = formatNumber(screenModel.points), fontFamily = satoshiBold, fontSize = 16.sp)
+                                Spacer(Modifier.width(8.dp))
+                                Image(painterResource(Res.drawable.ag_coin_small), null, Modifier.size(20.dp))
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // --- 3. INFO PENGGUNA (NAVIGASI AKTIF) ---
+                    // --- 3. INFO PENGGUNA ---
                     ProfileGroup(title = "Info Pengguna", font = satoshiBold) {
-                        // Menu Edit Profil
                         ProfileMenuItem(Icons.Default.Edit, "Edit Profil", satoshiMedium) {
                             val mainNavigator = navigator.parent ?: navigator
                             mainNavigator.push(EditProfileScreen(authService, screenModel.profileData))
@@ -102,9 +119,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                             color = Color(0xFFEEEEEE)
                         )
 
-                        // Menu Kendaraan Saya (DISESUAIKAN)
                         ProfileMenuItem(Icons.Default.DirectionsCar, "Kendaraan Saya", satoshiMedium) {
-                            // Gunakan parent navigator agar screen MyVehicle menutupi Bottom Bar (Full Screen)
                             val mainNavigator = navigator.parent ?: navigator
                             mainNavigator.push(MyVehicleScreen(authService))
                         }
@@ -114,7 +129,10 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                     // --- 4. BENEFIT ---
                     ProfileGroup(title = "Benefit", font = satoshiBold) {
-                        ProfileMenuItem(Icons.Default.ConfirmationNumber, "Voucher Saya", satoshiMedium) { }
+                        ProfileMenuItem(Icons.Default.ConfirmationNumber, "Voucher Saya", satoshiMedium) {
+                            val mainNavigator = navigator.parent ?: navigator
+                            mainNavigator.push(MyVoucherScreen(authService))
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(18.dp))
@@ -150,46 +168,26 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                     Spacer(modifier = Modifier.height(24.dp))
                 }
             }
-
-            // LOADING OVERLAY
-            if (screenModel.isLoading) {
-                Box(Modifier.fillMaxSize().background(Color.White.copy(0.4f)), Alignment.Center) {
-                    CircularProgressIndicator(color = redPrimer)
-                }
-            }
         }
 
         // --- DIALOG LOGOUT ---
         if (showLogoutDialog) {
             AlertDialog(
                 onDismissRequest = { showLogoutDialog = false },
-                icon = {
-                    Image(
-                        painter = painterResource(Res.drawable.ic_logout),
-                        contentDescription = null,
-                        modifier = Modifier.size(70.dp)
-                    )
-                },
-                title = {
-                    Text("Konfirmasi Keluar", fontFamily = satoshiBold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                },
-                text = {
-                    Text("Apakah anda yakin ingin keluar dari akun Autoglaze?", fontFamily = satoshiMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                },
+                icon = { Image(painterResource(Res.drawable.ic_logout), null, Modifier.size(70.dp)) },
+                title = { Text("Konfirmasi Keluar", fontFamily = satoshiBold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+                text = { Text("Apakah anda yakin ingin keluar dari akun Autoglaze?", fontFamily = satoshiMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
                 confirmButton = {
                     Button(
                         onClick = {
                             showLogoutDialog = false
                             TokenManager.clearAll()
-                            // Gunakan parent navigator untuk keluar dari Tab dan masuk ke Login
                             navigator.parent?.replaceAll(LoginScreen())
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(50.dp)
-                    ) {
-                        Text("Keluar sekarang", color = Color.White, fontFamily = satoshiBold)
-                    }
+                    ) { Text("Keluar sekarang", color = Color.White, fontFamily = satoshiBold) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showLogoutDialog = false }, modifier = Modifier.fillMaxWidth()) {
@@ -241,6 +239,17 @@ class ProfileScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
+    private fun ProfileHeaderShimmer(brush: Brush) {
+        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .background(brush, RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+        )
+    }
+
+    @Composable
     private fun ProfileGroup(title: String, font: FontFamily, content: @Composable ColumnScope.() -> Unit) {
         Column {
             Text(title, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp), fontSize = 15.sp, fontFamily = font, color = Color.Black)
@@ -256,6 +265,31 @@ class ProfileScreen(private val authService: AuthService) : Screen {
             Text(label, modifier = Modifier.weight(1f), fontSize = 16.sp, fontFamily = font, color = Color.Black)
             Icon(Icons.Default.ChevronRight, null, tint = Color.LightGray)
         }
+    }
+
+    @Composable
+    private fun rememberShimmerBrush(): Brush {
+        val shimmerColors = listOf(
+            Color.LightGray.copy(alpha = 0.6f),
+            Color.LightGray.copy(alpha = 0.2f),
+            Color.LightGray.copy(alpha = 0.6f),
+        )
+
+        val transition = rememberInfiniteTransition()
+        val translateAnim by transition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1000f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1200, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
+        )
+
+        return Brush.linearGradient(
+            colors = shimmerColors,
+            start = Offset.Zero,
+            end = Offset(x = translateAnim, y = translateAnim)
+        )
     }
 
     private fun formatNumber(number: Int): String {

@@ -232,4 +232,10 @@ class AuthService {
             }))
         }.body()
     }
+
+    suspend fun getVouchersByVehicle(idKendaraan: Int): VoucherKendaraanResponse {
+        return client.get("list-voucher-by-kendaraan") {
+            url { parameters.append("id_kendaraan", idKendaraan.toString()) }
+        }.body()
+    }
 }
