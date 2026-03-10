@@ -32,6 +32,8 @@ import autoglazecustomer.composeapp.generated.resources.wave_black
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.autoglazecustomer.ui.checkvehicle.CheckVehicleScreen
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
@@ -43,7 +45,8 @@ class SplashScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val satoshiBold = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Bold))
 
-        // State untuk skala (mulai dari 1.2f agar sudah terlihat besar di awal)
+        val settings = remember { Settings() }
+
         val scale = remember { Animatable(1.2f) }
 
         // Sequence Animasi: Zoom In -> Zoom Out -> Meledak
@@ -68,14 +71,22 @@ class SplashScreen : Screen {
                 animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing)
             )
 
-            // 4. BERPINDAH KE HALAMAN BERIKUTNYA
-            // Ganti ke OnboardingScreen() jika sudah siap, sementara ke CheckVehicleScreen()
-            navigator.replace(OnboardingScreen())
+            // 4. LOGIKA NAVIGASI JOSJIS
+            // Cek apakah user sudah pernah melewati onboarding
+            val isFirstTime = settings.getBoolean("is_first_time_onboarding", true)
+
+            if (isFirstTime) {
+                // Jika baru pertama kali, arahkan ke Onboarding
+                navigator.replace(OnboardingScreen())
+            } else {
+                // Jika sudah pernah, langsung ke Check Vehicle (Home)
+                navigator.replace(CheckVehicleScreen())
+            }
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
 
-            // LAYER 1: Background Pattern (Paling Bawah)
+            // LAYER 1: Background Pattern
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_white),
                 contentDescription = null,
@@ -83,7 +94,7 @@ class SplashScreen : Screen {
                 contentScale = ContentScale.Crop
             )
 
-            // LAYER 2: Wave Black (Animasi Scale di sini)
+            // LAYER 2: Wave Black (Animasi Scale)
             Image(
                 painter = painterResource(Res.drawable.wave_black),
                 contentDescription = null,
@@ -97,12 +108,11 @@ class SplashScreen : Screen {
                 contentScale = ContentScale.Fit
             )
 
-            // LAYER 3: Logo & Tagline (Paling Depan)
+            // LAYER 3: Logo & Tagline
             Column(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Logo Autoglaze White
                 Image(
                     painter = painterResource(Res.drawable.autoglaze_white),
                     contentDescription = "Autoglaze Logo",
@@ -111,7 +121,6 @@ class SplashScreen : Screen {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Tagline Putih
                 Text(
                     text = "Drive it clean and healthy",
                     color = Color.White,

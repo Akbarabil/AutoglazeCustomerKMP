@@ -7,6 +7,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager // Pastikan import ini ada
 import com.example.autoglazecustomer.data.network.AuthService
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
 
 class LoginScreenModel(
@@ -52,6 +53,7 @@ class LoginScreenModel(
 
         screenModelScope.launch {
             isLoading = true
+            errorMessage = null
             try {
                 val response = authService.login(email, password)
 
@@ -69,10 +71,27 @@ class LoginScreenModel(
                         errorMessage = "Data login tidak lengkap"
                     }
                 } else {
-                    errorMessage = response.message
+                    errorMessage = response.message ?: "Login gagal, silakan cek kembali data Anda"
+                }
+            } catch (e: io.ktor.client.plugins.ResponseException) {
+                // --- JURUS JOSJIS: Bongkar Error API ---
+                try {
+                    val errorBody = e.response.bodyAsText()
+                    val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                    val errorResponse = json.decodeFromString<com.example.autoglazecustomer.data.model.LoginResponse>(errorBody)
+
+                    errorMessage = errorResponse.message ?: "Email atau Password salah"
+                } catch (parseException: Exception) {
+                    errorMessage = when (e.response.status.value) {
+                        401 -> "Email atau Password salah"
+                        404 -> "Akun tidak ditemukan"
+                        500 -> "Server sedang bermasalah"
+                        else -> "Terjadi kesalahan sistem (${e.response.status.value})"
+                    }
                 }
             } catch (e: Exception) {
-                errorMessage = "Login Gagal: ${e.message}"
+                // Error koneksi (timeout/no internet)
+                errorMessage = "Gagal terhubung ke server. Pastikan internet Anda aktif."
             } finally {
                 isLoading = false
             }

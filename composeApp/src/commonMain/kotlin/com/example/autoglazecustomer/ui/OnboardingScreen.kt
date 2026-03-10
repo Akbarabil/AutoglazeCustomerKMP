@@ -12,6 +12,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,11 +28,11 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.ui.checkvehicle.CheckVehicleScreen
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
-
 
 data class OnboardingItem(
     val image: DrawableResource,
@@ -46,6 +47,9 @@ class OnboardingScreen : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
+
+        // Inisialisasi Settings untuk menyimpan status onboarding
+        val settings = remember { Settings() }
 
         // Font & Colors
         val satoshiBold = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Bold))
@@ -78,9 +82,14 @@ class OnboardingScreen : Screen {
             easing = FastOutSlowInEasing
         )
 
+        fun finishOnboarding() {
+            settings.putBoolean("is_first_time_onboarding", false)
+            navigator.replace(CheckVehicleScreen())
+        }
+
         Box(modifier = Modifier.fillMaxSize().background(backgroundGrey)) {
 
-            // --- LAYER 1: ViewPager (Paling Bawah) ---
+            // --- LAYER 1: ViewPager (Konten Utama) ---
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
@@ -120,11 +129,12 @@ class OnboardingScreen : Screen {
                 }
             }
 
-            // --- LAYER 2: HEADER (Di atas Pager) ---
+            // --- LAYER 2: HEADER (Nomor Halaman & Lewati) ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 60.dp, start = 24.dp, end = 24.dp),
+                    .statusBarsPadding()
+                    .padding(top = 20.dp, start = 24.dp, end = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -140,13 +150,11 @@ class OnboardingScreen : Screen {
                     fontFamily = satoshiBold,
                     fontSize = 18.sp,
                     color = myRed,
-                    modifier = Modifier.clickable {
-                        navigator.replace(CheckVehicleScreen())
-                    }
+                    modifier = Modifier.clickable { finishOnboarding() }
                 )
             }
 
-            // --- LAYER 3: FOOTER (Paling Depan) ---
+            // --- LAYER 3: FOOTER (Navigasi Bawah) ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,7 +213,7 @@ class OnboardingScreen : Screen {
                                         animationSpec = smoothScrollSpec
                                     )
                                 } else {
-                                    navigator.replace(CheckVehicleScreen())
+                                    finishOnboarding()
                                 }
                             }
                         }

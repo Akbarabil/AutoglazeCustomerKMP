@@ -29,13 +29,16 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.ui.KmpBackHandler // Import Jembatan KMP
 import com.example.autoglazecustomer.ui.login.LoginScreen
 import com.example.autoglazecustomer.ui.profile.editprofile.EditProfileScreen
 import com.example.autoglazecustomer.ui.profile.myvehicle.MyVehicleScreen
 import com.example.autoglazecustomer.ui.profile.myvoucher.MyVoucherScreen
+import com.example.autoglazecustomer.ui.tabs.HomeTab
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -45,6 +48,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
     override fun Content() {
         val screenModel = rememberScreenModel { ProfileScreenModel(authService) }
         val navigator = LocalNavigator.currentOrThrow
+        val tabNavigator = LocalTabNavigator.current
         val uriHandler = LocalUriHandler.current
 
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
@@ -55,9 +59,21 @@ class ProfileScreen(private val authService: AuthService) : Screen {
         var showLogoutDialog by remember { mutableStateOf(false) }
         val shimmerBrush = rememberShimmerBrush()
 
-        // --- REFRESH DATA OTOMATIS ---
+        // --- REFRESH DATA ---
         LaunchedEffect(Unit) {
             screenModel.fetchProfileAndPoints()
+        }
+
+        /**
+         * LOGIKA BACK JOSJIS:
+         * Mencegat tombol fisik Android agar kembali ke Home Tab dulu.
+         */
+        KmpBackHandler {
+            if (tabNavigator.current !is HomeTab) {
+                tabNavigator.current = HomeTab()
+            } else {
+                if (navigator.canPop) navigator.pop()
+            }
         }
 
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFBFBFB))) {
@@ -66,31 +82,46 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // --- 1. HEADER PROFILE (WITH SHIMMER LOGIC) ---
-                if (screenModel.isLoading && screenModel.profileData == null) {
-                    ProfileHeaderShimmer(shimmerBrush)
-                } else {
-                    ProfileHeader(
-                        name = screenModel.profileData?.nama ?: "User Autoglaze",
-                        email = screenModel.profileData?.email ?: "...",
-                        photoUrl = screenModel.profileData?.photo,
-                        gradientColors = listOf(redPrimer, deepRed),
-                        boldFont = satoshiBold,
-                        medFont = satoshiMedium
-                    )
+                // --- 1. HEADER PROFILE ---
+                Box {
+                    if (screenModel.isLoading && screenModel.profileData == null) {
+                        ProfileHeaderShimmer(shimmerBrush)
+                    } else {
+                        ProfileHeader(
+                            name = screenModel.profileData?.nama ?: "User Autoglaze",
+                            email = screenModel.profileData?.email ?: "...",
+                            photoUrl = screenModel.profileData?.photo,
+                            gradientColors = listOf(redPrimer, deepRed),
+                            boldFont = satoshiBold,
+                            medFont = satoshiMedium
+                        )
+                    }
+
+                    // TOMBOL BACK UI (Sesuai Logika KmpBackHandler)
+                    IconButton(
+                        onClick = {
+                            if (tabNavigator.current !is HomeTab) {
+                                tabNavigator.current = HomeTab()
+                            } else if (navigator.canPop) {
+                                navigator.pop()
+                            }
+                        },
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(start = 12.dp, top = 12.dp)
+                            .align(Alignment.TopStart)
+                            .background(Color.Black.copy(0.1f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
                 }
 
                 Column(modifier = Modifier.padding(24.dp)) {
 
-                    // --- 2. MEMBERSHIP / POINTS (WITH SHIMMER LOGIC) ---
+                    // --- 2. GLOW POINTS ---
                     ProfileGroup(title = "Point Umum", font = satoshiBold) {
                         if (screenModel.isLoading && screenModel.points == 0) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(60.dp)
-                                    .background(shimmerBrush)
-                            )
+                            Box(Modifier.fillMaxWidth().height(60.dp).background(shimmerBrush))
                         } else {
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -113,11 +144,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                             mainNavigator.push(EditProfileScreen(authService, screenModel.profileData))
                         }
 
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            thickness = 0.5.dp,
-                            color = Color(0xFFEEEEEE)
-                        )
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), 0.5.dp, Color(0xFFEEEEEE))
 
                         ProfileMenuItem(Icons.Default.DirectionsCar, "Kendaraan Saya", satoshiMedium) {
                             val mainNavigator = navigator.parent ?: navigator
@@ -146,7 +173,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // --- 6. LOGOUT BUTTON ---
+                    // --- 6. LOGOUT ---
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -292,7 +319,5 @@ class ProfileScreen(private val authService: AuthService) : Screen {
         )
     }
 
-    private fun formatNumber(number: Int): String {
-        return number.toString().reversed().chunked(3).joinToString(".").reversed()
-    }
+    private fun formatNumber(number: Int): String = number.toString().reversed().chunked(3).joinToString(".").reversed()
 }
