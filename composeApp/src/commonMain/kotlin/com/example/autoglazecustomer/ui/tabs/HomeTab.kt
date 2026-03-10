@@ -16,7 +16,7 @@ class HomeTab : Tab {
         @Composable
         get() = TabOptions(
             index = 0u,
-            title = "Home",
+            title = "Beranda",
             icon = painterResource(Res.drawable.ic_home)
         )
 

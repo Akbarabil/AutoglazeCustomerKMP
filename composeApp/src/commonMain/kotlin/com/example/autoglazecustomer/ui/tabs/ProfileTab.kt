@@ -17,7 +17,7 @@ class ProfileTab : Tab {
         @Composable
         get() = TabOptions(
             index = 3u,
-            title = "Profile",
+            title = "Profil",
             icon = painterResource(Res.drawable.ic_profile)
         )
 

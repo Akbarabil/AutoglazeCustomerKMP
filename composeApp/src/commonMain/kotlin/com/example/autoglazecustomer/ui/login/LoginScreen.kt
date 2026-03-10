@@ -187,15 +187,6 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     colors = commonTextFieldColors
                                 )
 
-                                Text(
-                                    text = "Lupa Password?",
-                                    modifier = Modifier.align(Alignment.End).padding(top = 8.dp).clickable { },
-                                    fontFamily = satoshiMedium,
-                                    color = redPrimer,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
-                                )
-
                                 Spacer(modifier = Modifier.height(24.dp))
 
                                 Button(

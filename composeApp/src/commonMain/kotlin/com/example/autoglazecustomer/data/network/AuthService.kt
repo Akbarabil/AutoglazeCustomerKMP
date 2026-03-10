@@ -2,6 +2,7 @@ package com.example.autoglazecustomer.data.network
 
 import com.example.autoglazecustomer.data.model.*
 import com.example.autoglazecustomer.data.model.HistoryResponse
+import com.example.autoglazecustomer.data.model.password.RequestPasswordResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -236,6 +237,16 @@ class AuthService {
     suspend fun getVouchersByVehicle(idKendaraan: Int): VoucherKendaraanResponse {
         return client.get("list-voucher-by-kendaraan") {
             url { parameters.append("id_kendaraan", idKendaraan.toString()) }
+        }.body()
+    }
+
+    suspend fun generatePassword(requestData: Map<String, String>): RequestPasswordResponse {
+        return client.post("customer/generate-password") {
+            setBody(FormDataContent(parameters {
+                requestData.forEach { (key, value) ->
+                    append(key, value)
+                }
+            }))
         }.body()
     }
 }

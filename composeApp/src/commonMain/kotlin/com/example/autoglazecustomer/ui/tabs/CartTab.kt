@@ -9,15 +9,13 @@ import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.cart.CartScreen
 import org.jetbrains.compose.resources.painterResource
 
-// Hapus parameter dari constructor class agar objek Tab ini "ringan"
-// dan tidak mengandung HttpClient (Ktor) yang merusak Serialization Android.
 class CartTab : Tab {
 
     override val options: TabOptions
         @Composable
         get() = TabOptions(
             index = 2u,
-            title = "Transaction",
+            title = "Pesanan",
             icon = painterResource(Res.drawable.ic_cart)
         )
 
