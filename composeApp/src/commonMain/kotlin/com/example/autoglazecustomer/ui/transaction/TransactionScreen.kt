@@ -281,7 +281,12 @@ class TransactionScreen(private val authService: AuthService) : Screen {
                                     ) {
                                         items(screenModel.filteredCabang) { cabang ->
                                             CabangCardItem(cabang, redPrimer, satoshiBold, satoshiMedium) {
-                                                // TAHAP SELANJUTNYA: navigator.push(VehicleSelectionScreen(cabang))
+                                                navigator.parent?.push(
+                                                    VehicleSelectionScreen(
+                                                        cabang = cabang,
+                                                        authService = authService
+                                                    )
+                                                )
                                             }
                                         }
                                     }

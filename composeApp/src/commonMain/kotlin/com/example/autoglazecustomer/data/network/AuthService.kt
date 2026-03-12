@@ -4,6 +4,7 @@ import com.example.autoglazecustomer.data.model.*
 import com.example.autoglazecustomer.data.model.HistoryResponse
 import com.example.autoglazecustomer.data.model.password.RequestPasswordResponse
 import com.example.autoglazecustomer.data.model.transaction.CabangTerdekatResponse
+import com.example.autoglazecustomer.data.model.transaction.MembershipStatusResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -258,5 +259,21 @@ class AuthService {
                 parameters.append("lat", latitude.toString())
             }
         }.body()
+    }
+
+    suspend fun checkMembership(idKendaraan: Int, kodeCabang: String): Int {
+        return try {
+            val response: MembershipStatusResponse = client.get("check-membership-customer") {
+                url {
+                    parameters.append("id_kendaraan", idKendaraan.toString())
+                    parameters.append("kode_cabang", kodeCabang)
+                }
+            }.body()
+
+            response.statusInt ?: 0
+        } catch (e: Exception) {
+            println("Error check membership: ${e.message}")
+            0 // Kembalikan 0 (Non-Membership) jika API gagal/timeout agar aplikasi tidak crash
+        }
     }
 }

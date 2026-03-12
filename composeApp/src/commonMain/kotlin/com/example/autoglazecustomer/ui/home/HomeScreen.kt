@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import autoglazecustomer.composeapp.generated.resources.*
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
@@ -44,16 +45,14 @@ class HomeScreen(private val authService: AuthService) : Screen {
         val screenModel = rememberScreenModel { HomeScreenModel(authService) }
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
-
-        // --- TRIGGER REFRESH OTOMATIS ---
-        // Setiap kali user kembali ke tab Home, data (Nama, Mobil, dll) akan di-update
-        LaunchedEffect(Unit) {
-            screenModel.loadAllHomeData()
-        }
-
+        var selectedBerita by remember { mutableStateOf<BeritaItem?>(null) }
         val redPrimer = Color(0xFFD53B1E)
         val deepRed = Color(0xFFA62B14)
         val headerGradient = listOf(redPrimer, deepRed)
+
+        LaunchedEffect(Unit) {
+            screenModel.loadAllHomeData()
+        }
 
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFBFBFB))) {
             Column(
@@ -61,10 +60,8 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // --- 1. HEADER SECTION ---
                 HeaderSection(screenModel.userName, screenModel.userAvatar, headerGradient, satoshiBold, satoshiMedium)
 
-                // --- 2. SLIDER / BANNER ---
                 if (screenModel.sliderList.isNotEmpty()) {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 20.dp),
@@ -79,7 +76,6 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                // --- 3. MENU LAYANAN ---
                 Text(
                     text = "Layanan Utama",
                     modifier = Modifier.padding(horizontal = 24.dp),
@@ -99,7 +95,6 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     HomeMenuItem(Res.drawable.ic_home_location, "Lokasi Cabang", satoshiMedium, Modifier.weight(1f))
                 }
 
-                // --- 4. MOBIL SAYA ---
                 SectionHeader("Mobil Saya", satoshiBold)
                 if (screenModel.vehicleList.isEmpty() && !screenModel.isLoading) {
                     EmptyState("Belum ada kendaraan terdaftar", satoshiMedium)
@@ -114,7 +109,6 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     }
                 }
 
-                // --- 5. PROMO ---
                 SectionHeader("Promo Berlangsung", satoshiBold)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 24.dp),
@@ -125,7 +119,6 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     }
                 }
 
-                // --- 6. BERITA ---
                 SectionHeader("Berita Terbaru", satoshiBold, true)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 24.dp),
@@ -133,29 +126,35 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     modifier = Modifier.padding(bottom = 100.dp)
                 ) {
                     items(screenModel.beritaList) { berita ->
-                        BeritaItemUI(berita, screenModel, satoshiBold, satoshiMedium)
+                        BeritaItemUI(berita, screenModel, satoshiBold, satoshiMedium) {
+                            selectedBerita = berita
+                        }
                     }
                 }
             }
+        }
 
-            // Silent Refresh: Indikator loading hanya muncul di awal (saat data benar-benar kosong)
-            if (screenModel.isLoading && screenModel.sliderList.isEmpty()) {
-                Box(Modifier.fillMaxSize().background(Color.White.copy(0.6f)), Alignment.Center) {
-                    CircularProgressIndicator(color = redPrimer, strokeWidth = 3.dp)
-                }
-            }
+        if (selectedBerita != null) {
+            BeritaDialog(
+                berita = selectedBerita!!,
+                onDismiss = { selectedBerita = null },
+                bold = satoshiBold,
+                medium = satoshiMedium,
+                accent = redPrimer
+            )
         }
     }
 
     @Composable
     private fun HeaderSection(
         name: String,
-        avatarUrl: String?, // Tambahkan ini
+        avatarUrl: String?,
         gradientColors: List<Color>,
         boldFont: FontFamily,
         medFont: FontFamily
     ) {
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -166,11 +165,9 @@ class HomeScreen(private val authService: AuthService) : Screen {
         ) {
             Row(
                 modifier = Modifier
-                    .padding(top = statusBarHeight + 40.dp, start = 24.dp, end = 24.dp, bottom = 64.dp)
-                    .padding(top = 12.dp),
+                    .padding(top = statusBarHeight + 16.dp, start = 24.dp, end = 24.dp, bottom = 54.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // --- BAGIAN FOTO PROFIL ---
                 Surface(
                     modifier = Modifier.size(50.dp),
                     shape = CircleShape,
@@ -180,15 +177,15 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     ProfessionalImage(
                         url = avatarUrl,
                         modifier = Modifier.fillMaxSize(),
-                        errorRes = Res.drawable.ic_profile_white // Fallback jika URL null/error
+                        errorRes = Res.drawable.ic_profile_white
                     )
                 }
 
                 Spacer(Modifier.width(12.dp))
 
                 Column(Modifier.weight(1f)) {
-                    Text("Selamat Datang,", color = Color.White.copy(0.7f), fontSize = 12.sp, fontFamily = medFont)
-                    Text(name, color = Color.White, fontSize = 19.sp, fontFamily = boldFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("Selamat Datang,", color = Color.White.copy(0.8f), fontSize = 12.sp, fontFamily = medFont)
+                    Text(name, color = Color.White, fontSize = 18.sp, fontFamily = boldFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
 
                 IconButton(
@@ -275,9 +272,11 @@ class HomeScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun BeritaItemUI(berita: BeritaItem, model: HomeScreenModel, bold: FontFamily, medium: FontFamily) {
+    private fun BeritaItemUI(berita: BeritaItem, model: HomeScreenModel, bold: FontFamily, medium: FontFamily, onClick: () -> Unit) {
         Card(
-            modifier = Modifier.width(240.dp),
+            modifier = Modifier
+                .width(240.dp)
+                .clickable { onClick() },
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             border = BorderStroke(1.dp, Color(0xFFEEEEEE))
@@ -291,6 +290,53 @@ class HomeScreen(private val authService: AuthService) : Screen {
                 }
             }
         }
+    }
+
+    @Composable
+    private fun BeritaDialog(berita: BeritaItem, onDismiss: () -> Unit, bold: FontFamily, medium: FontFamily, accent: Color) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            containerColor = Color.White,
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = berita.judul ?: "Informasi Berita",
+                    fontFamily = bold,
+                    fontSize = 18.sp,
+                    color = Color.Black
+                )
+            },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    ProfessionalImage(
+                        url = berita.gambarUrl,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = berita.deskripsi ?: "Detail berita ini belum tersedia untuk saat ini.",
+                        fontFamily = medium,
+                        fontSize = 14.sp,
+                        color = Color.DarkGray,
+                        lineHeight = 20.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = accent),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Tutup", fontFamily = bold, color = Color.White)
+                }
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        )
     }
 
     @Composable
