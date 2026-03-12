@@ -3,6 +3,7 @@ package com.example.autoglazecustomer.ui.password
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -58,8 +59,6 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
         var selectedMethod by remember { mutableStateOf<String?>(null) }
         var showSuccessDialog by remember { mutableStateOf(false) }
         var generatedPass by remember { mutableStateOf("") }
-
-        // State untuk Snackbar
         var snackbarVisible by remember { mutableStateOf(false) }
 
         LaunchedEffect(screenModel.isSuccess) {
@@ -69,35 +68,44 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.6f),
                 contentScale = ContentScale.Crop
             )
 
-            Scaffold(containerColor = Color.Transparent) { padding ->
+            Scaffold(
+                containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+            ) { padding ->
                 Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Header Image
                         Image(
                             painter = painterResource(Res.drawable.img_catat),
                             contentDescription = null,
-                            modifier = Modifier.padding(top = 80.dp).size(193.dp)
+                            modifier = Modifier.padding(top = 60.dp).size(193.dp)
                         )
 
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                            color = Color.White
+                            color = Color.White,
+                            shadowElevation = 8.dp
                         ) {
                             Column(
-                                modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    // JOSJIS: Pastikan putih mentok sampai area navigasi iOS
+                                    .windowInsetsPadding(WindowInsets.navigationBars)
+                                    .padding(horizontal = 24.dp)
+                                    .verticalScroll(rememberScrollState())
                             ) {
+                                Spacer(modifier = Modifier.height(32.dp))
                                 Text(
                                     text = "Minta Sandi",
                                     fontFamily = satoshiMedium,
@@ -172,21 +180,25 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
+
+                                Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
                     }
 
-                    // Back Button
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 12.dp, top = 12.dp).align(Alignment.TopStart)
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(start = 12.dp, top = 12.dp)
+                            .align(Alignment.TopStart)
                     ) {
                         Icon(Icons.Default.ArrowBackIosNew, null, tint = Color.DarkGray, modifier = Modifier.size(20.dp))
                     }
                 }
             }
 
-            // --- SNACKBAR UNIVERSAL HIJAU ---
+            // Snackbar Sukses Salin
             AnimatedVisibility(
                 visible = snackbarVisible,
                 enter = slideInVertically { -it } + fadeIn(),
@@ -194,7 +206,9 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                 modifier = Modifier.align(Alignment.TopCenter)
             ) {
                 Snackbar(
-                    modifier = Modifier.padding(top = 40.dp, start = 16.dp, end = 16.dp),
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                     containerColor = greenSuccess,
                 ) {
                     Text("Sandi berhasil disalin ke papan klip", color = Color.White, fontFamily = satoshiMedium)
@@ -235,7 +249,6 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                                     .padding(top = 16.dp)
                                     .clickable {
                                         clipboardManager.setText(AnnotatedString(generatedPass))
-                                        // Picu Snackbar
                                         scope.launch {
                                             snackbarVisible = true
                                             delay(3000)

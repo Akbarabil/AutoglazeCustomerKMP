@@ -6,17 +6,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,18 +16,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -50,14 +31,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
-import autoglazecustomer.composeapp.generated.resources.ic_email
-import autoglazecustomer.composeapp.generated.resources.ic_password
-import autoglazecustomer.composeapp.generated.resources.ic_visibility
-import autoglazecustomer.composeapp.generated.resources.ic_visibility_off
-import autoglazecustomer.composeapp.generated.resources.img_hello
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
+import autoglazecustomer.composeapp.generated.resources.*
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -84,7 +58,6 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
             if (initialEmail.isNotEmpty()) screenModel.onEmailChange(initialEmail)
         }
 
-        // Timer untuk menyembunyikan snackbar otomatis
         LaunchedEffect(screenModel.errorMessage) {
             if (screenModel.errorMessage != null) {
                 delay(4000)
@@ -108,15 +81,21 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
             unfocusedTextColor = Color.Black
         )
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        // JOSJIS: Gunakan dasar Putih agar tidak bocor di Safe Area iOS
+        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+            // Background Pattern hanya di area atas agar tidak bocor ke navigasi bawah
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.6f),
                 contentScale = ContentScale.Crop
             )
 
-            Scaffold(containerColor = Color.Transparent) { paddingValues ->
+            Scaffold(
+                containerColor = Color.Transparent,
+                // Hilangkan insets bawaan Scaffold agar kita bisa handle manual secara presisi
+                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+            ) { paddingValues ->
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -125,17 +104,25 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                         Image(
                             painter = painterResource(Res.drawable.img_hello),
                             contentDescription = null,
-                            modifier = Modifier.padding(top = 80.dp).size(193.dp)
+                            modifier = Modifier.padding(top = 60.dp).size(193.dp)
                         )
 
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                            color = Color.White
+                            color = Color.White,
+                            shadowElevation = 8.dp
                         ) {
                             Column(
-                                modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    // JOSJIS: Tambahkan padding navigasi bars agar warna putih mentok ke bawah iOS
+                                    .windowInsetsPadding(WindowInsets.navigationBars)
+                                    .padding(horizontal = 24.dp)
+                                    .verticalScroll(rememberScrollState())
                             ) {
+                                Spacer(modifier = Modifier.height(32.dp))
+
                                 Text(
                                     text = "Halo Sobat Glaze",
                                     fontFamily = satoshiMedium,
@@ -159,9 +146,7 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     modifier = Modifier.fillMaxWidth(),
                                     label = { Text("Email", fontFamily = satoshiMedium) },
                                     leadingIcon = { Icon(painterResource(Res.drawable.ic_email), null, Modifier.size(24.dp)) },
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Email
-                                    ),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                                     shape = RoundedCornerShape(10.dp),
                                     singleLine = true,
                                     colors = commonTextFieldColors
@@ -196,7 +181,7 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
 
                                 Button(
                                     onClick = {
-                                        screenModel.login { msg ->
+                                        screenModel.login { _ ->
                                             navigator.replaceAll(MainTabScreen())
                                         }
                                     },
@@ -229,20 +214,27 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                         fontSize = 16.sp
                                     )
                                 }
+
+                                // Padding tambahan di bawah agar scroll tidak mepet Home Indicator
+                                Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
                     }
 
+                    // Tombol Back
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 12.dp, top = 12.dp).align(Alignment.TopStart)
+                        modifier = Modifier
+                            .statusBarsPadding() // JOSJIS: Pastikan tombol tidak tertutup poni/dynamic island
+                            .padding(start = 12.dp, top = 12.dp)
+                            .align(Alignment.TopStart)
                     ) {
                         Icon(Icons.Default.ArrowBackIosNew, "Back", tint = Color.DarkGray, modifier = Modifier.size(20.dp))
                     }
                 }
             }
 
-            // SNACKBAR DI ATAS (Sesuai permintaan)
+            // Snackbar Error
             AnimatedVisibility(
                 visible = screenModel.errorMessage != null,
                 enter = slideInVertically { -it } + fadeIn(),
@@ -251,7 +243,9 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
             ) {
                 screenModel.errorMessage?.let { msg ->
                     Snackbar(
-                        modifier = Modifier.padding(top = 40.dp, start = 16.dp, end = 16.dp),
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                         containerColor = redPrimer,
                         action = {
                             TextButton(onClick = { screenModel.clearError() }) {

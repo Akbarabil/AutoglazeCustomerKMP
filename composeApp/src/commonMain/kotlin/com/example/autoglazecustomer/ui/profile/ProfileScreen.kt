@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.*
@@ -64,10 +65,6 @@ class ProfileScreen(private val authService: AuthService) : Screen {
             screenModel.fetchProfileAndPoints()
         }
 
-        /**
-         * LOGIKA BACK JOSJIS:
-         * Mencegat tombol fisik Android agar kembali ke Home Tab dulu.
-         */
         KmpBackHandler {
             if (tabNavigator.current !is HomeTab) {
                 tabNavigator.current = HomeTab()
@@ -259,7 +256,18 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(name, color = Color.White, fontSize = 22.sp, fontFamily = boldFont)
+                Text(
+                    text = name,
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontFamily = boldFont,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                )
                 Text(email, color = Color.White.copy(0.7f), fontSize = 14.sp, fontFamily = medFont)
             }
         }

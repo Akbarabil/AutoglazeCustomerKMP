@@ -46,7 +46,6 @@ class CheckVehicleScreen : Screen {
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
 
-        // --- KONFIGURASI WARNA FIELD (SAMA DENGAN LOGIN) ---
         val commonTextFieldColors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.DarkGray,
             unfocusedBorderColor = Color.DarkGray,
@@ -61,15 +60,20 @@ class CheckVehicleScreen : Screen {
             unfocusedTextColor = Color.Black
         )
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        // JOSJIS: Tambahkan background putih solid pada Box dasar
+        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+            // Batasi tinggi image agar tidak bocor ke bawah
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.6f),
                 contentScale = ContentScale.Crop
             )
 
-            Scaffold(containerColor = Color.Transparent) { padding ->
+            Scaffold(
+                containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+            ) { padding ->
                 Column(
                     modifier = Modifier.fillMaxSize().padding(padding),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -77,17 +81,24 @@ class CheckVehicleScreen : Screen {
                     Image(
                         painter = painterResource(Res.drawable.img_vehicle_check),
                         contentDescription = null,
-                        modifier = Modifier.padding(top = 80.dp).size(193.dp)
+                        modifier = Modifier.padding(top = 60.dp).size(193.dp)
                     )
 
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                        color = Color.White
+                        color = Color.White,
+                        shadowElevation = 8.dp
                     ) {
                         Column(
-                            modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())
+                            modifier = Modifier
+                                .fillMaxSize()
+                                // JOSJIS: Pastikan putih mentok sampai area navigasi iOS
+                                .windowInsetsPadding(WindowInsets.navigationBars)
+                                .padding(horizontal = 24.dp)
+                                .verticalScroll(rememberScrollState())
                         ) {
+                            Spacer(Modifier.height(32.dp))
                             Text("Cek Data Kendaraan", fontFamily = satoshiMedium, fontSize = 29.sp, color = Color(0xFF9E9E9E))
                             Text("Masukkan info kendaraan & kontak anda", fontFamily = satoshiMedium, fontSize = 16.sp, modifier = Modifier.padding(top = 8.dp, bottom = 32.dp))
 
@@ -129,17 +140,19 @@ class CheckVehicleScreen : Screen {
                                     fontFamily = satoshiBold, color = Color.Black, fontSize = 16.sp
                                 )
                             }
+
+                            Spacer(modifier = Modifier.height(32.dp))
                         }
                     }
                 }
             }
 
-            // --- 1. DIALOG DATA DITEMUKAN (UKURAN LEBIH BESAR & GAGAH) ---
+            // --- 1. DIALOG DATA DITEMUKAN ---
             if (screenModel.vehicleData != null) {
                 val data = screenModel.vehicleData!!
                 Dialog(
                     onDismissRequest = { screenModel.resetState() },
-                    properties = DialogProperties(usePlatformDefaultWidth = false) // Agar bisa fillMaxWidth lebih lega
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
                 ) {
                     Card(
                         modifier = Modifier.fillMaxWidth(0.92f).wrapContentHeight(),
@@ -191,7 +204,7 @@ class CheckVehicleScreen : Screen {
                 }
             }
 
-            // --- 2. DIALOG TIDAK DITEMUKAN (UKURAN DISAMAKAN) ---
+            // --- 2. DIALOG TIDAK DITEMUKAN ---
             if (screenModel.showNotFoundDialog) {
                 Dialog(
                     onDismissRequest = { screenModel.showNotFoundDialog = false },
@@ -230,7 +243,7 @@ class CheckVehicleScreen : Screen {
                 }
             }
 
-            // --- 3. DIALOG ERROR SERVER/KONEKSI ---
+            // --- 3. DIALOG ERROR ---
             if (screenModel.showErrorDialog) {
                 AlertDialog(
                     onDismissRequest = { screenModel.showErrorDialog = false },

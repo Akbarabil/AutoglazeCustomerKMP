@@ -10,24 +10,26 @@ import platform.darwin.NSObject
 
 @Composable
 actual fun rememberPermissionHandler(onResult: (Boolean) -> Unit): PermissionHandler {
-    return remember {
-        object : PermissionHandler {
-            private val locationManager = CLLocationManager()
-
-            private val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
-                override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
-                    val status = manager.authorizationStatus
-                    if (status == kCLAuthorizationStatusAuthorizedWhenInUse ||
-                        status == kCLAuthorizationStatusAuthorizedAlways) {
-                        onResult(true)
-                    } else if (status == kCLAuthorizationStatusDenied) {
-                        onResult(false)
-                    }
+    // Kita simpan delegate-nya di luar agar tidak hilang saat recompose
+    val delegate = remember {
+        object : NSObject(), CLLocationManagerDelegateProtocol {
+            override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
+                val status = manager.authorizationStatus
+                when (status) {
+                    kCLAuthorizationStatusAuthorizedWhenInUse,
+                    kCLAuthorizationStatusAuthorizedAlways -> onResult(true)
+                    kCLAuthorizationStatusDenied,
+                    kCLAuthorizationStatusRestricted -> onResult(false)
+                    else -> {} // Not determined
                 }
             }
+        }
+    }
 
-            init {
-                locationManager.delegate = delegate
+    return remember {
+        object : PermissionHandler {
+            private val locationManager = CLLocationManager().apply {
+                this.delegate = delegate
             }
 
             override fun askPermission() {
@@ -41,9 +43,15 @@ actual fun rememberPermissionHandler(onResult: (Boolean) -> Unit): PermissionHan
             }
 
             override fun openAppSettings() {
-                val url = NSURL.URLWithString(UIApplicationOpenSettingsURLString)
-                if (url != null && UIApplication.sharedApplication.canOpenURL(url)) {
-                    UIApplication.sharedApplication.openURL(url)
+                val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString)
+                if (settingsUrl != null) {
+                    if (UIApplication.sharedApplication.canOpenURL(settingsUrl)) {
+                        UIApplication.sharedApplication.openURL(
+                            url = settingsUrl,
+                            options = emptyMap<Any?, Any?>(),
+                            completionHandler = null
+                        )
+                    }
                 }
             }
         }

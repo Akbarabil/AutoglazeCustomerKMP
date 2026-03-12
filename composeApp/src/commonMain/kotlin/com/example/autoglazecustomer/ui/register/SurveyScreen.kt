@@ -42,14 +42,13 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
         val state = screenModel.state
 
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val redPrimer = Color(0xFFD53B1E)
 
         var expanded by remember { mutableStateOf(false) }
 
-        // Load data survey saat masuk layar
         LaunchedEffect(Unit) { screenModel.initData() }
 
-        // Definisi warna seragam (Sama dengan Register & Login)
         val commonTextFieldColors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.DarkGray,
             unfocusedBorderColor = Color.DarkGray,
@@ -66,42 +65,47 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
             unfocusedTextColor = Color.Black
         )
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            // 1. Background Pattern
+        // JOSJIS: Tambahkan background putih solid untuk mencegah kebocoran iOS
+        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.6f),
                 contentScale = ContentScale.Crop
             )
 
-            // 2. Main Content
-            Scaffold(containerColor = Color.Transparent) { paddingValues ->
+            Scaffold(
+                containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+            ) { paddingValues ->
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Header Image (80.dp)
                         Image(
                             painter = painterResource(Res.drawable.img_berpikir),
                             contentDescription = null,
                             modifier = Modifier
-                                .padding(top = 80.dp)
+                                .padding(top = 60.dp)
                                 .size(193.dp)
                         )
 
-                        // Form Container
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                            color = Color.White
+                            color = Color.White,
+                            shadowElevation = 8.dp
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(24.dp)
+                                    .fillMaxSize()
+                                    .windowInsetsPadding(WindowInsets.navigationBars)
+                                    .padding(horizontal = 24.dp)
                                     .verticalScroll(rememberScrollState())
                             ) {
+                                Spacer(modifier = Modifier.height(32.dp))
+
                                 Text(
                                     text = "Isi survey singkat",
                                     fontFamily = satoshiMedium,
@@ -111,7 +115,6 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
 
                                 Spacer(modifier = Modifier.height(30.dp))
 
-                                // Dropdown Survey
                                 ExposedDropdownMenuBox(
                                     expanded = expanded,
                                     onExpandedChange = { expanded = !expanded }
@@ -127,7 +130,7 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                                             .menuAnchor()
                                             .fillMaxWidth(),
                                         shape = RoundedCornerShape(10.dp),
-                                        colors = commonTextFieldColors // Menggunakan warna seragam
+                                        colors = commonTextFieldColors
                                     )
 
                                     ExposedDropdownMenu(
@@ -149,7 +152,6 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
 
                                 Spacer(modifier = Modifier.height(32.dp))
 
-                                // Tombol Daftar Final
                                 Button(
                                     onClick = { screenModel.registerFinal(dataRegistrasi) },
                                     modifier = Modifier
@@ -164,20 +166,24 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                                     } else {
                                         Text(
                                             text = "Daftar",
-                                            fontFamily = satoshiMedium,
+                                            fontFamily = satoshiBold,
                                             fontSize = 20.sp,
                                             color = Color.White
                                         )
                                     }
                                 }
+
+                                Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
                     }
 
-                    // Back Arrow
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 12.dp, top = 12.dp)
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(start = 12.dp, top = 12.dp)
+                            .align(Alignment.TopStart)
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBackIosNew,
@@ -189,7 +195,7 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                 }
             }
 
-            // --- DIALOG BERHASIL ---
+            // Dialog Berhasil
             if (state.showSuccessDialog) {
                 AlertDialog(
                     onDismissRequest = { },
@@ -198,8 +204,7 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                     title = {
                         Text(
                             text = "Pendaftaran Berhasil",
-                            fontFamily = satoshiMedium,
-                            fontWeight = FontWeight.Bold,
+                            fontFamily = satoshiBold,
                             fontSize = 20.sp,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
@@ -223,13 +228,13 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                             colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("Masuk Sekarang", fontFamily = satoshiMedium, color = Color.White)
+                            Text("Masuk Sekarang", fontFamily = satoshiBold, color = Color.White)
                         }
                     }
                 )
             }
 
-            // --- SNACKBAR ERROR (ANIMASI ATAS) ---
+            // Snackbar Error
             AnimatedVisibility(
                 visible = state.errorMessage != null,
                 enter = slideInVertically { -it } + fadeIn(),
@@ -238,7 +243,9 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
             ) {
                 state.errorMessage?.let { msg ->
                     Snackbar(
-                        modifier = Modifier.padding(top = 40.dp, start = 16.dp, end = 16.dp),
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                         containerColor = redPrimer,
                         action = {
                             TextButton(onClick = { screenModel.clearError() }) {

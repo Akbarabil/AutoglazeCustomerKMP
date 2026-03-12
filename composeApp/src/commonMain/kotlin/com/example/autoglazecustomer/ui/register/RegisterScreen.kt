@@ -73,13 +73,12 @@ class RegisterScreen : Screen {
         var showDatePicker by remember { mutableStateOf(false) }
         var showCountryPicker by remember { mutableStateOf(false) }
 
-        // Konfigurasi warna input seragam (Tanpa Ungu)
         val commonTextFieldColors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.DarkGray,
             unfocusedBorderColor = Color.DarkGray,
             focusedLabelColor = Color.DarkGray,
             unfocusedLabelColor = Color.Gray,
-            cursorColor = Color.DarkGray, // Fix Kursor Ungu
+            cursorColor = Color.DarkGray,
             selectionColors = TextSelectionColors(
                 handleColor = Color.DarkGray,
                 backgroundColor = Color.DarkGray.copy(alpha = 0.4f)
@@ -90,15 +89,19 @@ class RegisterScreen : Screen {
             unfocusedTextColor = Color.Black
         )
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        // JOSJIS: Tambahkan background putih solid untuk mencegah kebocoran iOS
+        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.6f),
                 contentScale = ContentScale.Crop
             )
 
-            Scaffold(containerColor = Color.Transparent) { paddingValues ->
+            Scaffold(
+                containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+            ) { paddingValues ->
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -107,21 +110,27 @@ class RegisterScreen : Screen {
                         Image(
                             painter = painterResource(Res.drawable.img_catat),
                             contentDescription = null,
-                            modifier = Modifier.padding(top = 80.dp).size(193.dp)
+                            modifier = Modifier.padding(top = 60.dp).size(193.dp)
                         )
 
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                            color = Color.White
+                            color = Color.White,
+                            shadowElevation = 8.dp
                         ) {
                             Column(
-                                modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    // JOSJIS: Menutup area bawah iOS dengan warna putih
+                                    .windowInsetsPadding(WindowInsets.navigationBars)
+                                    .padding(horizontal = 24.dp)
+                                    .verticalScroll(rememberScrollState())
                             ) {
+                                Spacer(modifier = Modifier.height(32.dp))
                                 Text("Yuk, daftar dulu", fontFamily = satoshiMedium, fontSize = 28.sp, color = Color(0xFF9E9E9E))
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                // Nama
                                 RegisterTextField(
                                     value = state.nama,
                                     onValueChange = { screenModel.onNamaChange(it) },
@@ -132,7 +141,6 @@ class RegisterScreen : Screen {
                                     colors = commonTextFieldColors
                                 )
 
-                                // Email
                                 RegisterTextField(
                                     value = state.email,
                                     onValueChange = { screenModel.onEmailChange(it) },
@@ -144,7 +152,6 @@ class RegisterScreen : Screen {
                                     colors = commonTextFieldColors
                                 )
 
-                                // Tanggal Lahir
                                 Box(modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp)) {
                                     OutlinedTextField(
                                         value = state.tglLahir,
@@ -160,7 +167,6 @@ class RegisterScreen : Screen {
                                     Box(modifier = Modifier.matchParentSize().clickable { showDatePicker = true })
                                 }
 
-                                // WhatsApp (International Style)
                                 OutlinedTextField(
                                     value = state.phone,
                                     onValueChange = { screenModel.onPhoneChange(it) },
@@ -185,7 +191,6 @@ class RegisterScreen : Screen {
                                     colors = commonTextFieldColors
                                 )
 
-                                // Password
                                 OutlinedTextField(
                                     value = state.password,
                                     onValueChange = { screenModel.onPasswordChange(it) },
@@ -207,7 +212,9 @@ class RegisterScreen : Screen {
 
                                 Button(
                                     onClick = {
-                                        screenModel.validateAndCheckEmail { navigator.push(RegisterVehicleScreen(it)) }
+                                        screenModel.validateAndCheckEmail {
+                                             navigator.push(RegisterVehicleScreen(it))
+                                        }
                                     },
                                     modifier = Modifier.fillMaxWidth().height(56.dp),
                                     shape = RoundedCornerShape(10.dp),
@@ -227,17 +234,24 @@ class RegisterScreen : Screen {
                                     Text("Sudah punya akun? ", fontFamily = satoshiMedium, color = Color(0xFFBDBDBD))
                                     Text("Masuk", modifier = Modifier.clickable { navigator.pop() }, fontWeight = FontWeight.Bold, color = redPrimer)
                                 }
+
+                                Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
                     }
 
-                    IconButton(onClick = { navigator.pop() }, modifier = Modifier.align(Alignment.TopStart).padding(start = 8.dp, top = 8.dp)) {
+                    IconButton(
+                        onClick = { navigator.pop() },
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .align(Alignment.TopStart)
+                            .padding(start = 8.dp, top = 8.dp)
+                    ) {
                         Icon(Icons.Default.ArrowBackIosNew, "Back", tint = Color.DarkGray, modifier = Modifier.size(20.dp))
                     }
                 }
             }
 
-            // SNACKBAR (Atas)
             AnimatedVisibility(
                 visible = state.errorMessage != null,
                 enter = slideInVertically { -it } + fadeIn(),
@@ -246,14 +260,13 @@ class RegisterScreen : Screen {
             ) {
                 state.errorMessage?.let { msg ->
                     Snackbar(
-                        modifier = Modifier.padding(top = 40.dp, start = 16.dp, end = 16.dp),
+                        modifier = Modifier.statusBarsPadding().padding(top = 16.dp, start = 16.dp, end = 16.dp),
                         containerColor = redPrimer,
                         action = { TextButton(onClick = { screenModel.clearError() }) { Text("OK", color = Color.White) } }
                     ) { Text(msg, color = Color.White) }
                 }
             }
 
-            // Country Picker
             if (showCountryPicker) {
                 CountryPickerDialog(
                     onDismiss = { showCountryPicker = false },
@@ -264,7 +277,6 @@ class RegisterScreen : Screen {
                 )
             }
 
-            // Date Picker (Background Putih)
             if (showDatePicker) {
                 DatePickerDialog(
                     onDismissRequest = { showDatePicker = false },

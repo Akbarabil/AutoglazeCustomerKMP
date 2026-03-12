@@ -45,6 +45,7 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
         val state = screenModel.state
 
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val redPrimer = Color(0xFFD53B1E)
         val yearList = remember { (2000..2026).map { it.toString() }.reversed() }
 
@@ -66,15 +67,19 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
 
         LaunchedEffect(Unit) { screenModel.initData() }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        // JOSJIS: Tambahkan background putih solid untuk mencegah kebocoran iOS
+        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.6f),
                 contentScale = ContentScale.Crop
             )
 
-            Scaffold(containerColor = Color.Transparent) { paddingValues ->
+            Scaffold(
+                containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+            ) { paddingValues ->
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -84,20 +89,25 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                             painter = painterResource(Res.drawable.img_vehicle_check),
                             contentDescription = null,
                             modifier = Modifier
-                                .padding(top = 80.dp)
+                                .padding(top = 60.dp)
                                 .size(193.dp)
                         )
 
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                            color = Color.White
+                            color = Color.White,
+                            shadowElevation = 8.dp
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(24.dp)
+                                    .fillMaxSize()
+                                    .windowInsetsPadding(WindowInsets.navigationBars)
+                                    .padding(horizontal = 24.dp)
                                     .verticalScroll(rememberScrollState())
                             ) {
+                                Spacer(modifier = Modifier.height(32.dp))
+
                                 Text(
                                     text = "Isi data kendaraanmu",
                                     fontFamily = satoshiMedium,
@@ -107,7 +117,6 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
 
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                // MERK MOBIL
                                 SearchableDropdown(
                                     label = "Merk Mobil",
                                     items = state.listMerek,
@@ -144,16 +153,14 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                             getLabel = { it },
                                             onItemSelected = { selected -> screenModel.onTahunSelected(selected) },
                                             satoshiMedium = satoshiMedium,
-                                            enabled = state.tipeTerpilih != null, // Baru aktif jika tipe dipilih
+                                            enabled = state.tipeTerpilih != null,
                                             isError = state.errorField == "tahun"
                                         )
                                     }
                                 }
 
-                                // SPACING KONSISTEN
                                 Spacer(modifier = Modifier.height(14.dp))
 
-                                // NOMOR POLISI
                                 OutlinedTextField(
                                     value = state.nopol,
                                     onValueChange = { screenModel.onNopolChange(it) },
@@ -167,7 +174,6 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                     singleLine = true
                                 )
 
-                                // NOMOR RANGKA
                                 OutlinedTextField(
                                     value = state.noRangka,
                                     onValueChange = { screenModel.onNoRangkaChange(it) },
@@ -216,13 +222,18 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                         Text("Selanjutnya", fontFamily = satoshiMedium, fontSize = 20.sp, color = Color.White)
                                     }
                                 }
+
+                                Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
                     }
 
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 12.dp, top = 12.dp)
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(start = 12.dp, top = 12.dp)
+                            .align(Alignment.TopStart)
                     ) {
                         Icon(Icons.Default.ArrowBackIosNew, "Kembali", tint = Color.DarkGray, modifier = Modifier.size(24.dp))
                     }
@@ -239,7 +250,9 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
             ) {
                 state.errorMessage?.let { msg ->
                     Snackbar(
-                        modifier = Modifier.padding(top = 40.dp, start = 16.dp, end = 16.dp),
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                         containerColor = redPrimer,
                         action = { TextButton(onClick = { screenModel.clearError() }) { Text("OK", color = Color.White) } }
                     ) { Text(msg, color = Color.White) }
