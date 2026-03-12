@@ -51,5 +51,8 @@
     <string>Autoglaze memerlukan akses ke galeri untuk memilih foto profil Anda.</string>
     <key>NSCameraUsageDescription</key>
     <string>Autoglaze memerlukan akses kamera untuk mengambil foto profil Anda secara langsung.</string>
+
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Autoglaze memerlukan akses lokasi untuk menampilkan daftar cabang terdekat dari posisi Anda saat ini.</string>
 </dict>
 </plist>

@@ -32,6 +32,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
             implementation("io.ktor:ktor-client-cio:2.3.12")
+            implementation(libs.play.services.location)
+            implementation(libs.kotlinx.coroutines.play.services)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)

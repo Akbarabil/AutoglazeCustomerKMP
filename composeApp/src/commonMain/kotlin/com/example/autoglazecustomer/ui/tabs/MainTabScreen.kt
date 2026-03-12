@@ -26,14 +26,12 @@ import com.example.autoglazecustomer.ui.tabs.ProfileTab
 class MainTabScreen : Screen {
     @Composable
     override fun Content() {
-        // 1. Inisialisasi Tab (Semua pakai remember agar stabil)
+        // 1. Inisialisasi Tab secara stabil
         val homeTab = remember { HomeTab() }
+        val transactionTab = remember { TransactionTab() } // Menggunakan tab asli
         val cartTab = remember { CartTab() }
-        val profileTab = remember { ProfileTab() } // Class ProfileTab Anda
-        val placeholderTab = remember { PlaceholderTab }
+        val profileTab = remember { ProfileTab() }
 
-        // 2. PERBAIKAN: TabNavigator hanya menerima satu argumen (tab awal)
-        // Jangan tambahkan variabel di dalam { } agar tidak dianggap DeepRecursiveFunction
         TabNavigator(homeTab) {
             Scaffold(
                 bottomBar = {
@@ -42,13 +40,12 @@ class MainTabScreen : Screen {
                         tonalElevation = 8.dp
                     ) {
                         TabNavigationItem(homeTab)
-                        TabNavigationItem(placeholderTab.copyOptions(1u, "Transaction"))
+                        TabNavigationItem(transactionTab)
                         TabNavigationItem(cartTab)
                         TabNavigationItem(profileTab)
                     }
                 }
             ) { paddingValues ->
-                // Solusi Anti-Jidad
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

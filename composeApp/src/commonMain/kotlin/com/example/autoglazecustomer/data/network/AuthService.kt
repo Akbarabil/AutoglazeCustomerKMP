@@ -3,6 +3,7 @@ package com.example.autoglazecustomer.data.network
 import com.example.autoglazecustomer.data.model.*
 import com.example.autoglazecustomer.data.model.HistoryResponse
 import com.example.autoglazecustomer.data.model.password.RequestPasswordResponse
+import com.example.autoglazecustomer.data.model.transaction.CabangTerdekatResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -247,6 +248,15 @@ class AuthService {
                     append(key, value)
                 }
             }))
+        }.body()
+    }
+
+    suspend fun getCabangTerdekat(longitude: Double, latitude: Double): CabangTerdekatResponse {
+        return client.get("cabang-by-long-lat") {
+            url {
+                parameters.append("long", longitude.toString())
+                parameters.append("lat", latitude.toString())
+            }
         }.body()
     }
 }

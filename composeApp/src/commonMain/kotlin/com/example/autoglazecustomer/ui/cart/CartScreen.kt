@@ -41,6 +41,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 class CartScreen(private val authService: AuthService) : Screen {
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val screenModel = rememberScreenModel { CartScreenModel(authService) }
@@ -63,7 +64,6 @@ class CartScreen(private val authService: AuthService) : Screen {
             }
         }
 
-        // --- JURUS JOSJIS: Reset Selection jika hasil filter kosong ---
         LaunchedEffect(filteredVehicles) {
             if (filteredVehicles.isEmpty() && searchQuery.isNotEmpty()) {
                 screenModel.selectedVehicle = null
@@ -81,31 +81,28 @@ class CartScreen(private val authService: AuthService) : Screen {
 
         Scaffold(
             topBar = {
-                // Menghilangkan shadow elevation (0.dp)
-                Surface(shadowElevation = 0.dp) {
-                    Box(
-                        modifier = Modifier
-                            .statusBarsPadding()
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        IconButton(
-                            onClick = {
-                                if (tabNavigator.current !is HomeTab) {
-                                    tabNavigator.current = HomeTab()
-                                } else if (navigator.canPop) {
-                                    navigator.pop()
-                                }
-                            },
-                            modifier = Modifier.align(Alignment.CenterStart).padding(start = 8.dp)
-                        ) {
-                            Icon(Icons.Default.ArrowBackIosNew, null, modifier = Modifier.size(20.dp))
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text("Riwayat Pesanan", fontFamily = satoshiBold, fontSize = 18.sp)
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            if (tabNavigator.current !is HomeTab) {
+                                tabNavigator.current = HomeTab()
+                            } else if (navigator.canPop) {
+                                navigator.pop()
+                            }
+                        }) {
+                            Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Kembali", modifier = Modifier.size(20.dp))
                         }
-                        Text("Riwayat Pesanan", fontFamily = satoshiBold, fontSize = 19.sp)
-                    }
-                }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.White,
+                        titleContentColor = Color.Black,
+                        navigationIconContentColor = Color.Black
+                    ),
+                    windowInsets = WindowInsets.statusBars
+                )
             },
             containerColor = Color(0xFFFBFBFB)
         ) { padding ->
@@ -115,29 +112,32 @@ class CartScreen(private val authService: AuthService) : Screen {
                 Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
                     Text("Cari Kendaraan", fontFamily = satoshiBold, fontSize = 14.sp)
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Ketik Nomor Polisi atau Merk", fontSize = 14.sp, fontFamily = satoshiMedium) },
-                        leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(20.dp)) },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Close, null, modifier = Modifier.size(20.dp))
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Ketik Nomor Polisi atau Merk", fontSize = 14.sp, fontFamily = satoshiMedium) },
+                            leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray, modifier = Modifier.size(20.dp)) },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { searchQuery = "" }) {
+                                        Icon(Icons.Default.Close, null, modifier = Modifier.size(20.dp))
+                                    }
                                 }
-                            }
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = redPrimer,
-                            unfocusedBorderColor = Color(0xFFE0E0E0),
-                            cursorColor = redPrimer
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                focusedBorderColor = redPrimer,
+                                unfocusedBorderColor = Color(0xFFE0E0E0),
+                                cursorColor = redPrimer
+                            )
                         )
-                    )
+                    }
                 }
 
                 // --- 2. HORIZONTAL VEHICLE SELECTOR ---
@@ -156,7 +156,6 @@ class CartScreen(private val authService: AuthService) : Screen {
                                 shape = RoundedCornerShape(12.dp),
                                 color = if (isSelected) redPrimer else Color.White,
                                 border = BorderStroke(1.dp, if (isSelected) redPrimer else Color(0xFFEEEEEE)),
-                                // Menghapus shadow (0.dp)
                                 shadowElevation = 0.dp
                             ) {
                                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
@@ -198,7 +197,6 @@ class CartScreen(private val authService: AuthService) : Screen {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.White,
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                    // Menghapus shadow (0.dp)
                     shadowElevation = 0.dp
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
@@ -247,7 +245,7 @@ class CartScreen(private val authService: AuthService) : Screen {
         }
     }
 
-    // --- FUNGSI PENDUKUNG (TETAP SAMA) ---
+    // --- FUNGSI PENDUKUNG ---
 
     @OptIn(ExperimentalEncodingApi::class)
     @Composable

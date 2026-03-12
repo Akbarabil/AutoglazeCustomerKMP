@@ -15,6 +15,8 @@ kotlin = "2.3.0"
 material3 = "1.10.0-alpha05"
 voyager = "1.1.0-beta02"
 multiplatformSettings = "1.2.0"
+playServicesLocation = "21.1.0"
+kotlinxCoroutinesPlayServices = "1.8.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -39,6 +41,8 @@ voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", vers
 voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
 voyager-tab = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
