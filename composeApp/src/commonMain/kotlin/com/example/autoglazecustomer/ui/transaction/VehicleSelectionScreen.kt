@@ -214,7 +214,7 @@ class VehicleSelectionScreen(
                         text = item.membershipStatusText,
                         fontFamily = bold,
                         fontSize = 12.sp,
-                        color = if (item.membershipStatusInt > 0) redPrimer else if (item.membershipStatusText == "Mengecek status...") Color.LightGray else Color.Gray
+                        color = if (item.membershipStatusInt > 0) redPrimer else if (item.membershipStatusText == "Memeriksa status...") Color.LightGray else Color.Gray
                     )
                 }
 

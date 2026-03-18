@@ -4,7 +4,9 @@ import com.example.autoglazecustomer.data.model.*
 import com.example.autoglazecustomer.data.model.HistoryResponse
 import com.example.autoglazecustomer.data.model.password.RequestPasswordResponse
 import com.example.autoglazecustomer.data.model.transaction.CabangTerdekatResponse
+import com.example.autoglazecustomer.data.model.transaction.MembershipCarwashCheckResponse
 import com.example.autoglazecustomer.data.model.transaction.MembershipStatusResponse
+import com.example.autoglazecustomer.data.model.transaction.jasa.JasaResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -14,7 +16,11 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
+
 
 class AuthService {
     private val BASE_URL = "https://autoglaze-canary.digiponic.co.id/api/"
@@ -276,4 +282,37 @@ class AuthService {
             0 // Kembalikan 0 (Non-Membership) jika API gagal/timeout agar aplikasi tidak crash
         }
     }
+
+    suspend fun getAllServices(kodeCabang: String): JasaResponse {
+        return try {
+            client.get("get-all-produk-services") {
+                url {
+                    parameters.append("kode_cabang", kodeCabang)
+                }
+            }.body()
+        } catch (e: Exception) {
+            JasaResponse(status = false, message = "Gagal memuat layanan: ${e.message}", data = emptyList())
+        }
+    }
+
+    suspend fun checkMembershipCarwash(idKendaraan: Int): MembershipCarwashCheckResponse {
+        val now = kotlin.time.Clock.System.now()
+        val instant = Instant.fromEpochMilliseconds(now.toEpochMilliseconds())
+        val timeZone = TimeZone.currentSystemDefault()
+        val today = instant.toLocalDateTime(timeZone).date
+
+        val tglTransaksi = today.toString()
+
+        return try {
+            client.get("check-membership-carwash") {
+                url {
+                    parameters.append("id_kendaraan", idKendaraan.toString())
+                    parameters.append("tgl_transaksi", tglTransaksi)
+                }
+            }.body()
+        } catch (e: Exception) {
+            MembershipCarwashCheckResponse(status = false, message = "Gagal cek status carwash: ${e.message}", data = emptyList())
+        }
+    }
+
 }

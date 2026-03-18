@@ -34,6 +34,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.MenuGridCategory
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
+import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.transaction.jasa.JasaListScreen
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -49,6 +51,7 @@ class MenuTransactionScreen(
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
+        val authService = remember { AuthService() }
 
         val menus = remember {
             val list = mutableListOf(
@@ -109,7 +112,11 @@ class MenuTransactionScreen(
                     }
                 ) { menu ->
                     MenuGridItem(menu, satoshiBold, redPrimer) {
-                        // Action navigasi di sini
+                        when (menu.id) {
+                            "JASA" -> navigator.push(JasaListScreen(cabang, vehicle, authService))
+                            "PRODUK" -> { /* TODO: Arahkan ke ProdukListScreen */ }
+                            "MEMBER" -> { /* TODO: Arahkan ke MemberListScreen */ }
+                        }
                     }
                 }
             }
@@ -175,7 +182,7 @@ class MenuTransactionScreen(
                     Image(
                         painter = painterResource(menu.icon),
                         contentDescription = null,
-                        modifier = Modifier.size(54.dp), // Konsisten besar ikon
+                        modifier = Modifier.size(54.dp),
                         contentScale = ContentScale.Fit
                     )
                     Spacer(Modifier.width(20.dp))

@@ -54,7 +54,7 @@ class VehicleSelectionScreenModel(
                 }
 
                 vehicleList = vehicles.map {
-                    VehicleWithStatus(it, "Mengecek status...", 0)
+                    VehicleWithStatus(it, "Memeriksa status...", 0)
                 }
 
                 isLoading = false
