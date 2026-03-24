@@ -1,0 +1,193 @@
+package com.example.autoglazecustomer.ui.transaction.produk
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import autoglazecustomer.composeapp.generated.resources.*
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import coil3.compose.AsyncImage
+import com.example.autoglazecustomer.data.model.transaction.CabangData
+import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
+import com.example.autoglazecustomer.data.model.transaction.produk.ProdukItem
+import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.painterResource
+
+class ProdukDetailScreen(
+    private val item: ProdukItem,
+    private val cabang: CabangData,
+    private val vehicle: VehicleWithStatus
+) : Screen {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val scrollState = rememberScrollState()
+
+        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
+        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val redPrimer = Color(0xFFD53B1E)
+        val bgLight = Color(0xFFF8F9FA)
+
+        // Kalkulasi Harga (Disamakan dengan field KMP yang baru)
+        val originalPrice = item.hargaNonMember
+        val finalPrice = when (vehicle.membershipStatusInt) {
+            1 -> item.hargaExpress
+            2 -> item.hargaCarwash
+            3 -> item.hargaDual
+            4 -> item.hargaVIP
+            else -> originalPrice
+        }
+
+        val cleanDescription = parseHtml(item.deskripsi ?: "Tidak ada deskripsi tambahan untuk produk ini.")
+
+        Box(modifier = Modifier.fillMaxSize().background(bgLight)) {
+            // 1. Gambar Parallax
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+                    .graphicsLayer { translationY = scrollState.value * 0.4f }
+            ) {
+                AsyncImage(
+                    model = item.gambarUrl,
+                    contentDescription = item.namaProduk,
+                    modifier = Modifier.fillMaxSize().background(Color.White),
+                    contentScale = ContentScale.Crop, // Ganti ke ContentScale.Fit jika gambarnya sering kepotong
+                    error = painterResource(Res.drawable.dummy_promo_dark)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp)
+                        .background(Brush.verticalGradient(listOf(Color.Black.copy(0.7f), Color.Transparent)))
+                        .align(Alignment.TopCenter)
+                )
+            }
+
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                Spacer(modifier = Modifier.height(340.dp))
+
+                Surface(
+                    modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 500.dp),
+                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                    color = Color.White
+                ) {
+                    Column(modifier = Modifier.padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)) {
+
+                        // Pull bar
+                        Box(
+                            modifier = Modifier.width(40.dp).height(4.dp).clip(CircleShape).background(Color(0xFFE0E0E0)).align(Alignment.CenterHorizontally)
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        // Judul
+                        Text(item.namaProduk, fontFamily = satoshiBold, fontSize = 26.sp, color = Color(0xFF1A1A1A), lineHeight = 34.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Info Diskon Member
+                        if (finalPrice < originalPrice) {
+                            Row(
+                                modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(redPrimer.copy(alpha = 0.08f)).padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Verified, null, tint = redPrimer, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Harga Member", fontFamily = satoshiMedium, color = redPrimer, fontSize = 13.sp)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(28.dp))
+                        HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 1.dp)
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Deskripsi
+                        Text("Detail Produk", fontFamily = satoshiBold, color = Color.Black, fontSize = 18.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(cleanDescription, fontFamily = satoshiMedium, color = Color(0xFF555555), fontSize = 15.sp, lineHeight = 24.sp)
+
+                        Spacer(modifier = Modifier.height(130.dp))
+                    }
+                }
+            }
+
+            IconButton(
+                onClick = { navigator.pop() },
+                modifier = Modifier.statusBarsPadding().padding(start = 16.dp, top = 8.dp).shadow(4.dp, CircleShape).clip(CircleShape).background(Color.White).size(42.dp)
+            ) {
+                Icon(Icons.Default.ArrowBackIosNew, "Kembali", tint = Color.Black, modifier = Modifier.size(18.dp).padding(end = 2.dp))
+            }
+
+            // 4. Bottom Bar Keranjang
+            Box(
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0f), Color.White.copy(alpha = 0.8f), Color.White), startY = 0f, endY = 100f))
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp).windowInsetsPadding(WindowInsets.navigationBars)
+                        .shadow(16.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.15f)),
+                    shape = RoundedCornerShape(24.dp), color = Color.White
+                ) {
+                    Row(
+                        modifier = Modifier.padding(start = 20.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            Text("Total Harga", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 12.sp)
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                Text(formatRupiah(finalPrice), fontFamily = satoshiBold, color = redPrimer, fontSize = 20.sp)
+                                if (finalPrice < originalPrice) {
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(formatRupiah(originalPrice), fontFamily = satoshiMedium, color = Color.LightGray, fontSize = 12.sp, textDecoration = TextDecoration.LineThrough, modifier = Modifier.padding(bottom = 3.dp))
+                                }
+                            }
+                        }
+                        Button(
+                            onClick = { /* TODO Nanti Arahkan Ke Cart Bottom Sheet */ },
+                            modifier = Modifier.height(52.dp), shape = RoundedCornerShape(16.dp), contentPadding = PaddingValues(horizontal = 20.dp), colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+                        ) {
+                            Icon(Icons.Default.ShoppingCart, null, modifier = Modifier.size(18.dp), tint = Color.White)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Keranjang", fontFamily = satoshiBold, fontSize = 15.sp, color = Color.White)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun formatRupiah(amount: Double): String {
+        val absoluteAmount = kotlin.math.abs(amount).toLong()
+        val formattedNumber = absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
+        val sign = if (amount < 0) "-" else ""
+        return "${sign}Rp $formattedNumber"
+    }
+
+    private fun parseHtml(html: String): String {
+        return html.replace(Regex("<br\\s*?/?>", RegexOption.IGNORE_CASE), "\n").replace(Regex("</p>\\s*<p>", RegexOption.IGNORE_CASE), "\n\n").replace(Regex("<[^>]*>"), "").replace("&nbsp;", " ").replace("&amp;", "&").trim()
+    }
+}

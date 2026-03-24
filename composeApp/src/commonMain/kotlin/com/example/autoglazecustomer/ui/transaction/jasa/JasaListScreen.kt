@@ -99,7 +99,7 @@ class JasaListScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 20.dp, vertical = 8.dp)
                                     .height(54.dp),
-                                placeholder = { Text("Ketik layanan yang diinginkan", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 15.sp) },
+                                placeholder = { Text("Ketik nama layanan", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 15.sp) },
                                 leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray) },
                                 shape = RoundedCornerShape(16.dp),
                                 singleLine = true,

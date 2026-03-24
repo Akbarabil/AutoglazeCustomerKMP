@@ -14,7 +14,7 @@ data class LayananItem(
     @SerialName("ID_PRODUK") val idProduk: Int,
     @SerialName("NAMA_PRODUK") val namaProduk: String,
     @SerialName("GAMBAR") val gambarUrl: String? = null,
-    @SerialName("DURASI_PENGERJAAN") val durasiMenit: Int,
+    @SerialName("DURASI_PENGERJAAN") val durasiMenit: Int? = 0,
     @SerialName("ID_KATEGORI") val idKategori: Int,
     @SerialName("KATEGORI") val KATEGORI: String,
     @SerialName("HARGA_JUAL") val hargaJual: Double,

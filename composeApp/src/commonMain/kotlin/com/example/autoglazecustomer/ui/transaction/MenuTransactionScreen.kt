@@ -36,6 +36,8 @@ import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.transaction.jasa.JasaListScreen
+import com.example.autoglazecustomer.ui.transaction.membership.MembershipListScreen
+import com.example.autoglazecustomer.ui.transaction.produk.ProdukListScreen
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -114,8 +116,8 @@ class MenuTransactionScreen(
                     MenuGridItem(menu, satoshiBold, redPrimer) {
                         when (menu.id) {
                             "JASA" -> navigator.push(JasaListScreen(cabang, vehicle, authService))
-                            "PRODUK" -> { /* TODO: Arahkan ke ProdukListScreen */ }
-                            "MEMBER" -> { /* TODO: Arahkan ke MemberListScreen */ }
+                            "PRODUK" -> navigator.push(ProdukListScreen(cabang,vehicle,authService))
+                            "MEMBER" -> navigator.push(MembershipListScreen(cabang, authService))
                         }
                     }
                 }

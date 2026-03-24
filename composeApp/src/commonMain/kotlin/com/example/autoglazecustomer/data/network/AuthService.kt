@@ -7,6 +7,8 @@ import com.example.autoglazecustomer.data.model.transaction.CabangTerdekatRespon
 import com.example.autoglazecustomer.data.model.transaction.MembershipCarwashCheckResponse
 import com.example.autoglazecustomer.data.model.transaction.MembershipStatusResponse
 import com.example.autoglazecustomer.data.model.transaction.jasa.JasaResponse
+import com.example.autoglazecustomer.data.model.transaction.membership.MembershipResponse
+import com.example.autoglazecustomer.data.model.transaction.produk.ProdukResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -312,6 +314,30 @@ class AuthService {
             }.body()
         } catch (e: Exception) {
             MembershipCarwashCheckResponse(status = false, message = "Gagal cek status carwash: ${e.message}", data = emptyList())
+        }
+    }
+
+    suspend fun getProduk(kodeCabang: String): ProdukResponse {
+        return try {
+            client.get("get-only-produk") {
+                url {
+                    parameters.append("kode_cabang", kodeCabang)
+                }
+            }.body()
+        } catch (e: Exception) {
+            ProdukResponse(status = false, message = "Gagal memuat produk: ${e.message}", data = emptyList())
+        }
+    }
+
+    suspend fun getMembership(kodeCabang: String): MembershipResponse {
+        return try {
+            client.get("get-all-membership") {
+                url {
+                    parameters.append("kode_cabang", kodeCabang)
+                }
+            }.body()
+        } catch (e: Exception) {
+            MembershipResponse(status = false, data = emptyList())
         }
     }
 
