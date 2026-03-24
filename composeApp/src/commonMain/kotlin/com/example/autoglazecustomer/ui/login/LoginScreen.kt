@@ -16,6 +16,8 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -145,7 +147,7 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     onValueChange = { screenModel.onEmailChange(it) },
                                     modifier = Modifier.fillMaxWidth(),
                                     label = { Text("Email", fontFamily = satoshiMedium) },
-                                    leadingIcon = { Icon(painterResource(Res.drawable.ic_email), null, Modifier.size(24.dp)) },
+                                    leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = "Email Icon", Modifier.size(24.dp)) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                                     shape = RoundedCornerShape(10.dp),
                                     singleLine = true,
@@ -160,7 +162,7 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     modifier = Modifier.fillMaxWidth(),
                                     label = { Text("Password", fontFamily = satoshiMedium) },
                                     visualTransformation = if (screenModel.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                    leadingIcon = { Icon(painterResource(Res.drawable.ic_password), null, Modifier.size(24.dp)) },
+                                    leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = "Password Icon", Modifier.size(24.dp)) },
                                     trailingIcon = {
                                         IconButton(onClick = { screenModel.togglePasswordVisibility() }) {
                                             Icon(

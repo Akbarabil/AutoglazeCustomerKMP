@@ -5,14 +5,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -85,35 +85,42 @@ class MenuTransactionScreen(
                     windowInsets = WindowInsets.statusBars
                 )
             },
-            containerColor = Color.White
+            containerColor = Color(0xFFFBFBFB)
         ) { padding ->
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+            // JOSJIS: Menggunakan LazyColumn (List Vertikal) bukan Grid
+            LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(24.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item(span = { GridItemSpan(2) }) {
+                item {
                     TransactionInfoBanner(cabang, vehicle, satoshiBold, satoshiMedium, redPrimer)
+                    Spacer(Modifier.height(16.dp))
                 }
 
-                item(span = { GridItemSpan(2) }) {
-                    Column(modifier = Modifier.padding(top = 8.dp)) {
+                item {
+                    Column {
                         Text("Apa yang Anda butuhkan?", fontFamily = satoshiBold, fontSize = 20.sp, color = Color.Black)
                         Text("Pilih kategori layanan di bawah ini", fontFamily = satoshiMedium, fontSize = 14.sp, color = Color.Gray)
                         Spacer(Modifier.height(8.dp))
                     }
                 }
 
-                items(
-                    items = menus,
-                    key = { it.id },
-                    span = { menu ->
-                        GridItemSpan(if (menu.id == "MEMBER") 2 else 1)
+                items(items = menus, key = { it.id }) { menu ->
+                    val subtitle = when(menu.id) {
+                        "JASA" -> "Pilih layanan cuci dan detailing"
+                        "PRODUK" -> "Beli perlengkapan & produk perawatan"
+                        "MEMBER" -> "Nikmati harga khusus & promo"
+                        else -> ""
                     }
-                ) { menu ->
-                    MenuGridItem(menu, satoshiBold, redPrimer) {
+
+                    MenuListItem(
+                        menu = menu,
+                        subtitle = subtitle,
+                        bold = satoshiBold,
+                        med = satoshiMedium,
+                        accent = redPrimer
+                    ) {
                         when (menu.id) {
                             "JASA" -> navigator.push(JasaListScreen(cabang, vehicle, authService))
                             "PRODUK" -> navigator.push(ProdukListScreen(cabang,vehicle,authService))
@@ -136,6 +143,7 @@ class MenuTransactionScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .shadow(elevation = 8.dp, shape = RoundedCornerShape(20.dp), spotColor = accent.copy(alpha = 0.5f))
                 .clip(RoundedCornerShape(20.dp))
                 .background(Brush.horizontalGradient(listOf(accent, Color(0xFF9E2A15))))
                 .padding(20.dp)
@@ -161,61 +169,75 @@ class MenuTransactionScreen(
     }
 
     @Composable
-    private fun MenuGridItem(
+    private fun MenuListItem(
         menu: MenuGridCategory,
+        subtitle: String,
         bold: FontFamily,
+        med: FontFamily,
         accent: Color,
         onClick: () -> Unit
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(if (menu.id == "MEMBER") 110.dp else 160.dp)
+                .shadow(elevation = 6.dp, shape = RoundedCornerShape(20.dp), spotColor = Color.Black.copy(alpha = 0.08f))
+                .clip(RoundedCornerShape(20.dp))
                 .clickable { onClick() },
-            shape = RoundedCornerShape(24.dp),
-            color = accent.copy(alpha = 0.04f),
-            border = BorderStroke(1.dp, accent.copy(alpha = 0.15f))
+            color = Color.White,
+            border = BorderStroke(1.dp, Color(0xFFF0F0F0))
         ) {
-            if (menu.id == "MEMBER") {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp, horizontal = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(menu.icon),
-                        contentDescription = null,
-                        modifier = Modifier.size(54.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                    Spacer(Modifier.width(20.dp))
-                    Text(
-                        text = menu.title,
-                        fontFamily = bold,
-                        fontSize = 17.sp, // Konsisten ukuran teks
-                        color = Color.Black
-                    )
+
+                    Surface(
+                        shape = CircleShape,
+                        color = accent.copy(alpha = 0.08f),
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Image(
+                                painter = painterResource(menu.icon),
+                                contentDescription = null,
+                                modifier = Modifier.size(30.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.width(16.dp))
+
+                    Column {
+                        Text(
+                            text = menu.title,
+                            fontFamily = bold,
+                            fontSize = 17.sp,
+                            color = Color(0xFF1A1A1A)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = subtitle,
+                            fontFamily = med,
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                    }
                 }
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(24.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Image(
-                        painter = painterResource(menu.icon),
-                        contentDescription = null,
-                        modifier = Modifier.size(54.dp), // Konsisten besar ikon
-                        contentScale = ContentScale.Fit
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        text = menu.title,
-                        fontFamily = bold,
-                        fontSize = 17.sp, // Konsisten ukuran teks
-                        lineHeight = 22.sp,
-                        color = Color.Black
-                    )
-                }
+
+                Icon(
+                    imageVector = Icons.Default.ArrowForwardIos,
+                    contentDescription = null,
+                    tint = Color(0xFFD3D3D3),
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }

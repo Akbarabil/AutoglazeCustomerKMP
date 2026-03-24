@@ -1,6 +1,7 @@
 package com.example.autoglazecustomer.ui.transaction.membership
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -150,74 +151,116 @@ class MembershipListScreen(
         brandRed: Color,
         onClick: () -> Unit
     ) {
-        // Kartu Putih yang Konsisten dengan Jasa/Produk
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(elevation = 6.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.08f))
-                .clip(RoundedCornerShape(16.dp))
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.05f)
+                )
+                .clip(RoundedCornerShape(20.dp))
+                .border(
+                    width = 1.dp,
+                    color = Color(0xFFF0F0F0),
+                    shape = RoundedCornerShape(20.dp)
+                )
                 .clickable { onClick() },
             color = Color.White
         ) {
-            Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                // Watermark Badge di Latar Belakang agar tidak terlalu polos
-                Icon(
-                    imageVector = Icons.Default.WorkspacePremium,
-                    contentDescription = null,
-                    tint = Color(0xFFF0F0F0), // Abu-abu sangat muda
-                    modifier = Modifier.size(100.dp).align(Alignment.BottomEnd).offset(x = 10.dp, y = 10.dp)
-                )
-
-                Column {
-                    // Row atas: Nama dan Label Bulan
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top // Top agar teks yang turun ke bawah tidak membuat badge ikut turun
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = brandRed.copy(alpha = 0.08f),
+                        modifier = Modifier.size(52.dp)
                     ) {
-                        Text(
-                            text = item.namaMembership,
-                            fontFamily = bold,
-                            fontSize = 18.sp,
-                            color = Color(0xFF1A1A1A),
-                            modifier = Modifier.weight(1f).padding(end = 12.dp),
-                            lineHeight = 24.sp
-                            // maxLines dan overflow DIHAPUS agar teks panjang bisa turun ke baris baru
-                        )
-
-                        // Badge Masa Berlaku
-                        Surface(
-                            color = brandRed.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text(
-                                text = "${item.masaBerlaku} Bulan",
-                                fontFamily = bold,
-                                fontSize = 12.sp,
-                                color = brandRed,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.WorkspacePremium,
+                                contentDescription = null,
+                                tint = brandRed,
+                                modifier = Modifier.size(26.dp)
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
-                    HorizontalDivider(color = Color(0xFFF5F5F5), thickness = 1.dp)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
 
-                    // Row bawah: Harga dan Tombol Panah
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = item.namaMembership,
+                            fontFamily = bold,
+                            fontSize = 17.sp,
+                            color = Color(0xFF1A1A1A),
+                            lineHeight = 22.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Masa Aktif ${item.masaBerlaku} Bulan",
+                            fontFamily = med,
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = Color(0xFFF5F5F5),
+                    thickness = 1.dp
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFCFCFC))
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Biaya Membership",
+                            fontFamily = med,
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = formatRupiah(item.hargaDaftar),
+                            fontFamily = bold,
+                            fontSize = 20.sp,
+                            color = brandRed
+                        )
+                    }
+
+                    Surface(
+                        color = brandRed,
+                        shape = CircleShape,
+                        shadowElevation = 2.dp
                     ) {
-                        Column {
-                            Text("Total Harga", fontFamily = med, fontSize = 13.sp, color = Color.Gray)
-                            Spacer(Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
                             Text(
-                                text = formatRupiah(item.hargaDaftar),
+                                text = "Pilih",
                                 fontFamily = bold,
-                                fontSize = 22.sp,
-                                color = brandRed
+                                fontSize = 13.sp,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(
+                                imageVector = Icons.Default.ArrowForwardIos,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(10.dp)
                             )
                         }
                     }

@@ -1,5 +1,7 @@
 package com.example.autoglazecustomer.ui.transaction
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,14 +13,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -90,32 +96,46 @@ class VehicleSelectionScreen(
                         enabled = screenModel.selectedVehicle != null,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = redPrimer,
-                            disabledContainerColor = Color.LightGray
+                            disabledContainerColor = Color(0xFFE0E0E0)
                         ),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp)
-                            .height(54.dp)
+                            .padding(horizontal = 24.dp, vertical = 20.dp)
+                            .height(56.dp)
                     ) {
-                        Text("Lanjutkan", fontFamily = satoshiBold, fontSize = 16.sp, color = Color.White)
+                        Text("Lanjutkan", fontFamily = satoshiBold, fontSize = 16.sp, color = if(screenModel.selectedVehicle != null) Color.White else Color.Gray)
                     }
                 }
             },
             containerColor = Color(0xFFFBFBFB)
         ) { padding ->
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-                Surface(
-                    color = Color(0xFFFFF0ED),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp),
-                    shape = RoundedCornerShape(12.dp)
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(20.dp), spotColor = redPrimer.copy(alpha = 0.5f))
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Brush.horizontalGradient(listOf(redPrimer, Color(0xFF9E2A15))))
+                        .padding(20.dp)
                 ) {
-                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.LocationOn, null, tint = redPrimer, modifier = Modifier.size(24.dp))
-                        Spacer(Modifier.width(12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.White.copy(alpha = 0.2f),
+                            modifier = Modifier.size(54.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.LocationOn, null, tint = Color.White, modifier = Modifier.size(24.dp))
+                            }
+                        }
+                        Spacer(Modifier.width(16.dp))
                         Column {
-                            Text("Cabang Terpilih", fontFamily = satoshiMedium, fontSize = 12.sp, color = Color.Gray)
-                            Text(cabang.namaCabang, fontFamily = satoshiBold, fontSize = 16.sp, color = redPrimer)
+                            Text("Cabang Terpilih", color = Color.White.copy(alpha = 0.8f), fontFamily = satoshiMedium, fontSize = 13.sp)
+                            Spacer(Modifier.height(2.dp))
+                            Text(cabang.namaCabang, color = Color.White, fontFamily = satoshiBold, fontSize = 18.sp)
                         }
                     }
                 }
@@ -180,53 +200,105 @@ class VehicleSelectionScreen(
         med: FontFamily,
         onClick: () -> Unit
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth().clickable { onClick() },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (isSelected) redPrimer.copy(alpha = 0.05f) else Color.White
-            ),
-            border = BorderStroke(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) redPrimer else Color(0xFFEEEEEE)
-            )
+        val borderColor by animateColorAsState(if (isSelected) redPrimer else Color(0xFFEEEEEE))
+        val elevation by animateDpAsState(if (isSelected) 8.dp else 0.dp)
+        val iconColor by animateColorAsState(if (isSelected) redPrimer else Color.Gray)
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = elevation,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = if (isSelected) redPrimer.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.05f)
+                )
+                .clip(RoundedCornerShape(20.dp))
+                .border(
+                    width = if (isSelected) 2.dp else 1.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .clickable { onClick() },
+            color = Color.White
         ) {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFFF5F5F5),
-                    modifier = Modifier.size(48.dp)
+                    color = if (isSelected) redPrimer.copy(alpha = 0.06f) else Color(0xFFFBFBFB),
+                    border = BorderStroke(1.dp, if (isSelected) redPrimer.copy(alpha = 0.1f) else Color(0xFFF0F0F0)),
+                    modifier = Modifier.size(56.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.DirectionsCar, null, tint = Color.Gray, modifier = Modifier.size(24.dp))
+                        Icon(
+                            imageVector = Icons.Default.DirectionsCar,
+                            contentDescription = null,
+                            tint = iconColor,
+                            modifier = Modifier.size(26.dp)
+                        )
                     }
                 }
 
                 Spacer(Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = item.vehicle.merek ?: "Merek Tidak Diketahui", fontFamily = bold, fontSize = 16.sp, color = Color.Black)
-                    Text(text = item.vehicle.nopol ?: "Nopol Kosong", fontFamily = med, fontSize = 14.sp, color = Color.DarkGray)
+                    Text(
+                        text = item.vehicle.nopol ?: "NOPOL KOSONG",
+                        fontFamily = bold,
+                        fontSize = 17.sp,
+                        color = Color(0xFF1A1A1A),
+                        letterSpacing = 1.sp
+                    )
 
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(2.dp))
 
                     Text(
-                        text = item.membershipStatusText,
-                        fontFamily = bold,
-                        fontSize = 12.sp,
-                        color = if (item.membershipStatusInt > 0) redPrimer else if (item.membershipStatusText == "Memeriksa status...") Color.LightGray else Color.Gray
+                        text = item.vehicle.merek ?: "Merek Tidak Diketahui",
+                        fontFamily = med,
+                        fontSize = 14.sp,
+                        color = Color.Gray
                     )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    val isMember = item.membershipStatusInt > 0
+                    val badgeColor = if (isMember) redPrimer else Color(0xFF9E9E9E)
+                    val badgeBg = if (isMember) redPrimer.copy(alpha = 0.1f) else Color(0xFFF5F5F5)
+
+                    Surface(
+                        color = badgeBg,
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text(
+                            text = item.membershipStatusText.uppercase(),
+                            fontFamily = bold,
+                            fontSize = 11.sp,
+                            color = badgeColor,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
 
-                if (isSelected) {
-                    Icon(Icons.Default.CheckCircle, null, tint = redPrimer, modifier = Modifier.size(28.dp))
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .background(Color.Transparent, CircleShape)
-                            .border(2.dp, Color.LightGray, CircleShape)
-                    )
+                Spacer(Modifier.width(12.dp))
+
+                Surface(
+                    shape = CircleShape,
+                    color = if (isSelected) redPrimer else Color.White,
+                    border = if (isSelected) null else BorderStroke(2.dp, Color(0xFFDCDCDC)),
+                    modifier = Modifier.size(26.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -115,6 +115,7 @@ class JasaListScreen(
                             )
 
                             // 3. Autoglaze Pill Categories
+                            // 3. Autoglaze Pill Categories
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -126,27 +127,30 @@ class JasaListScreen(
                                     val isSelected = screenModel.selectedCategory == category
                                     val label = if (category == "Car Wash") "Carwash" else category
 
+                                    // JOSJIS: Surface adalah yang menampung shape & warna
                                     Surface(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable {
-                                                screenModel.selectedCategory = category
-                                                screenModel.updateDisplayedList()
-                                            },
-                                        shape = CircleShape,
+                                        modifier = Modifier.weight(1f),
+                                        shape = CircleShape, // Pastikan shape didefinisikan di Surface
                                         color = if (isSelected) redPrimer else Color.White,
                                         border = if (isSelected) null else BorderStroke(1.dp, Color(0xFFE0E0E0)),
                                         shadowElevation = if (isSelected) 4.dp else 0.dp
                                     ) {
                                         Box(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(CircleShape)
+                                                .clickable {
+                                                    screenModel.selectedCategory = category
+                                                    screenModel.updateDisplayedList()
+                                                }
+                                                .padding(vertical = 10.dp),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
                                                 text = label,
                                                 fontFamily = if (isSelected) satoshiBold else satoshiMedium,
                                                 color = if (isSelected) Color.White else Color.DarkGray,
-                                                fontSize = 12.sp, // Dikecilkan sedikit agar kata "Detailing" dan "Bundling" muat
+                                                fontSize = 12.sp,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
