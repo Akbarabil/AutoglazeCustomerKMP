@@ -23,6 +23,6 @@ data class LayananItem(
     @SerialName("HARGA_DUA_MEMBER") val hargaDuaMember: Double,
     @SerialName("HARGA_VIP") val hargaVIP: Double,
     @SerialName("DESKRIPSI") val deskripsi: String? = null,
-    @SerialName("IS_MULTIPLE") val isMultiple: Int,
+    @SerialName("IS_MULTIPLE") val isMultiple: Int? = 0,
     @SerialName("ID_CABANG_ITEM") val idCabangItem: Int
 )

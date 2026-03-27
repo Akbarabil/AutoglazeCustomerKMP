@@ -124,7 +124,7 @@ class MenuTransactionScreen(
                         when (menu.id) {
                             "JASA" -> navigator.push(JasaListScreen(cabang, vehicle, authService))
                             "PRODUK" -> navigator.push(ProdukListScreen(cabang,vehicle,authService))
-                            "MEMBER" -> navigator.push(MembershipListScreen(cabang, authService))
+                            "MEMBER" -> navigator.push(MembershipListScreen(cabang,vehicle, authService))
                         }
                     }
                 }

@@ -30,10 +30,14 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.example.autoglazecustomer.data.manager.CartManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukItem
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.KmpBackHandler
+import com.example.autoglazecustomer.ui.transaction.checkout.CheckoutScreen
+import com.example.autoglazecustomer.ui.transaction.components.FloatingCheckoutBar
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -50,13 +54,32 @@ class ProdukListScreen(
         val screenModel = rememberScreenModel {
             ProdukListScreenModel(authService, cabang.kodeCabang, vehicle.membershipStatusInt)
         }
-
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 
+        // JOSJIS 1: State Dialog & Observasi Keranjang
+        val cartItems by CartManager.cartItems.collectAsState()
+        var showExitDialog by remember { mutableStateOf(false) }
+
         LaunchedEffect(Unit) { screenModel.fetchData() }
+
+        // JOSJIS 2: Fungsi Mencegat Keluar (Interceptor)
+        val onLeaveAttempt = {
+            if (cartItems.isNotEmpty()) {
+                showExitDialog = true
+            } else {
+                if (navigator.canPop) {
+                    navigator.pop()
+                }
+            }
+        }
+
+        // JOSJIS 3: Tahan navigasi dengan KmpBackHandler (Aman untuk iOS)
+        KmpBackHandler {
+            onLeaveAttempt()
+        }
 
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Scaffold(
@@ -69,7 +92,8 @@ class ProdukListScreen(
                             CenterAlignedTopAppBar(
                                 title = { Text("Daftar Produk", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black) },
                                 navigationIcon = {
-                                    IconButton(onClick = { navigator.pop() }) {
+                                    // JOSJIS 4: Terapkan penahan di tombol back UI
+                                    IconButton(onClick = { onLeaveAttempt() }) {
                                         Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp), Color.DarkGray)
                                     }
                                 },
@@ -134,14 +158,63 @@ class ProdukListScreen(
                                     med = satoshiMedium,
                                     redPrimer = redPrimer,
                                     onClick = {
-                                        // JOSJIS: Navigasi ke Layar Detail Produk
-                                        navigator.push(ProdukDetailScreen(item, cabang, vehicle))
+                                        navigator.push(ProdukDetailScreen(item, finalPrice = final, cabang, vehicle))
                                     }
                                 )
                             }
                         }
                     }
                 }
+            }
+
+            val totalQty = cartItems.sumOf { it.qty }
+            val totalPrice = cartItems.sumOf { it.subtotal }
+
+            Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                FloatingCheckoutBar(
+                    visible = cartItems.isNotEmpty(),
+                    totalQty = totalQty,
+                    totalPrice = totalPrice,
+                    onClick = {
+                         navigator.push(CheckoutScreen(cabang, vehicle, authService))
+                    }
+                )
+            }
+
+            // JOSJIS 5: UI Dialog Peringatan Hapus Keranjang
+            if (showExitDialog) {
+                AlertDialog(
+                    onDismissRequest = { showExitDialog = false },
+                    containerColor = Color.White,
+                    title = {
+                        Text("Perhatian", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black)
+                    },
+                    text = {
+                        Text(
+                            "Jika anda kembali, data dalam keranjang akan dihapus. Anda yakin?",
+                            fontFamily = satoshiMedium,
+                            fontSize = 15.sp,
+                            color = Color.DarkGray
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showExitDialog = false
+                                CartManager.clearCart() // Hapus memori cart saat fix keluar
+                                if (navigator.canPop) navigator.pop()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+                        ) {
+                            Text("Yakin Keluar", fontFamily = satoshiBold, color = Color.White)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showExitDialog = false }) {
+                            Text("Batal", fontFamily = satoshiBold, color = Color.Gray)
+                        }
+                    }
+                )
             }
         }
     }

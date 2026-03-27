@@ -6,6 +6,8 @@ import com.example.autoglazecustomer.data.model.password.RequestPasswordResponse
 import com.example.autoglazecustomer.data.model.transaction.CabangTerdekatResponse
 import com.example.autoglazecustomer.data.model.transaction.MembershipCarwashCheckResponse
 import com.example.autoglazecustomer.data.model.transaction.MembershipStatusResponse
+import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutPayload
+import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutResponse
 import com.example.autoglazecustomer.data.model.transaction.jasa.JasaResponse
 import com.example.autoglazecustomer.data.model.transaction.membership.MembershipResponse
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukResponse
@@ -338,6 +340,32 @@ class AuthService {
             }.body()
         } catch (e: Exception) {
             MembershipResponse(status = false, data = emptyList())
+        }
+    }
+
+    suspend fun processCheckout(
+        payload: CheckoutPayload,
+        isMembership: Boolean
+    ): CheckoutResponse {
+        return try {
+            val targetUrl = if (isMembership) {
+                "insert-penjualan-customer-membership"
+            } else {
+                "insert-penjualan-customer"
+            }
+
+            // Eksekusi POST request
+            client.post(targetUrl) {
+                contentType(ContentType.Application.Json)
+                setBody(payload)
+            }.body()
+
+        } catch (e: Exception) {
+            CheckoutResponse(
+                status = false,
+                message = "Terjadi kesalahan koneksi: ${e.message}",
+                kodePenjualan = null
+            )
         }
     }
 

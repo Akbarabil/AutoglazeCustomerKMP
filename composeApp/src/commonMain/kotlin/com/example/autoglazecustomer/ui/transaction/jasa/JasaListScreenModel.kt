@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.model.transaction.jasa.LayananItem
-import com.example.autoglazecustomer.data.network.AuthService // Menggunakan AuthService yang sudah digabung
+import com.example.autoglazecustomer.data.network.AuthService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
@@ -21,7 +21,7 @@ class JasaListScreenModel(
     var errorMessage by mutableStateOf<String?>(null)
 
     private var allServices = listOf<LayananItem>()
-    private var carwashEligibleIds = setOf<Int>()
+    private var eligibleForCarwashPriceIds = setOf<Int>()
 
     var searchQuery by mutableStateOf("")
     val categories = listOf("Car Wash", "Express", "Detailing", "Bundling")
@@ -34,7 +34,6 @@ class JasaListScreenModel(
             errorMessage = null
 
             try {
-                // Eksekusi API secara paralel pakai AuthService
                 val servicesDeferred = async { authService.getAllServices(kodeCabang) }
                 val eligibilityDeferred = async { authService.checkMembershipCarwash(idKendaraan) }
 
@@ -48,7 +47,7 @@ class JasaListScreenModel(
                 }
 
                 if (eligibilityResponse.status) {
-                    carwashEligibleIds = eligibilityResponse.data?.map { it.idProduk }?.toSet() ?: emptySet()
+                    eligibleForCarwashPriceIds = eligibilityResponse.data?.map { it.idProduk }?.toSet() ?: emptySet()
                 }
 
                 updateDisplayedList()
@@ -62,7 +61,6 @@ class JasaListScreenModel(
 
     fun updateDisplayedList() {
         displayedServices = allServices.filter { item ->
-            // Pastikan perbandingan string category aman
             val categoryLayanan = if (item.KATEGORI.equals("Carwash", ignoreCase = true)) "Car Wash" else item.KATEGORI
 
             val matchCategory = categoryLayanan.equals(selectedCategory, ignoreCase = true)
@@ -72,23 +70,23 @@ class JasaListScreenModel(
         }
     }
 
-    // Fungsi penentu harga (Sesuai logika Legacy)
     fun calculatePrice(item: LayananItem): Pair<Double, Double> {
         val originalPrice = item.hargaJual
+        val isEligibleForCarwashPrice = eligibleForCarwashPriceIds.contains(item.idProduk)
 
-        val finalPrice = if (carwashEligibleIds.contains(item.idProduk)) {
+        val finalPrice = if (isEligibleForCarwashPrice) {
             item.hargaJualMemberCarwash
         } else {
             when (membershipStatusInt) {
                 1 -> item.hargaJualMemberExpress
                 2 -> item.hargaJual
-                3 -> item.hargaDuaMember
+                3 -> item.hargaJualMemberExpress
                 4 -> item.hargaVIP
                 else -> item.hargaJual
             }
         }
+
         return Pair(originalPrice, finalPrice)
     }
 
-    fun isEligible(idProduk: Int): Boolean = carwashEligibleIds.contains(idProduk)
 }

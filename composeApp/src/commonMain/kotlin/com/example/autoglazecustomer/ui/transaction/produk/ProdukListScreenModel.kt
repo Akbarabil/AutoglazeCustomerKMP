@@ -37,7 +37,7 @@ class ProdukListScreenModel(
                     errorMessage = response.message ?: "Gagal memuat produk."
                 }
             } catch (e: Exception) {
-                errorMessage = "Terjadi kesalahan koneksi: ${e.message}"
+                errorMessage = "Terjadi kesalahan koneksi."
             } finally {
                 isLoading = false
             }
@@ -45,7 +45,7 @@ class ProdukListScreenModel(
     }
 
     fun updateDisplayedList() {
-        displayedProducts = if (searchQuery.isEmpty()) {
+        displayedProducts = if (searchQuery.isBlank()) {
             allProducts
         } else {
             allProducts.filter { it.namaProduk.contains(searchQuery, ignoreCase = true) }
@@ -61,6 +61,9 @@ class ProdukListScreenModel(
             4 -> item.hargaVIP
             else -> originalPrice
         }
-        return Pair(originalPrice, finalPrice)
+
+        val safeFinalPrice = if (finalPrice == 0.0 && originalPrice > 0.0) originalPrice else finalPrice
+
+        return Pair(originalPrice, safeFinalPrice)
     }
 }

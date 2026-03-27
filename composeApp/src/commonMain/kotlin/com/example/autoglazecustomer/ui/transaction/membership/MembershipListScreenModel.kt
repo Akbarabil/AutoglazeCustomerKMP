@@ -44,7 +44,7 @@ class MembershipListScreenModel(
     }
 
     fun updateDisplayedList() {
-        displayedMemberships = if (searchQuery.isEmpty()) {
+        displayedMemberships = if (searchQuery.isBlank()) {
             allMemberships
         } else {
             allMemberships.filter { it.namaMembership.contains(searchQuery, ignoreCase = true) }

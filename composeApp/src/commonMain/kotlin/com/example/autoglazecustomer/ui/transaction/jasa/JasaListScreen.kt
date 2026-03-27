@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,11 +32,14 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.example.autoglazecustomer.data.manager.CartManager // JOSJIS: Pastikan import ini
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.jasa.LayananItem
 import com.example.autoglazecustomer.data.network.AuthService
-import kotlinx.coroutines.launch
+import com.example.autoglazecustomer.ui.KmpBackHandler
+import com.example.autoglazecustomer.ui.transaction.checkout.CheckoutScreen
+import com.example.autoglazecustomer.ui.transaction.components.FloatingCheckoutBar
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -55,14 +57,33 @@ class JasaListScreen(
             JasaListScreenModel(authService, cabang.kodeCabang, vehicle.vehicle.idKendaraan ?: -1, vehicle.membershipStatusInt)
         }
         val snackbarHostState = remember { SnackbarHostState() }
-        val coroutineScope = rememberCoroutineScope()
 
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
-        val bgLight = Color(0xFFF8F9FA) // Latar belakang abu-abu sangat muda khas aplikasi modern
+        val bgLight = Color(0xFFF8F9FA)
+
+        // JOSJIS 1: State Dialog & Observasi Keranjang Jasa
+        val cartItems by CartManager.cartItems.collectAsState()
+        var showExitDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) { screenModel.fetchData() }
+
+        // JOSJIS 2: Fungsi Mencegat Keluar (Interceptor)
+        val onLeaveAttempt = {
+            if (cartItems.isNotEmpty()) {
+                showExitDialog = true // Munculkan peringatan keranjang akan hangus
+            } else {
+                if (navigator.canPop) {
+                    navigator.pop()
+                }
+            }
+        }
+
+        // JOSJIS 3: Tahan navigasi dengan KmpBackHandler (Aman untuk iOS)
+        KmpBackHandler {
+            onLeaveAttempt()
+        }
 
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Scaffold(
@@ -72,15 +93,15 @@ class JasaListScreen(
                 topBar = {
                     Surface(
                         color = Color.White,
-                        shadowElevation = 4.dp, // Shadow halus di bawah header
+                        shadowElevation = 4.dp,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            // 1. App Bar
                             CenterAlignedTopAppBar(
                                 title = { Text("Daftar Jasa", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black) },
                                 navigationIcon = {
-                                    IconButton(onClick = { navigator.pop() }) {
+                                    // JOSJIS 4: Terapkan penahan di tombol back UI
+                                    IconButton(onClick = { onLeaveAttempt() }) {
                                         Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp), Color.DarkGray)
                                     }
                                 },
@@ -88,7 +109,6 @@ class JasaListScreen(
                                 windowInsets = WindowInsets.statusBars
                             )
 
-                            // 2. Modern Search Bar (Tanpa outline kaku)
                             TextField(
                                 value = screenModel.searchQuery,
                                 onValueChange = {
@@ -106,16 +126,14 @@ class JasaListScreen(
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = Color(0xFFF0F2F5),
                                     unfocusedContainerColor = Color(0xFFF0F2F5),
-                                    focusedIndicatorColor = Color.Transparent, // Hilangkan garis bawah
-                                    unfocusedIndicatorColor = Color.Transparent, // Hilangkan garis bawah
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
                                     cursorColor = redPrimer,
                                     focusedTextColor = Color.Black,
                                     unfocusedTextColor = Color.Black
                                 )
                             )
 
-                            // 3. Autoglaze Pill Categories
-                            // 3. Autoglaze Pill Categories
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -127,10 +145,9 @@ class JasaListScreen(
                                     val isSelected = screenModel.selectedCategory == category
                                     val label = if (category == "Car Wash") "Carwash" else category
 
-                                    // JOSJIS: Surface adalah yang menampung shape & warna
                                     Surface(
                                         modifier = Modifier.weight(1f),
-                                        shape = CircleShape, // Pastikan shape didefinisikan di Surface
+                                        shape = CircleShape,
                                         color = if (isSelected) redPrimer else Color.White,
                                         border = if (isSelected) null else BorderStroke(1.dp, Color(0xFFE0E0E0)),
                                         shadowElevation = if (isSelected) 4.dp else 0.dp
@@ -187,7 +204,6 @@ class JasaListScreen(
                         ) {
                             items(screenModel.displayedServices) { item ->
                                 val (original, final) = screenModel.calculatePrice(item)
-                                val isEligible = screenModel.isEligible(item.idProduk)
 
                                 ServiceCardItem(
                                     item = item,
@@ -200,7 +216,7 @@ class JasaListScreen(
                                         navigator.push(
                                             JasaDetailScreen(
                                                 item = item,
-                                                isEligible = isEligible,
+                                                finalPrice = final,
                                                 cabang = cabang,
                                                 vehicle = vehicle
                                             )
@@ -211,6 +227,56 @@ class JasaListScreen(
                         }
                     }
                 }
+            }
+
+            val totalQty = cartItems.sumOf { it.qty }
+            val totalPrice = cartItems.sumOf { it.subtotal }
+
+            Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                FloatingCheckoutBar(
+                    visible = cartItems.isNotEmpty(),
+                    totalQty = totalQty,
+                    totalPrice = totalPrice,
+                    onClick = {
+                         navigator.push(CheckoutScreen(cabang, vehicle, authService))
+                    }
+                )
+            }
+
+            // JOSJIS 5: UI Dialog Peringatan Hapus Keranjang Jasa
+            if (showExitDialog) {
+                AlertDialog(
+                    onDismissRequest = { showExitDialog = false },
+                    containerColor = Color.White,
+                    title = {
+                        Text("Perhatian", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black)
+                    },
+                    text = {
+                        Text(
+                            "Jika anda kembali, data dalam keranjang akan dihapus. Anda yakin?",
+                            fontFamily = satoshiMedium,
+                            fontSize = 15.sp,
+                            color = Color.DarkGray
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showExitDialog = false
+                                CartManager.clearCart() // Hapus memori cart saat fix keluar
+                                if (navigator.canPop) navigator.pop()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+                        ) {
+                            Text("Yakin Keluar", fontFamily = satoshiBold, color = Color.White)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showExitDialog = false }) {
+                            Text("Batal", fontFamily = satoshiBold, color = Color.Gray)
+                        }
+                    }
+                )
             }
         }
     }
@@ -260,18 +326,17 @@ class JasaListScreen(
 
                     Spacer(Modifier.height(6.dp))
 
-                    // Indikator Durasi Modern
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Schedule, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("${item.durasiMenit} Menit", fontFamily = med, fontSize = 13.sp, color = Color.Gray)
+                        val durasi = item.durasiMenit?.let { "$it Menit" } ?: "Fleksibel"
+                        Text(durasi, fontFamily = med, fontSize = 13.sp, color = Color.Gray)
                     }
 
                     Spacer(Modifier.height(12.dp))
 
                     if (finalPrice < originalPrice) {
                         Column {
-                            // Harga Coret
                             Text(
                                 text = formatRupiah(originalPrice),
                                 fontFamily = med,
@@ -279,7 +344,6 @@ class JasaListScreen(
                                 color = Color.Gray,
                                 textDecoration = TextDecoration.LineThrough
                             )
-                            // Harga Final + Badge Promo
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(formatRupiah(finalPrice), fontFamily = bold, fontSize = 17.sp, color = redPrimer)
                                 Spacer(Modifier.width(8.dp))
@@ -292,7 +356,6 @@ class JasaListScreen(
                             }
                         }
                     } else {
-                        // Harga Normal / Gratis
                         val priceText = if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice)
                         Text(
                             text = priceText,

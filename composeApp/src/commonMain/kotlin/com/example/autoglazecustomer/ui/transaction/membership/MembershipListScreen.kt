@@ -29,14 +29,22 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.autoglazecustomer.data.manager.CartItem // JOSJIS: Pastikan import ini
+import com.example.autoglazecustomer.data.manager.CartManager // JOSJIS: Pastikan import ini
+import com.example.autoglazecustomer.data.manager.ItemCategory // JOSJIS: Pastikan import ini
 import com.example.autoglazecustomer.data.model.transaction.CabangData
+import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.membership.MembershipItem
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.KmpBackHandler
+import com.example.autoglazecustomer.ui.transaction.checkout.CheckoutScreen
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
 
+
 class MembershipListScreen(
     private val cabang: CabangData,
+    private val vehicle: VehicleWithStatus,
     private val authService: AuthService
 ) : Screen {
 
@@ -54,7 +62,27 @@ class MembershipListScreen(
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 
+        // JOSJIS 1: State Dialog & Observasi Keranjang
+        val cartItems by CartManager.cartItems.collectAsState()
+        var showExitDialog by remember { mutableStateOf(false) }
+
         LaunchedEffect(Unit) { screenModel.fetchData() }
+
+        // JOSJIS 2: Fungsi Mencegat Keluar (Interceptor)
+        val onLeaveAttempt = {
+            if (cartItems.isNotEmpty()) {
+                showExitDialog = true
+            } else {
+                if (navigator.canPop) {
+                    navigator.pop()
+                }
+            }
+        }
+
+        // JOSJIS 3: Tahan navigasi dengan KmpBackHandler
+        KmpBackHandler {
+            onLeaveAttempt()
+        }
 
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Scaffold(
@@ -68,7 +96,8 @@ class MembershipListScreen(
                             CenterAlignedTopAppBar(
                                 title = { Text("Pilih Membership", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black) },
                                 navigationIcon = {
-                                    IconButton(onClick = { navigator.pop() }) {
+                                    // JOSJIS 4: Pasang penahan di tombol back UI
+                                    IconButton(onClick = { onLeaveAttempt() }) {
                                         Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp), Color.DarkGray)
                                     }
                                 },
@@ -115,7 +144,6 @@ class MembershipListScreen(
                             Text(screenModel.errorMessage ?: "Membership tidak ditemukan.", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 16.sp)
                         }
                     } else {
-                        // JOSJIS: Layout Kartu Putih Bersih
                         LazyColumn(
                             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 100.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -127,18 +155,73 @@ class MembershipListScreen(
                                     med = satoshiMedium,
                                     brandRed = redPrimer,
                                     onClick = {
-                                        // TODO: Arahkan ke CheckoutScreen
+                                        // JOSJIS 5: Langsung masukkan Membership ke CartManager
+                                        CartManager.clearCart() // Bersihkan sisa cart lama (karena membership cuma bisa beli 1)
+
+                                        val newCartItem = CartItem(
+                                            idProduk = item.idMembership, // Pakai ID Membership sbg unique identifier
+                                            idCabangItem = null, // Karena ini Membership
+                                            idMembership = item.idMembership,
+                                            namaItem = item.namaMembership,
+                                            imageUrl = null, // Membership biasanya tidak punya gambar khusus
+                                            qty = 1, // Pasti 1
+                                            hargaUnit = item.hargaDaftar,
+                                            category = ItemCategory.MEMBERSHIP
+                                        )
+                                        CartManager.addItemToCart(newCartItem)
+
                                         coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                "Membuka halaman Checkout: ${item.namaMembership}..."
-                                            )
+                                            snackbarHostState.showSnackbar("Membuka Checkout untuk ${item.namaMembership}...")
                                         }
+
+                                         navigator.push(
+                                             CheckoutScreen(
+                                                 cabang = cabang,
+                                                 vehicle = vehicle,
+                                                 authService)
+                                         )
                                     }
                                 )
                             }
                         }
                     }
                 }
+            }
+
+            // JOSJIS 6: UI Dialog Peringatan Hapus Keranjang Membership
+            if (showExitDialog) {
+                AlertDialog(
+                    onDismissRequest = { showExitDialog = false },
+                    containerColor = Color.White,
+                    title = {
+                        Text("Perhatian", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black)
+                    },
+                    text = {
+                        Text(
+                            "Jika anda kembali, data dalam keranjang akan dihapus. Anda yakin?",
+                            fontFamily = satoshiMedium,
+                            fontSize = 15.sp,
+                            color = Color.DarkGray
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showExitDialog = false
+                                CartManager.clearCart() // Hapus memori cart saat fix keluar
+                                if (navigator.canPop) navigator.pop()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+                        ) {
+                            Text("Yakin Keluar", fontFamily = satoshiBold, color = Color.White)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showExitDialog = false }) {
+                            Text("Batal", fontFamily = satoshiBold, color = Color.Gray)
+                        }
+                    }
+                )
             }
         }
     }
