@@ -2,7 +2,21 @@ package com.example.autoglazecustomer.ui.transaction.produk
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -10,8 +24,28 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +58,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -60,13 +97,13 @@ class ProdukListScreen(
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 
-        // JOSJIS 1: State Dialog & Observasi Keranjang
+
         val cartItems by CartManager.cartItems.collectAsState()
         var showExitDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) { screenModel.fetchData() }
 
-        // JOSJIS 2: Fungsi Mencegat Keluar (Interceptor)
+
         val onLeaveAttempt = {
             if (cartItems.isNotEmpty()) {
                 showExitDialog = true
@@ -77,7 +114,7 @@ class ProdukListScreen(
             }
         }
 
-        // JOSJIS 3: Tahan navigasi dengan KmpBackHandler (Aman untuk iOS)
+
         KmpBackHandler {
             onLeaveAttempt()
         }
@@ -87,22 +124,40 @@ class ProdukListScreen(
                 containerColor = bgLight,
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 topBar = {
-                    Surface(color = Color.White, shadowElevation = 4.dp, modifier = Modifier.fillMaxWidth()) {
+                    Surface(
+                        color = Color.White,
+                        shadowElevation = 4.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            // 1. App Bar
+
                             CenterAlignedTopAppBar(
-                                title = { Text("Daftar Produk", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black) },
+                                title = {
+                                    Text(
+                                        "Daftar Produk",
+                                        fontFamily = satoshiBold,
+                                        fontSize = 18.sp,
+                                        color = Color.Black
+                                    )
+                                },
                                 navigationIcon = {
-                                    // JOSJIS 4: Terapkan penahan di tombol back UI
+
                                     IconButton(onClick = { onLeaveAttempt() }) {
-                                        Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp), Color.DarkGray)
+                                        Icon(
+                                            Icons.Default.ArrowBackIosNew,
+                                            null,
+                                            Modifier.size(20.dp),
+                                            Color.DarkGray
+                                        )
                                     }
                                 },
-                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White),
+                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                    containerColor = Color.White
+                                ),
                                 windowInsets = WindowInsets.statusBars
                             )
 
-                            // 2. Search Bar Modern
+
                             TextField(
                                 value = screenModel.searchQuery,
                                 onValueChange = {
@@ -113,8 +168,21 @@ class ProdukListScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 20.dp, vertical = 12.dp)
                                     .height(54.dp),
-                                placeholder = { Text("Ketik nama produk", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 15.sp) },
-                                leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray) },
+                                placeholder = {
+                                    Text(
+                                        "Ketik nama produk",
+                                        fontFamily = satoshiMedium,
+                                        color = Color.Gray,
+                                        fontSize = 15.sp
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        null,
+                                        tint = Color.Gray
+                                    )
+                                },
                                 shape = RoundedCornerShape(16.dp),
                                 singleLine = true,
                                 colors = TextFieldDefaults.colors(
@@ -131,20 +199,44 @@ class ProdukListScreen(
                     }
                 }
             ) { padding ->
-                Box(modifier = Modifier.fillMaxSize().padding(padding).windowInsetsPadding(WindowInsets.navigationBars)) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding)
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                ) {
                     if (screenModel.isLoading) {
-                        CircularProgressIndicator(color = redPrimer, modifier = Modifier.align(Alignment.Center))
+                        CircularProgressIndicator(
+                            color = redPrimer,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     } else if (screenModel.displayedProducts.isEmpty()) {
-                        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.Search, null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Search,
+                                null,
+                                tint = Color.LightGray,
+                                modifier = Modifier.size(64.dp)
+                            )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(screenModel.errorMessage ?: "Produk kosong pada cabang ini", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 16.sp)
+                            Text(
+                                screenModel.errorMessage ?: "Produk kosong pada cabang ini",
+                                fontFamily = satoshiMedium,
+                                color = Color.Gray,
+                                fontSize = 16.sp
+                            )
                         }
                     } else {
-                        // Layout 2 Kolom (Grid)
+
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
-                            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 100.dp),
+                            contentPadding = PaddingValues(
+                                start = 20.dp,
+                                end = 20.dp,
+                                top = 20.dp,
+                                bottom = 100.dp
+                            ),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
@@ -159,7 +251,14 @@ class ProdukListScreen(
                                     med = satoshiMedium,
                                     redPrimer = redPrimer,
                                     onClick = {
-                                        navigator.push(ProdukDetailScreen(item, finalPrice = final, cabang, vehicle))
+                                        navigator.push(
+                                            ProdukDetailScreen(
+                                                item,
+                                                finalPrice = final,
+                                                cabang,
+                                                vehicle
+                                            )
+                                        )
                                     }
                                 )
                             }
@@ -177,18 +276,23 @@ class ProdukListScreen(
                     totalQty = totalQty,
                     totalPrice = totalPrice,
                     onClick = {
-                         navigator.push(CheckoutScreen(cabang, vehicle, authService))
+                        navigator.push(CheckoutScreen(cabang, vehicle, authService))
                     }
                 )
             }
 
-            // JOSJIS 5: UI Dialog Peringatan Hapus Keranjang
+
             if (showExitDialog) {
                 AlertDialog(
                     onDismissRequest = { showExitDialog = false },
                     containerColor = Color.White,
                     title = {
-                        Text("Perhatian", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black)
+                        Text(
+                            "Perhatian",
+                            fontFamily = satoshiBold,
+                            fontSize = 18.sp,
+                            color = Color.Black
+                        )
                     },
                     text = {
                         Text(
@@ -234,7 +338,11 @@ class ProdukListScreen(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(elevation = 6.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.08f))
+                .shadow(
+                    elevation = 6.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    spotColor = Color.Black.copy(alpha = 0.08f)
+                )
                 .clip(RoundedCornerShape(16.dp))
                 .clickable { onClick() },
             color = Color.White
@@ -273,11 +381,22 @@ class ProdukListScreen(
                             textDecoration = TextDecoration.LineThrough
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(formatRupiah(finalPrice), fontFamily = bold, fontSize = 15.sp, color = redPrimer)
+                            Text(
+                                formatRupiah(finalPrice),
+                                fontFamily = bold,
+                                fontSize = 15.sp,
+                                color = redPrimer
+                            )
                         }
                     } else {
-                        val priceText = if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice)
-                        Text(priceText, fontFamily = bold, fontSize = 15.sp, color = if (finalPrice == 0.0) Color(0xFF4CAF50) else Color.Black)
+                        val priceText =
+                            if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice)
+                        Text(
+                            priceText,
+                            fontFamily = bold,
+                            fontSize = 15.sp,
+                            color = if (finalPrice == 0.0) Color(0xFF4CAF50) else Color.Black
+                        )
                     }
                 }
             }
@@ -286,7 +405,8 @@ class ProdukListScreen(
 
     private fun formatRupiah(amount: Double): String {
         val absoluteAmount = kotlin.math.abs(amount).toLong()
-        val formattedNumber = absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
+        val formattedNumber =
+            absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
         val sign = if (amount < 0) "-" else ""
         return "${sign}Rp $formattedNumber"
     }

@@ -1,7 +1,22 @@
 package com.example.autoglazecustomer.ui.transaction.jasa
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,8 +26,23 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,7 +57,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -39,7 +72,7 @@ import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.jasa.LayananItem
 import com.example.autoglazecustomer.ui.transaction.components.AddToCartBottomSheet
-import kotlinx.coroutines.launch // JOSJIS: Import untuk Snackbar
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -55,7 +88,7 @@ class JasaDetailScreen(
         val navigator = LocalNavigator.currentOrThrow
         val scrollState = rememberScrollState()
 
-        // JOSJIS: Coroutine dan Snackbar State
+
         val coroutineScope = rememberCoroutineScope()
         val snackbarHostState = remember { SnackbarHostState() }
 
@@ -68,9 +101,10 @@ class JasaDetailScreen(
 
         val originalPrice = item.hargaJual
 
-        val cleanDescription = parseHtml(item.deskripsi ?: "Tidak ada deskripsi tambahan untuk layanan ini.")
+        val cleanDescription =
+            parseHtml(item.deskripsi ?: "Tidak ada deskripsi tambahan untuk layanan ini.")
 
-        // Gunakan Scaffold agar Snackbar tidak tertutup
+
         Scaffold(
             snackbarHost = {
                 SnackbarHost(
@@ -79,11 +113,11 @@ class JasaDetailScreen(
                 )
             },
             containerColor = bgLight,
-            contentWindowInsets = WindowInsets(0,0,0,0)
+            contentWindowInsets = WindowInsets(0, 0, 0, 0)
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
 
-                // --- 1. BACKGROUND IMAGE DENGAN PARALLAX EFFECT ---
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,26 +134,40 @@ class JasaDetailScreen(
                         error = painterResource(Res.drawable.dummy_promo_dark)
                     )
 
-                    // Gradasi Atas
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
-                            .background(Brush.verticalGradient(listOf(Color.Black.copy(0.7f), Color.Transparent)))
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color.Black.copy(0.7f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
                             .align(Alignment.TopCenter)
                     )
 
-                    // Gradasi Bawah
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(80.dp)
-                            .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(0.3f))))
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color.Transparent,
+                                        Color.Black.copy(0.3f)
+                                    )
+                                )
+                            )
                             .align(Alignment.BottomCenter)
                     )
                 }
 
-                // --- 2. KONTEN SCROLLABLE ---
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -133,7 +181,14 @@ class JasaDetailScreen(
                         color = Color.White,
                         shadowElevation = 0.dp
                     ) {
-                        Column(modifier = Modifier.padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)) {
+                        Column(
+                            modifier = Modifier.padding(
+                                top = 16.dp,
+                                start = 24.dp,
+                                end = 24.dp,
+                                bottom = 24.dp
+                            )
+                        ) {
 
                             Box(
                                 modifier = Modifier
@@ -156,9 +211,16 @@ class JasaDetailScreen(
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 val durasi = item.durasiMenit?.let { "$it Menit" } ?: "Fleksibel"
-                                InfoChip(icon = Icons.Default.Schedule, text = durasi, font = satoshiMedium)
+                                InfoChip(
+                                    icon = Icons.Default.Schedule,
+                                    text = durasi,
+                                    font = satoshiMedium
+                                )
 
                                 Spacer(modifier = Modifier.width(10.dp))
 
@@ -167,7 +229,9 @@ class JasaDetailScreen(
                                         icon = Icons.Default.Verified,
                                         text = if (finalPrice == 0.0) "Gratis Carwash" else "Harga Member",
                                         font = satoshiMedium,
-                                        bgColor = if (finalPrice == 0.0) Color(0xFFE8F5E9) else redPrimer.copy(alpha = 0.08f),
+                                        bgColor = if (finalPrice == 0.0) Color(0xFFE8F5E9) else redPrimer.copy(
+                                            alpha = 0.08f
+                                        ),
                                         textColor = if (finalPrice == 0.0) Color(0xFF4CAF50) else redPrimer,
                                         iconColor = if (finalPrice == 0.0) Color(0xFF4CAF50) else redPrimer
                                     )
@@ -200,7 +264,7 @@ class JasaDetailScreen(
                     }
                 }
 
-                // --- 3. FLOATING BACK BUTTON ---
+
                 IconButton(
                     onClick = { if (navigator.canPop) navigator.pop() },
                     modifier = Modifier
@@ -211,17 +275,26 @@ class JasaDetailScreen(
                         .background(Color.White)
                         .size(42.dp)
                 ) {
-                    Icon(Icons.Default.ArrowBackIosNew, "Kembali", tint = Color.Black, modifier = Modifier.size(18.dp).padding(end = 2.dp))
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        "Kembali",
+                        tint = Color.Black,
+                        modifier = Modifier.size(18.dp).padding(end = 2.dp)
+                    )
                 }
 
-                // --- 4. SLEEK BOTTOM BAR ---
+
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .background(
                             Brush.verticalGradient(
-                                listOf(Color.White.copy(alpha = 0f), Color.White.copy(alpha = 0.8f), Color.White),
+                                listOf(
+                                    Color.White.copy(alpha = 0f),
+                                    Color.White.copy(alpha = 0.8f),
+                                    Color.White
+                                ),
                                 startY = 0f,
                                 endY = 100f
                             )
@@ -232,19 +305,34 @@ class JasaDetailScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp, vertical = 20.dp)
                             .windowInsetsPadding(WindowInsets.navigationBars)
-                            .shadow(16.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.15f)),
+                            .shadow(
+                                16.dp,
+                                RoundedCornerShape(24.dp),
+                                spotColor = Color.Black.copy(alpha = 0.15f)
+                            ),
                         shape = RoundedCornerShape(24.dp),
                         color = Color.White
                     ) {
                         Row(
-                            modifier = Modifier.padding(start = 20.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
+                            modifier = Modifier.padding(
+                                start = 20.dp,
+                                end = 12.dp,
+                                top = 14.dp,
+                                bottom = 14.dp
+                            ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                                Text("Total Harga", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 12.sp)
+                                Text(
+                                    "Total Harga",
+                                    fontFamily = satoshiMedium,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
 
                                 Row(verticalAlignment = Alignment.Bottom) {
-                                    val priceText = if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice)
+                                    val priceText =
+                                        if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice)
                                     Text(
                                         text = priceText,
                                         fontFamily = satoshiBold,
@@ -273,15 +361,25 @@ class JasaDetailScreen(
                                 contentPadding = PaddingValues(horizontal = 20.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
                             ) {
-                                Icon(Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                                Icon(
+                                    Icons.Default.ShoppingCart,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color.White
+                                )
                                 Spacer(Modifier.width(8.dp))
-                                Text("Tambah", fontFamily = satoshiBold, fontSize = 15.sp, color = Color.White)
+                                Text(
+                                    "Tambah",
+                                    fontFamily = satoshiBold,
+                                    fontSize = 15.sp,
+                                    color = Color.White
+                                )
                             }
                         }
                     }
                 }
 
-                // --- 5. BOTTOM SHEET KERANJANG ---
+
                 if (showBottomSheet) {
                     AddToCartBottomSheet(
                         namaProduk = item.namaProduk,
@@ -294,11 +392,11 @@ class JasaDetailScreen(
                         onAddToCart = { quantity ->
                             showBottomSheet = false
 
-                            // JOSJIS: SUNTIKKAN KE CART MANAGER (Kategori JASA)
+
                             val newCartItem = CartItem(
                                 idProduk = item.idProduk,
                                 idCabangItem = item.idCabangItem,
-                                idMembership = null, // Karena ini Jasa
+                                idMembership = null,
                                 namaItem = item.namaProduk,
                                 imageUrl = item.gambarUrl,
                                 qty = quantity,
@@ -307,7 +405,7 @@ class JasaDetailScreen(
                             )
                             CartManager.addItemToCart(newCartItem)
 
-                            // JOSJIS: Munculkan Snackbar Notifikasi!
+
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar(
                                     message = "Sip! $quantity ${item.namaProduk} masuk keranjang \uD83D\uDED2",
@@ -345,7 +443,8 @@ class JasaDetailScreen(
 
     private fun formatRupiah(amount: Double): String {
         val absoluteAmount = kotlin.math.abs(amount).toLong()
-        val formattedNumber = absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
+        val formattedNumber =
+            absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
         val sign = if (amount < 0) "-" else ""
         return "${sign}Rp $formattedNumber"
     }

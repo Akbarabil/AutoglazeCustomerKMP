@@ -62,7 +62,8 @@ class ProdukListScreenModel(
             else -> originalPrice
         }
 
-        val safeFinalPrice = if (finalPrice == 0.0 && originalPrice > 0.0) originalPrice else finalPrice
+        val safeFinalPrice =
+            if (finalPrice == 0.0 && originalPrice > 0.0) originalPrice else finalPrice
 
         return Pair(originalPrice, safeFinalPrice)
     }

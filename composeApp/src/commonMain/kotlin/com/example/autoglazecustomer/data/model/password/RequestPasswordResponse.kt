@@ -14,6 +14,7 @@ data class RequestPasswordResponse(
     @SerialName("data")
     val data: GeneratedPasswordData? = null
 )
+
 @Serializable
 data class GeneratedPasswordData(
     @SerialName("id_customer")

@@ -43,8 +43,8 @@ class RegisterVehicleScreenModel(
 
         state = state.copy(
             merekTerpilih = merek,
-            tipeTerpilih = null, // Cascading Reset
-            tahun = "",          // Cascading Reset
+            tipeTerpilih = null,
+            tahun = "",
             listTipe = emptyList(),
             isLoadingTipe = true,
             errorField = null
@@ -72,7 +72,7 @@ class RegisterVehicleScreenModel(
         val tipe = state.listTipe.find { it.namaTipeKendaraan == nama }
         state = state.copy(
             tipeTerpilih = tipe,
-            tahun = "", // Reset tahun jika tipe berubah
+            tahun = "",
             errorField = null
         )
     }

@@ -3,7 +3,22 @@ package com.example.autoglazecustomer.ui.transaction.membership
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -13,8 +28,32 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WorkspacePremium
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +63,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -53,7 +94,8 @@ class MembershipListScreen(
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { MembershipListScreenModel(authService, cabang.kodeCabang) }
+        val screenModel =
+            rememberScreenModel { MembershipListScreenModel(authService, cabang.kodeCabang) }
 
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
@@ -88,21 +130,38 @@ class MembershipListScreen(
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 snackbarHost = { SnackbarHost(snackbarHostState) },
                 topBar = {
-                    Surface(color = Color.White, shadowElevation = 4.dp, modifier = Modifier.fillMaxWidth()) {
+                    Surface(
+                        color = Color.White,
+                        shadowElevation = 4.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            // 1. App Bar
+
                             CenterAlignedTopAppBar(
-                                title = { Text("Pilih Membership", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black) },
+                                title = {
+                                    Text(
+                                        "Pilih Membership",
+                                        fontFamily = satoshiBold,
+                                        fontSize = 18.sp,
+                                        color = Color.Black
+                                    )
+                                },
                                 navigationIcon = {
                                     IconButton(onClick = { onLeaveAttempt() }) {
-                                        Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp), Color.DarkGray)
+                                        Icon(
+                                            Icons.Default.ArrowBackIosNew,
+                                            null,
+                                            Modifier.size(20.dp),
+                                            Color.DarkGray
+                                        )
                                     }
                                 },
-                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White),
+                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                    containerColor = Color.White
+                                ),
                                 windowInsets = WindowInsets.statusBars
                             )
 
-                            // 2. Search Bar
                             TextField(
                                 value = screenModel.searchQuery,
                                 onValueChange = {
@@ -113,8 +172,21 @@ class MembershipListScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 20.dp, vertical = 12.dp)
                                     .height(54.dp),
-                                placeholder = { Text("Ketik paket membership", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 15.sp) },
-                                leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray) },
+                                placeholder = {
+                                    Text(
+                                        "Ketik paket membership",
+                                        fontFamily = satoshiMedium,
+                                        color = Color.Gray,
+                                        fontSize = 15.sp
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        null,
+                                        tint = Color.Gray
+                                    )
+                                },
                                 shape = RoundedCornerShape(16.dp),
                                 singleLine = true,
                                 colors = TextFieldDefaults.colors(
@@ -131,18 +203,42 @@ class MembershipListScreen(
                     }
                 }
             ) { padding ->
-                Box(modifier = Modifier.fillMaxSize().padding(padding).windowInsetsPadding(WindowInsets.navigationBars)) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding)
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                ) {
                     if (screenModel.isLoading) {
-                        CircularProgressIndicator(color = redPrimer, modifier = Modifier.align(Alignment.Center))
+                        CircularProgressIndicator(
+                            color = redPrimer,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     } else if (screenModel.displayedMemberships.isEmpty()) {
-                        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.Search, null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Search,
+                                null,
+                                tint = Color.LightGray,
+                                modifier = Modifier.size(64.dp)
+                            )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(screenModel.errorMessage ?: "Membership tidak ditemukan.", fontFamily = satoshiMedium, color = Color.Gray, fontSize = 16.sp)
+                            Text(
+                                screenModel.errorMessage ?: "Membership tidak ditemukan.",
+                                fontFamily = satoshiMedium,
+                                color = Color.Gray,
+                                fontSize = 16.sp
+                            )
                         }
                     } else {
                         LazyColumn(
-                            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 100.dp),
+                            contentPadding = PaddingValues(
+                                start = 20.dp,
+                                end = 20.dp,
+                                top = 20.dp,
+                                bottom = 100.dp
+                            ),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             items(screenModel.displayedMemberships) { item ->
@@ -156,12 +252,12 @@ class MembershipListScreen(
                                         VoucherManager.clearVouchers()
 
                                         val newCartItem = CartItem(
-                                            idProduk = item.idMembership, // Pakai ID Membership sbg unique identifier
-                                            idCabangItem = null, // Karena ini Membership
+                                            idProduk = item.idMembership,
+                                            idCabangItem = null,
                                             idMembership = item.idMembership,
                                             namaItem = item.namaMembership,
-                                            imageUrl = null, // Membership biasanya tidak punya gambar khusus
-                                            qty = 1, // Pasti 1
+                                            imageUrl = null,
+                                            qty = 1,
                                             hargaUnit = item.hargaDaftar,
                                             category = ItemCategory.MEMBERSHIP
                                         )
@@ -171,12 +267,13 @@ class MembershipListScreen(
                                             snackbarHostState.showSnackbar("Membuka Checkout untuk ${item.namaMembership}...")
                                         }
 
-                                         navigator.push(
-                                             CheckoutScreen(
-                                                 cabang = cabang,
-                                                 vehicle = vehicle,
-                                                 authService)
-                                         )
+                                        navigator.push(
+                                            CheckoutScreen(
+                                                cabang = cabang,
+                                                vehicle = vehicle,
+                                                authService
+                                            )
+                                        )
                                     }
                                 )
                             }
@@ -190,7 +287,12 @@ class MembershipListScreen(
                     onDismissRequest = { showExitDialog = false },
                     containerColor = Color.White,
                     title = {
-                        Text("Perhatian", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black)
+                        Text(
+                            "Perhatian",
+                            fontFamily = satoshiBold,
+                            fontSize = 18.sp,
+                            color = Color.Black
+                        )
                     },
                     text = {
                         Text(
@@ -351,7 +453,8 @@ class MembershipListScreen(
 
     private fun formatRupiah(amount: Double): String {
         val absoluteAmount = kotlin.math.abs(amount).toLong()
-        val formattedNumber = absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
+        val formattedNumber =
+            absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
         val sign = if (amount < 0) "-" else ""
         return "${sign}Rp $formattedNumber"
     }

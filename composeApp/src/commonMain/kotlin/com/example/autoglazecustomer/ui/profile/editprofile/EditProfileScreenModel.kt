@@ -1,13 +1,19 @@
 package com.example.autoglazecustomer.ui.profile.editprofile
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.local.TokenManager
-import io.ktor.client.plugins.* import io.ktor.client.statement.bodyAsText
+import com.example.autoglazecustomer.data.network.AuthService
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class EditProfileScreenModel(private val authService: AuthService) : ScreenModel {
     var nama by mutableStateOf("")
@@ -70,7 +76,8 @@ class EditProfileScreenModel(private val authService: AuthService) : ScreenModel
                     val firstError = errorObj["errors"]?.jsonObject?.values?.firstOrNull()
                         ?.jsonArray?.firstOrNull()?.jsonPrimitive?.content
 
-                    errorMessage = firstError ?: errorObj["message"]?.jsonPrimitive?.content ?: "Data tidak valid"
+                    errorMessage = firstError ?: errorObj["message"]?.jsonPrimitive?.content
+                            ?: "Data tidak valid"
                 } catch (parseEx: Exception) {
                     errorMessage = "Gagal memproses data server. Silakan cek koneksi Anda."
                 }

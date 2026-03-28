@@ -7,7 +7,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.HelpOutline
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -20,15 +26,14 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.example.autoglazecustomer.ui.tabs.ProfileTab
 
 
 class MainTabScreen : Screen {
     @Composable
     override fun Content() {
-        // 1. Inisialisasi Tab secara stabil
+
         val homeTab = remember { HomeTab() }
-        val transactionTab = remember { TransactionTab() } // Menggunakan tab asli
+        val transactionTab = remember { TransactionTab() }
         val cartTab = remember { CartTab() }
         val profileTab = remember { ProfileTab() }
 
@@ -94,9 +99,7 @@ class MainTabScreen : Screen {
     }
 }
 
-/**
- * Placeholder untuk Tab yang belum diimplementasikan
- */
+
 object PlaceholderTab : Tab {
     private var customIndex: UShort = 1u
     private var customTitle: String = "Coming Soon"

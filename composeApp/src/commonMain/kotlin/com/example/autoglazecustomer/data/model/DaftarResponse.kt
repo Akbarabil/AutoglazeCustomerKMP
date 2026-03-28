@@ -12,7 +12,7 @@ data class DaftarResponse(
     @SerialName("success")
     val success: Boolean? = null
 ) {
-    // Helper property untuk mengecek keberhasilan secara aman
+
     val isSuccessful: Boolean
         get() = success == true || status == "success" || status == "true"
 }

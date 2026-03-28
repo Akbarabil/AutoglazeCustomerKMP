@@ -6,8 +6,8 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
-import com.example.autoglazecustomer.data.model.*
 import com.example.autoglazecustomer.data.model.HistoryItem
+import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.network.AuthService
 import kotlinx.coroutines.launch
 
@@ -45,9 +45,9 @@ class CartScreenModel(private val authService: AuthService) : ScreenModel {
         }
     }
 
-    // UBAH: Parameter idKendaraan sekarang menjadi Int?
+
     fun fetchHistory(idKendaraan: Int?) {
-        // Guard Clause: Jika id null, jangan tembak API
+
         if (idKendaraan == null) {
             historyList = emptyList()
             return

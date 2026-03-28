@@ -8,7 +8,23 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -25,8 +41,28 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -126,7 +162,12 @@ class RegisterScreen : Screen {
                                     .verticalScroll(rememberScrollState())
                             ) {
                                 Spacer(modifier = Modifier.height(32.dp))
-                                Text("Yuk, daftar dulu", fontFamily = satoshiMedium, fontSize = 28.sp, color = Color(0xFF9E9E9E))
+                                Text(
+                                    "Yuk, daftar dulu",
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 28.sp,
+                                    color = Color(0xFF9E9E9E)
+                                )
                                 Spacer(modifier = Modifier.height(24.dp))
 
                                 RegisterTextField(
@@ -156,13 +197,20 @@ class RegisterScreen : Screen {
                                         onValueChange = {},
                                         isError = state.errorField == "tglLahir",
                                         modifier = Modifier.fillMaxWidth(),
-                                        label = { Text("Tanggal Lahir", fontFamily = satoshiMedium) },
+                                        label = {
+                                            Text(
+                                                "Tanggal Lahir",
+                                                fontFamily = satoshiMedium
+                                            )
+                                        },
                                         readOnly = true,
                                         leadingIcon = { Icon(Icons.Default.DateRange, null) },
                                         shape = RoundedCornerShape(10.dp),
                                         colors = commonTextFieldColors
                                     )
-                                    Box(modifier = Modifier.matchParentSize().clickable { showDatePicker = true })
+                                    Box(
+                                        modifier = Modifier.matchParentSize()
+                                            .clickable { showDatePicker = true })
                                 }
 
                                 OutlinedTextField(
@@ -173,15 +221,28 @@ class RegisterScreen : Screen {
                                     label = { Text("Nomor Telephone", fontFamily = satoshiMedium) },
                                     leadingIcon = {
                                         Row(
-                                            modifier = Modifier.clickable { showCountryPicker = true }.padding(start = 12.dp, end = 8.dp),
+                                            modifier = Modifier.clickable {
+                                                showCountryPicker = true
+                                            }.padding(start = 12.dp, end = 8.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(state.selectedCountry.flag, fontSize = 20.sp)
                                             Spacer(Modifier.width(4.dp))
-                                            Text("+${state.selectedCountry.phoneCode}", fontWeight = FontWeight.Medium, fontFamily = satoshiMedium)
-                                            Icon(Icons.Default.ArrowDropDown, null, modifier = Modifier.size(20.dp))
+                                            Text(
+                                                "+${state.selectedCountry.phoneCode}",
+                                                fontWeight = FontWeight.Medium,
+                                                fontFamily = satoshiMedium
+                                            )
+                                            Icon(
+                                                Icons.Default.ArrowDropDown,
+                                                null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
                                             Spacer(Modifier.width(8.dp))
-                                            Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.LightGray))
+                                            Box(
+                                                modifier = Modifier.width(1.dp).height(24.dp)
+                                                    .background(Color.LightGray)
+                                            )
                                         }
                                     },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -198,7 +259,10 @@ class RegisterScreen : Screen {
                                     leadingIcon = { Icon(Icons.Default.Lock, null) },
                                     trailingIcon = {
                                         IconButton(onClick = { screenModel.togglePasswordVisibility() }) {
-                                            Icon(if (state.isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff, null)
+                                            Icon(
+                                                if (state.isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                                null
+                                            )
                                         }
                                     },
                                     visualTransformation = if (state.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -211,7 +275,7 @@ class RegisterScreen : Screen {
                                 Button(
                                     onClick = {
                                         screenModel.validateAndCheckEmail {
-                                             navigator.push(RegisterVehicleScreen(it))
+                                            navigator.push(RegisterVehicleScreen(it))
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -219,8 +283,16 @@ class RegisterScreen : Screen {
                                     colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
                                     enabled = !state.isLoading
                                 ) {
-                                    if (state.isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                                    else Text("Selanjutnya", fontFamily = satoshiMedium, fontSize = 20.sp, color = Color.White)
+                                    if (state.isLoading) CircularProgressIndicator(
+                                        color = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    else Text(
+                                        "Selanjutnya",
+                                        fontFamily = satoshiMedium,
+                                        fontSize = 20.sp,
+                                        color = Color.White
+                                    )
                                 }
 
                                 Spacer(modifier = Modifier.height(24.dp))
@@ -229,8 +301,17 @@ class RegisterScreen : Screen {
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Sudah punya akun? ", fontFamily = satoshiMedium, color = Color(0xFFBDBDBD))
-                                    Text("Masuk", modifier = Modifier.clickable { navigator.pop() }, fontWeight = FontWeight.Bold, color = redPrimer)
+                                    Text(
+                                        "Sudah punya akun? ",
+                                        fontFamily = satoshiMedium,
+                                        color = Color(0xFFBDBDBD)
+                                    )
+                                    Text(
+                                        "Masuk",
+                                        modifier = Modifier.clickable { navigator.pop() },
+                                        fontWeight = FontWeight.Bold,
+                                        color = redPrimer
+                                    )
                                 }
 
                                 Spacer(modifier = Modifier.height(32.dp))
@@ -245,7 +326,12 @@ class RegisterScreen : Screen {
                             .align(Alignment.TopStart)
                             .padding(start = 8.dp, top = 8.dp)
                     ) {
-                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = Color.DarkGray, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.ArrowBackIosNew,
+                            "Back",
+                            tint = Color.DarkGray,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
             }
@@ -258,9 +344,17 @@ class RegisterScreen : Screen {
             ) {
                 state.errorMessage?.let { msg ->
                     Snackbar(
-                        modifier = Modifier.statusBarsPadding().padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                        modifier = Modifier.statusBarsPadding()
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                         containerColor = redPrimer,
-                        action = { TextButton(onClick = { screenModel.clearError() }) { Text("OK", color = Color.White) } }
+                        action = {
+                            TextButton(onClick = { screenModel.clearError() }) {
+                                Text(
+                                    "OK",
+                                    color = Color.White
+                                )
+                            }
+                        }
                     ) { Text(msg, color = Color.White) }
                 }
             }
@@ -280,12 +374,21 @@ class RegisterScreen : Screen {
                     onDismissRequest = { showDatePicker = false },
                     confirmButton = {
                         TextButton(onClick = {
-                            datePickerState.selectedDateMillis?.let { screenModel.onTglLahirChange(formatMillisToDate(it)) }
+                            datePickerState.selectedDateMillis?.let {
+                                screenModel.onTglLahirChange(
+                                    formatMillisToDate(it)
+                                )
+                            }
                             showDatePicker = false
                         }) { Text("Pilih", color = redPrimer) }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showDatePicker = false }) { Text("Batal", color = Color.Gray) }
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text(
+                                "Batal",
+                                color = Color.Gray
+                            )
+                        }
                     },
                     colors = DatePickerDefaults.colors(containerColor = Color.White)
                 ) {
@@ -310,19 +413,33 @@ class RegisterScreen : Screen {
 @Composable
 fun CountryPickerDialog(onDismiss: () -> Unit, onCountrySelected: (Country) -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
-        Surface(shape = RoundedCornerShape(16.dp), color = Color.White, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White,
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Pilih Negara", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.DarkGray)
+                Text(
+                    "Pilih Negara",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.DarkGray
+                )
                 Spacer(Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
                     items(allCountries) { country ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable { onCountrySelected(country) }.padding(vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                                .clickable { onCountrySelected(country) }.padding(vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(country.flag, fontSize = 24.sp)
                             Spacer(Modifier.width(12.dp))
-                            Text(country.name, modifier = Modifier.weight(1f), color = Color.DarkGray)
+                            Text(
+                                country.name,
+                                modifier = Modifier.weight(1f),
+                                color = Color.DarkGray
+                            )
                             Text("+${country.phoneCode}", color = Color.Gray)
                         }
                     }
@@ -353,5 +470,7 @@ fun RegisterTextField(
 fun formatMillisToDate(millis: Long): String {
     val instant = Instant.fromEpochMilliseconds(millis)
     val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-    return "${localDateTime.year}-${localDateTime.monthNumber.toString().padStart(2, '0')}-${localDateTime.dayOfMonth.toString().padStart(2, '0')}"
+    return "${localDateTime.year}-${
+        localDateTime.monthNumber.toString().padStart(2, '0')
+    }-${localDateTime.dayOfMonth.toString().padStart(2, '0')}"
 }

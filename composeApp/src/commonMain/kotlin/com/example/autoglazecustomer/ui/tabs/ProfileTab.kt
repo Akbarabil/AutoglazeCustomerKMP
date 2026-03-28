@@ -10,7 +10,7 @@ import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.profile.ProfileScreen
 import org.jetbrains.compose.resources.painterResource
 
-// Menggunakan class tanpa parameter agar aman dari Serialization crash di Android
+
 class ProfileTab : Tab {
 
     override val options: TabOptions
@@ -23,10 +23,10 @@ class ProfileTab : Tab {
 
     @Composable
     override fun Content() {
-        // Inisialisasi AuthService di dalam Content (Lazy Initialization)
+
         val authService = remember { AuthService() }
 
-        // Inisialisasi ProfileScreen dengan parameter authService
+
         val profileScreen = remember(authService) { ProfileScreen(authService) }
 
         profileScreen.Content()

@@ -35,7 +35,7 @@ class CheckoutScreenModel(
     var nettFinal by mutableStateOf(0.0)
     var diskonFinal by mutableStateOf(0.0)
 
-    // JOSJIS: Fungsi Kasir Pintar (Menghitung PPN & Diskon Voucher)
+
     fun calculateTotals(cartItems: List<CartItem>) {
         val totalBayarAsli = cartItems.sumOf { it.subtotal }
         val taxRate = 0.11
@@ -47,7 +47,8 @@ class CheckoutScreenModel(
         var tempTotalDiskon = 0.0
         selectedVouchers.forEach { voucher ->
             val potHarga = if (hasMembership) voucher.potHargaMember else voucher.potHargaNonMember
-            val persen = if (hasMembership) voucher.presentaseMember else voucher.presentaseNonMember
+            val persen =
+                if (hasMembership) voucher.presentaseMember else voucher.presentaseNonMember
 
             if (persen > 0) {
                 tempTotalDiskon += (totalBayarAsli * (persen / 100.0))
@@ -100,9 +101,10 @@ class CheckoutScreenModel(
                     )
                 }
 
-                // JOSJIS: Ambil ID Voucher terpilih untuk Payload
+
                 val selectedVoucherIds = VoucherManager.selectedVouchers.value.map { it.idVoucher }
-                val idVoucherPayload = if (selectedVoucherIds.isEmpty()) "[]" else selectedVoucherIds.toString()
+                val idVoucherPayload =
+                    if (selectedVoucherIds.isEmpty()) "[]" else selectedVoucherIds.toString()
 
                 val payload = CheckoutPayload(
                     idCustomer = customerIdInt,
@@ -121,11 +123,12 @@ class CheckoutScreenModel(
                     detail = detailPayload
                 )
 
-                // LOG PAYLOAD SEBELUM TERBANG
+
                 try {
                     val jsonString = Json { prettyPrint = true }.encodeToString(payload)
                     println("🚀 ====== PAYLOAD CHECKOUT DENGAN VOUCHER ======\n$jsonString\n==============================")
-                } catch (e: Exception) { /* ignore log error */ }
+                } catch (e: Exception) {
+                }
 
                 val response = authService.processCheckout(payload, isMembership)
                 if (response.status) {

@@ -3,15 +3,48 @@ package com.example.autoglazecustomer.ui.profile.myvoucher
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -76,7 +109,11 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                     title = { Text("Voucher Saya", fontFamily = satoshiBold, fontSize = 19.sp) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.Default.ArrowBackIosNew, null, modifier = Modifier.size(20.dp))
+                            Icon(
+                                Icons.Default.ArrowBackIosNew,
+                                null,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -86,7 +123,7 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
         ) { padding ->
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
 
-                // --- SEARCH BAR AREA ---
+
                 Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
                     Text(
                         text = "Cari Kendaraan",
@@ -99,19 +136,35 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Ketik Nomor Polisi atau Merk kendaraan", fontSize = 14.sp, fontFamily = satoshiMedium) },
-                        leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(20.dp)) },
-                        // --- FITUR CLEAR FILTER ---
+                        placeholder = {
+                            Text(
+                                "Ketik Nomor Polisi atau Merk kendaraan",
+                                fontSize = 14.sp,
+                                fontFamily = satoshiMedium
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Search,
+                                null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Close, "Clear", modifier = Modifier.size(20.dp))
+                                    Icon(
+                                        Icons.Default.Close,
+                                        "Clear",
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                 }
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
-                        // --- FIX COLORS BERDASARKAN KANDIDAT FUNGSI KAMU ---
+
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.Black,
                             unfocusedTextColor = Color.Black,
@@ -128,11 +181,14 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                     )
                 }
 
-                // --- HORIZONTAL TABS ---
+
                 if (screenModel.isLoadingVehicles) {
                     Row(modifier = Modifier.padding(horizontal = 24.dp)) {
                         repeat(3) {
-                            Box(modifier = Modifier.size(width = 100.dp, height = 50.dp).background(Color(0xFFEBEBEB), RoundedCornerShape(12.dp)))
+                            Box(
+                                modifier = Modifier.size(width = 100.dp, height = 50.dp)
+                                    .background(Color(0xFFEBEBEB), RoundedCornerShape(12.dp))
+                            )
                             Spacer(Modifier.width(8.dp))
                         }
                     }
@@ -152,7 +208,13 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                     ) {
                         items(filteredVehicles) { vehicle ->
                             val isActive = selectedId == vehicle.idKendaraan
-                            VehicleTabItem(vehicle, isActive, satoshiBold, satoshiMedium, redPrimer) {
+                            VehicleTabItem(
+                                vehicle,
+                                isActive,
+                                satoshiBold,
+                                satoshiMedium,
+                                redPrimer
+                            ) {
                                 selectedId = vehicle.idKendaraan
                                 screenModel.toggleExpand(vehicle.idKendaraan!!)
                             }
@@ -162,7 +224,7 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
 
                 Spacer(Modifier.height(16.dp))
 
-                // --- CONTAINER VOUCHER SHELF ---
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color.White,
@@ -183,7 +245,10 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                         )
 
                         if (isLoading) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 CircularProgressIndicator(color = redPrimer)
                             }
                         } else if (vouchers.isNullOrEmpty()) {
@@ -253,7 +318,7 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
         red: Color
     ) {
         val memberStatus = isMember ?: false
-        val potHarga = if (memberStatus) voucher.potHargaMember else voucher.potHargaNonMember
+        if (memberStatus) voucher.potHargaMember else voucher.potHargaNonMember
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -264,8 +329,15 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
         ) {
             Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                 Column(modifier = Modifier.weight(1f).padding(16.dp)) {
-                    Text(text = voucher.kodeVoucher ?: "-", fontFamily = bold, fontSize = 14.sp, color = Color.Black)
-                    val potHarga = (if (memberStatus) voucher.potHargaMember else voucher.potHargaNonMember) ?: 0.0
+                    Text(
+                        text = voucher.kodeVoucher ?: "-",
+                        fontFamily = bold,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                    val potHarga =
+                        (if (memberStatus) voucher.potHargaMember else voucher.potHargaNonMember)
+                            ?: 0.0
 
                     if (potHarga > 0) {
                         Text(
@@ -279,22 +351,38 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                     )
                     if (!voucher.keterangan.isNullOrEmpty()) {
                         Spacer(Modifier.height(8.dp))
-                        Text(voucher.keterangan!!, fontFamily = med, fontSize = 11.sp, color = Color(0xFF00796B))
+                        Text(
+                            voucher.keterangan!!,
+                            fontFamily = med,
+                            fontSize = 11.sp,
+                            color = Color(0xFF00796B)
+                        )
                     }
                 }
 
                 Box(modifier = Modifier.fillMaxHeight().width(1.dp).background(Color(0xFFEEEEEE)))
 
                 Column(
-                    modifier = Modifier.background(Color(0xFFFAFAFA)).fillMaxHeight().padding(16.dp),
+                    modifier = Modifier.background(Color(0xFFFAFAFA)).fillMaxHeight()
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text("KODE", fontFamily = bold, fontSize = 10.sp, color = Color.Gray)
-                    Text(text = voucher.kodeVoucher ?: "-", fontFamily = bold, fontSize = 14.sp, color = Color.Black)
+                    Text(
+                        text = voucher.kodeVoucher ?: "-",
+                        fontFamily = bold,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
                     Spacer(Modifier.height(12.dp))
                     Text("Berlaku s/d", fontFamily = med, fontSize = 9.sp, color = Color.Gray)
-                    Text(voucher.tglExpired ?: "-", fontFamily = med, fontSize = 10.sp, color = Color.DarkGray)
+                    Text(
+                        voucher.tglExpired ?: "-",
+                        fontFamily = med,
+                        fontSize = 10.sp,
+                        color = Color.DarkGray
+                    )
                 }
             }
         }
@@ -307,9 +395,20 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(Icons.Default.ConfirmationNumber, null, modifier = Modifier.size(64.dp), tint = Color(0xFFE0E0E0))
+            Icon(
+                Icons.Default.ConfirmationNumber,
+                null,
+                modifier = Modifier.size(64.dp),
+                tint = Color(0xFFE0E0E0)
+            )
             Spacer(Modifier.height(16.dp))
-            Text("Belum ada voucher tersedia\nuntuk kendaraan ini.", textAlign = TextAlign.Center, fontFamily = med, fontSize = 16.sp, color = Color.Gray)
+            Text(
+                "Belum ada voucher tersedia\nuntuk kendaraan ini.",
+                textAlign = TextAlign.Center,
+                fontFamily = med,
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
         }
     }
 

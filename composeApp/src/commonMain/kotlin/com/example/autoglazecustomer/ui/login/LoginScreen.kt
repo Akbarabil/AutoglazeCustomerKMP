@@ -8,7 +8,21 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,7 +32,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -33,7 +58,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
+import autoglazecustomer.composeapp.generated.resources.ic_visibility
+import autoglazecustomer.composeapp.generated.resources.ic_visibility_off
+import autoglazecustomer.composeapp.generated.resources.img_hello
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -84,7 +114,7 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
         )
 
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
-            // Background Pattern hanya di area atas agar tidak bocor ke navigasi bawah
+
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
@@ -94,7 +124,7 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
 
             Scaffold(
                 containerColor = Color.Transparent,
-                // Hilangkan insets bawaan Scaffold agar kita bisa handle manual secara presisi
+
                 contentWindowInsets = WindowInsets(0, 0, 0, 0)
             ) { paddingValues ->
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
@@ -145,7 +175,13 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     onValueChange = { screenModel.onEmailChange(it) },
                                     modifier = Modifier.fillMaxWidth(),
                                     label = { Text("Email", fontFamily = satoshiMedium) },
-                                    leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = "Email Icon", Modifier.size(24.dp)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Outlined.Email,
+                                            contentDescription = "Email Icon",
+                                            Modifier.size(24.dp)
+                                        )
+                                    },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                                     shape = RoundedCornerShape(10.dp),
                                     singleLine = true,
@@ -160,7 +196,13 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     modifier = Modifier.fillMaxWidth(),
                                     label = { Text("Password", fontFamily = satoshiMedium) },
                                     visualTransformation = if (screenModel.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                    leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = "Password Icon", Modifier.size(24.dp)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Outlined.Lock,
+                                            contentDescription = "Password Icon",
+                                            Modifier.size(24.dp)
+                                        )
+                                    },
                                     trailingIcon = {
                                         IconButton(onClick = { screenModel.togglePasswordVisibility() }) {
                                             Icon(
@@ -191,9 +233,19 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     enabled = !screenModel.isLoading
                                 ) {
                                     if (screenModel.isLoading) {
-                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                        CircularProgressIndicator(
+                                            color = Color.White,
+                                            modifier = Modifier.size(24.dp),
+                                            strokeWidth = 2.dp
+                                        )
                                     } else {
-                                        Text("Masuk", fontFamily = satoshiMedium, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                        Text(
+                                            "Masuk",
+                                            fontFamily = satoshiMedium,
+                                            color = Color.White,
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
                                 }
 
@@ -204,10 +256,19 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Belum punya akun? ", fontFamily = satoshiMedium, color = Color(0xFFBDBDBD), fontSize = 16.sp)
+                                    Text(
+                                        "Belum punya akun? ",
+                                        fontFamily = satoshiMedium,
+                                        color = Color(0xFFBDBDBD),
+                                        fontSize = 16.sp
+                                    )
                                     Text(
                                         text = "Daftar",
-                                        modifier = Modifier.clickable { navigator.push(RegisterScreen()) },
+                                        modifier = Modifier.clickable {
+                                            navigator.push(
+                                                RegisterScreen()
+                                            )
+                                        },
                                         fontFamily = satoshiMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = redPrimer,
@@ -215,13 +276,13 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                                     )
                                 }
 
-                                // Padding tambahan di bawah agar scroll tidak mepet Home Indicator
+
                                 Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
                     }
 
-                    // Tombol Back
+
                     IconButton(
                         onClick = { navigator.pop() },
                         modifier = Modifier
@@ -229,12 +290,17 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                             .padding(start = 12.dp, top = 12.dp)
                             .align(Alignment.TopStart)
                     ) {
-                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = Color.DarkGray, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.ArrowBackIosNew,
+                            "Back",
+                            tint = Color.DarkGray,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
             }
 
-            // Snackbar Error
+
             AnimatedVisibility(
                 visible = screenModel.errorMessage != null,
                 enter = slideInVertically { -it } + fadeIn(),

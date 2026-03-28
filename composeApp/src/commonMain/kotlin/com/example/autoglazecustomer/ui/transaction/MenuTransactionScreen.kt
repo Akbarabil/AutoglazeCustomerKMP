@@ -4,7 +4,20 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -13,7 +26,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Assignment
-import androidx.compose.material3.*
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,7 +47,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.ic_carwash_category
+import autoglazecustomer.composeapp.generated.resources.ic_daftar_member
+import autoglazecustomer.composeapp.generated.resources.ic_produk
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -78,7 +103,11 @@ class MenuTransactionScreen(
                     title = { Text("Menu Transaksi", fontFamily = satoshiBold, fontSize = 18.sp) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.Default.ArrowBackIosNew, null, modifier = Modifier.size(20.dp))
+                            Icon(
+                                Icons.Default.ArrowBackIosNew,
+                                null,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White),
@@ -87,7 +116,7 @@ class MenuTransactionScreen(
             },
             containerColor = Color(0xFFFBFBFB)
         ) { padding ->
-            // JOSJIS: Menggunakan LazyColumn (List Vertikal) bukan Grid
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(24.dp),
@@ -100,14 +129,24 @@ class MenuTransactionScreen(
 
                 item {
                     Column {
-                        Text("Apa yang Anda butuhkan?", fontFamily = satoshiBold, fontSize = 20.sp, color = Color.Black)
-                        Text("Pilih kategori layanan di bawah ini", fontFamily = satoshiMedium, fontSize = 14.sp, color = Color.Gray)
+                        Text(
+                            "Apa yang Anda butuhkan?",
+                            fontFamily = satoshiBold,
+                            fontSize = 20.sp,
+                            color = Color.Black
+                        )
+                        Text(
+                            "Pilih kategori layanan di bawah ini",
+                            fontFamily = satoshiMedium,
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
                         Spacer(Modifier.height(8.dp))
                     }
                 }
 
                 items(items = menus, key = { it.id }) { menu ->
-                    val subtitle = when(menu.id) {
+                    val subtitle = when (menu.id) {
                         "JASA" -> "Pilih layanan cuci dan detailing"
                         "PRODUK" -> "Beli perlengkapan & produk perawatan"
                         "MEMBER" -> "Nikmati harga khusus & promo"
@@ -123,8 +162,21 @@ class MenuTransactionScreen(
                     ) {
                         when (menu.id) {
                             "JASA" -> navigator.push(JasaListScreen(cabang, vehicle, authService))
-                            "PRODUK" -> navigator.push(ProdukListScreen(cabang,vehicle,authService))
-                            "MEMBER" -> navigator.push(MembershipListScreen(cabang,vehicle, authService))
+                            "PRODUK" -> navigator.push(
+                                ProdukListScreen(
+                                    cabang,
+                                    vehicle,
+                                    authService
+                                )
+                            )
+
+                            "MEMBER" -> navigator.push(
+                                MembershipListScreen(
+                                    cabang,
+                                    vehicle,
+                                    authService
+                                )
+                            )
                         }
                     }
                 }
@@ -143,7 +195,11 @@ class MenuTransactionScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(elevation = 8.dp, shape = RoundedCornerShape(20.dp), spotColor = accent.copy(alpha = 0.5f))
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = accent.copy(alpha = 0.5f)
+                )
                 .clip(RoundedCornerShape(20.dp))
                 .background(Brush.horizontalGradient(listOf(accent, Color(0xFF9E2A15))))
                 .padding(20.dp)
@@ -155,14 +211,34 @@ class MenuTransactionScreen(
                     modifier = Modifier.size(54.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Assignment, null, tint = Color.White, modifier = Modifier.size(24.dp))
+                        Icon(
+                            Icons.Default.Assignment,
+                            null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
                 Spacer(Modifier.width(16.dp))
                 Column {
-                    Text(cabang.namaCabang, color = Color.White, fontFamily = bold, fontSize = 20.sp)
-                    Text(vehicle.vehicle.merek ?: "Kendaraan", color = Color.White.copy(0.9f), fontFamily = med, fontSize = 14.sp)
-                    Text(vehicle.vehicle.nopol ?: "-", color = Color.White.copy(0.7f), fontFamily = med, fontSize = 13.sp)
+                    Text(
+                        cabang.namaCabang,
+                        color = Color.White,
+                        fontFamily = bold,
+                        fontSize = 20.sp
+                    )
+                    Text(
+                        vehicle.vehicle.merek ?: "Kendaraan",
+                        color = Color.White.copy(0.9f),
+                        fontFamily = med,
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        vehicle.vehicle.nopol ?: "-",
+                        color = Color.White.copy(0.7f),
+                        fontFamily = med,
+                        fontSize = 13.sp
+                    )
                 }
             }
         }
@@ -180,7 +256,11 @@ class MenuTransactionScreen(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(elevation = 6.dp, shape = RoundedCornerShape(20.dp), spotColor = Color.Black.copy(alpha = 0.08f))
+                .shadow(
+                    elevation = 6.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.08f)
+                )
                 .clip(RoundedCornerShape(20.dp))
                 .clickable { onClick() },
             color = Color.White,

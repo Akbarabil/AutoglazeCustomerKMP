@@ -1,7 +1,25 @@
 package com.example.autoglazecustomer.data.network
 
-import com.example.autoglazecustomer.data.model.*
+import com.example.autoglazecustomer.data.model.AddVehicleResponse
+import com.example.autoglazecustomer.data.model.ApiResponse
+import com.example.autoglazecustomer.data.model.AsalTahuResponse
+import com.example.autoglazecustomer.data.model.BeritaResponse
+import com.example.autoglazecustomer.data.model.ChekKendaraanResponse
+import com.example.autoglazecustomer.data.model.DaftarData
+import com.example.autoglazecustomer.data.model.DaftarResponse
 import com.example.autoglazecustomer.data.model.HistoryResponse
+import com.example.autoglazecustomer.data.model.LoginResponse
+import com.example.autoglazecustomer.data.model.MerkKendaraanResponse
+import com.example.autoglazecustomer.data.model.PointResponse
+import com.example.autoglazecustomer.data.model.ProfileResponse
+import com.example.autoglazecustomer.data.model.RegisterResponse
+import com.example.autoglazecustomer.data.model.SliderResponse
+import com.example.autoglazecustomer.data.model.TipeKendaraanResponse
+import com.example.autoglazecustomer.data.model.UpdateProfileResponse
+import com.example.autoglazecustomer.data.model.VehicleResponse
+import com.example.autoglazecustomer.data.model.VoucherKendaraanResponse
+import com.example.autoglazecustomer.data.model.VoucherUmumResponse
+import com.example.autoglazecustomer.data.model.WarnaKendaraanResponse
 import com.example.autoglazecustomer.data.model.password.RequestPasswordResponse
 import com.example.autoglazecustomer.data.model.transaction.CabangTerdekatResponse
 import com.example.autoglazecustomer.data.model.transaction.MembershipCarwashCheckResponse
@@ -11,15 +29,28 @@ import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutRes
 import com.example.autoglazecustomer.data.model.transaction.jasa.JasaResponse
 import com.example.autoglazecustomer.data.model.transaction.membership.MembershipResponse
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukResponse
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
-import io.ktor.client.request.*
-import io.ktor.client.request.forms.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.forms.FormDataContent
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitForm
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
+import io.ktor.http.parameters
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -61,7 +92,7 @@ class AuthService {
         }
     }
 
-    // --- AUTH & LOGIN ---
+
     suspend fun login(email: String, password: String): LoginResponse {
         return client.submitForm(
             url = "login",
@@ -72,7 +103,7 @@ class AuthService {
         ).body()
     }
 
-    // --- REGISTER FLOW ---
+
     suspend fun registerCustomer(data: DaftarData): RegisterResponse {
         return client.submitForm(
             url = "register-customer",
@@ -93,7 +124,7 @@ class AuthService {
         ).body()
     }
 
-    // --- HOMEPAGE DATA ---
+
     suspend fun getProfileData(token: String): ProfileResponse {
         return client.get("profile") {
             header(HttpHeaders.Authorization, token)
@@ -118,7 +149,7 @@ class AuthService {
         return client.get("list-voucher-umum").body()
     }
 
-    // --- VALIDATION & HELPERS ---
+
     suspend fun cekKendaraan(nopol: String): ChekKendaraanResponse {
         return client.submitForm(
             url = "cek-kendaraan",
@@ -144,7 +175,9 @@ class AuthService {
     suspend fun getMerek(): List<MerkKendaraanResponse> {
         return try {
             client.get("kendaraan/merek").body()
-        } catch (e: Exception) { emptyList() }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     suspend fun getTipe(idMerek: Int): List<TipeKendaraanResponse> {
@@ -152,13 +185,17 @@ class AuthService {
             client.get("kendaraan/tipe") {
                 url { parameters.append("id_merek", idMerek.toString()) }
             }.body()
-        } catch (e: Exception) { emptyList() }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     suspend fun getWarna(): List<WarnaKendaraanResponse> {
         return try {
             client.get("warna").body()
-        } catch (e: Exception) { emptyList() }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     suspend fun getAsalTahu(): List<AsalTahuResponse> {
@@ -189,7 +226,7 @@ class AuthService {
         }.body()
     }
 
-    // --- EDIT PROFILE (MULTIPART) ---
+
     suspend fun updateProfile(
         token: String,
         nama: String,
@@ -197,14 +234,15 @@ class AuthService {
         telepon: String,
         imageBytes: ByteArray? = null
     ): UpdateProfileResponse {
-        return client.post("profile") { // Gunakan POST manual dengan body MultiPart
+        return client.post("profile") {
             header(HttpHeaders.Authorization, token)
             header(HttpHeaders.Accept, "application/json")
-            header("X-HTTP-Method-Override", "PUT") // Spoofing via header
+            header("X-HTTP-Method-Override", "PUT")
 
-            setBody(MultiPartFormDataContent(
+            setBody(
+                MultiPartFormDataContent(
                 formData {
-                    // Laravel Spoofing di body
+
                     append("_method", "PUT")
 
                     append("nama", nama)
@@ -214,7 +252,10 @@ class AuthService {
                     if (imageBytes != null) {
                         append("photo", imageBytes, Headers.build {
                             append(HttpHeaders.ContentType, "image/jpeg")
-                            append(HttpHeaders.ContentDisposition, "form-data; name=\"photo\"; filename=\"profile.jpg\"")
+                            append(
+                                HttpHeaders.ContentDisposition,
+                                "form-data; name=\"photo\"; filename=\"profile.jpg\""
+                            )
                         })
                     }
                 }
@@ -281,7 +322,7 @@ class AuthService {
             response.statusInt ?: 0
         } catch (e: Exception) {
             println("Error check membership: ${e.message}")
-            0 // Kembalikan 0 (Non-Membership) jika API gagal/timeout agar aplikasi tidak crash
+            0
         }
     }
 
@@ -293,7 +334,11 @@ class AuthService {
                 }
             }.body()
         } catch (e: Exception) {
-            JasaResponse(status = false, message = "Gagal memuat layanan: ${e.message}", data = emptyList())
+            JasaResponse(
+                status = false,
+                message = "Gagal memuat layanan: ${e.message}",
+                data = emptyList()
+            )
         }
     }
 
@@ -313,7 +358,11 @@ class AuthService {
                 }
             }.body()
         } catch (e: Exception) {
-            MembershipCarwashCheckResponse(status = false, message = "Gagal cek status carwash: ${e.message}", data = emptyList())
+            MembershipCarwashCheckResponse(
+                status = false,
+                message = "Gagal cek status carwash: ${e.message}",
+                data = emptyList()
+            )
         }
     }
 
@@ -325,7 +374,11 @@ class AuthService {
                 }
             }.body()
         } catch (e: Exception) {
-            ProdukResponse(status = false, message = "Gagal memuat produk: ${e.message}", data = emptyList())
+            ProdukResponse(
+                status = false,
+                message = "Gagal memuat produk: ${e.message}",
+                data = emptyList()
+            )
         }
     }
 
@@ -352,7 +405,7 @@ class AuthService {
                 "insert-penjualan-customer"
             }
 
-            // Eksekusi POST request
+
             client.post(targetUrl) {
                 contentType(ContentType.Application.Json)
                 setBody(payload)

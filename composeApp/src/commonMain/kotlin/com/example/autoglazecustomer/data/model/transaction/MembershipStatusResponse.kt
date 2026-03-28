@@ -1,8 +1,8 @@
 package com.example.autoglazecustomer.data.model.transaction
 
 import com.example.autoglazecustomer.data.model.VehicleData
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class MembershipStatusResponse(

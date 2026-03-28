@@ -10,7 +10,7 @@ import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.home.HomeScreen
 import org.jetbrains.compose.resources.painterResource
 
-// Hapus (private val authService: AuthService) dari constructor
+
 class HomeTab : Tab {
     override val options: TabOptions
         @Composable

@@ -6,8 +6,11 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.model.BeritaItem
+import com.example.autoglazecustomer.data.model.SliderItem
+import com.example.autoglazecustomer.data.model.VehicleData
+import com.example.autoglazecustomer.data.model.VoucherItem
 import com.example.autoglazecustomer.data.network.AuthService
-import com.example.autoglazecustomer.data.model.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
@@ -41,14 +44,15 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
 
                 val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-                // Jalankan Parallel
-                val profileJob = async { runCatching { authService.getProfileData(formattedToken) } }
+
+                val profileJob =
+                    async { runCatching { authService.getProfileData(formattedToken) } }
                 val sliderJob = async { runCatching { authService.getSlider() } }
                 val vehicleJob = async { runCatching { authService.getVehicles(formattedToken) } }
                 val beritaJob = async { runCatching { authService.getBerita() } }
                 val voucherJob = async { runCatching { authService.getVoucherUmum() } }
 
-                // Evaluasi satu per satu agar error di satu API tidak mematikan yang lain
+
                 profileJob.await().onSuccess { res ->
                     if (res.success) {
                         userName = res.data?.nama ?: userName

@@ -37,5 +37,5 @@ val allCountries = listOf(
     Country("Australia", "AU", "61", "🇦🇺", 9, 9),
     Country("Japan", "JP", "81", "🇯🇵", 10, 10),
     Country("South Korea", "KR", "82", "🇰🇷", 9, 10),
-    Country("Other", "XX", "", "🌐", 5, 15) // Opsi darurat
+    Country("Other", "XX", "", "🌐", 5, 15)
 ).sortedBy { it.name }

@@ -30,11 +30,16 @@ class SurveyScreenModel(private val authService: AuthService) : ScreenModel {
         state = state.copy(selectedAsalTahu = item, errorField = null)
     }
 
-    fun clearError() { state = state.copy(errorMessage = null) }
+    fun clearError() {
+        state = state.copy(errorMessage = null)
+    }
 
     fun registerFinal(dataRegistrasi: DaftarData) {
         if (state.selectedAsalTahu == null) {
-            state = state.copy(errorMessage = "Silakan pilih salah satu opsi survey", errorField = "survey")
+            state = state.copy(
+                errorMessage = "Silakan pilih salah satu opsi survey",
+                errorField = "survey"
+            )
             return
         }
 

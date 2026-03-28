@@ -13,37 +13,60 @@ import kotlinx.coroutines.launch
 
 class RegisterScreenModel(private val authService: AuthService) : ScreenModel {
 
-    // Menggunakan state tunggal agar UI hanya memantau satu sumber data
+
     var state by mutableStateOf(RegisterState())
         private set
 
     fun onNamaChange(newValue: String) {
-        state = state.copy(nama = newValue, errorField = if(state.errorField == "nama") null else state.errorField)
+        state = state.copy(
+            nama = newValue,
+            errorField = if (state.errorField == "nama") null else state.errorField
+        )
     }
+
     fun onEmailChange(newValue: String) {
-        state = state.copy(email = newValue, errorField = if(state.errorField == "email") null else state.errorField)
+        state = state.copy(
+            email = newValue,
+            errorField = if (state.errorField == "email") null else state.errorField
+        )
     }
+
     fun onTglLahirChange(newValue: String) {
-        state = state.copy(tglLahir = newValue, errorField = if(state.errorField == "tglLahir") null else state.errorField)
+        state = state.copy(
+            tglLahir = newValue,
+            errorField = if (state.errorField == "tglLahir") null else state.errorField
+        )
     }
+
     fun onPhoneChange(newValue: String) {
         if (newValue.all { it.isDigit() }) {
-            state = state.copy(phone = newValue, errorField = if(state.errorField == "phone") null else state.errorField)
+            state = state.copy(
+                phone = newValue,
+                errorField = if (state.errorField == "phone") null else state.errorField
+            )
         }
     }
+
     fun onPasswordChange(newValue: String) {
-        state = state.copy(password = newValue, errorField = if(state.errorField == "password") null else state.errorField)
+        state = state.copy(
+            password = newValue,
+            errorField = if (state.errorField == "password") null else state.errorField
+        )
     }
 
-    fun togglePasswordVisibility() { state = state.copy(isPasswordVisible = !state.isPasswordVisible) }
+    fun togglePasswordVisibility() {
+        state = state.copy(isPasswordVisible = !state.isPasswordVisible)
+    }
 
-    // Modifikasi clearError agar menghapus keduanya
-    fun clearError() { state = state.copy(errorMessage = null, errorField = null) }
+
+    fun clearError() {
+        state = state.copy(errorMessage = null, errorField = null)
+    }
 
     fun validateAndCheckEmail(onSuccess: (DaftarData) -> Unit) {
         val s = state
 
-        // Logika Validasi dengan penentuan field yang error
+
         val validation = when {
             s.nama.isBlank() -> "nama" to "Nama lengkap tidak boleh kosong"
             s.nama.length < 3 -> "nama" to "Nama terlalu pendek"
@@ -66,15 +89,16 @@ class RegisterScreenModel(private val authService: AuthService) : ScreenModel {
         screenModelScope.launch {
             state = state.copy(isLoading = true, errorField = null)
             try {
-                // 1. Ambil objek response utuh
+
                 val response = authService.cekEmail(s.email)
 
-                // 2. Gunakan helper .isSuccessful yang sudah kamu buat di DaftarResponse
+
                 if (response.isSuccessful) {
-                    val fullPhone = if (s.selectedCountry.phoneCode.isEmpty()) s.phone else "+${s.selectedCountry.phoneCode}${s.phone}"
+                    val fullPhone =
+                        if (s.selectedCountry.phoneCode.isEmpty()) s.phone else "+${s.selectedCountry.phoneCode}${s.phone}"
                     onSuccess(DaftarData(s.nama, s.email, s.tglLahir, fullPhone, s.password))
                 } else {
-                    // 3. Jika gagal, ambil pesan error dari properti .message
+
                     state = state.copy(
                         errorMessage = response.message ?: "Email sudah terdaftar",
                         errorField = "email"

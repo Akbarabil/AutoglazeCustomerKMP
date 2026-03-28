@@ -8,8 +8,8 @@ data class VoucherUIModel(
     val namaVoucher: String,
     val keterangan: String,
     val kodeVoucher: String?,
-    val allowMultiple: Int, // 0 = Eksklusif, 1 = Boleh digabung
-    val idProduk: String?,  // Batasan ID Produk
+    val allowMultiple: Int,
+    val idProduk: String?,
     val tglExpired: String?,
     val isForVehicle: Boolean,
     val potHargaMember: Double,
@@ -18,11 +18,7 @@ data class VoucherUIModel(
     val presentaseNonMember: Double
 )
 
-// ==========================================================
-// MAPPER (PENERJEMAH) DARI API KE UI MODEL
-// ==========================================================
 
-// 1. Penerjemah untuk Voucher Umum
 fun VoucherItem.toUIModel(): VoucherUIModel {
     return VoucherUIModel(
         idVoucher = this.idVoucher ?: 0,
@@ -40,7 +36,7 @@ fun VoucherItem.toUIModel(): VoucherUIModel {
     )
 }
 
-// 2. Penerjemah untuk Voucher Kendaraan
+
 fun VoucherItemId.toUIModel(): VoucherUIModel {
     return VoucherUIModel(
         idVoucher = this.idVoucherKendaraan ?: 0,

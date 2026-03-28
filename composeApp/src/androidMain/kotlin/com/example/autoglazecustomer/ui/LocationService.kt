@@ -1,13 +1,12 @@
 package com.example.autoglazecustomer.ui
 
 import android.annotation.SuppressLint
-import android.content.Context // Import spesifik
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import kotlinx.coroutines.tasks.await // Sekarang ini akan terbaca setelah sync gradle
+import kotlinx.coroutines.tasks.await
 
 actual class LocationService(private val context: Context) {
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)

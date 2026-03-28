@@ -9,6 +9,7 @@ data class JasaResponse(
     @SerialName("message") val message: String,
     @SerialName("data") val data: List<LayananItem>? = null
 )
+
 @Serializable
 data class LayananItem(
     @SerialName("ID_PRODUK") val idProduk: Int,

@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.example.autoglazecustomer.data.local.TokenManager // Pastikan import ini ada
+import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.network.AuthService
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
@@ -77,7 +77,10 @@ class LoginScreenModel(
                 try {
                     val errorBody = e.response.bodyAsText()
                     val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-                    val errorResponse = json.decodeFromString<com.example.autoglazecustomer.data.model.LoginResponse>(errorBody)
+                    val errorResponse =
+                        json.decodeFromString<com.example.autoglazecustomer.data.model.LoginResponse>(
+                            errorBody
+                        )
 
                     errorMessage = errorResponse.message ?: "Email atau Password salah"
                 } catch (parseException: Exception) {
@@ -89,7 +92,7 @@ class LoginScreenModel(
                     }
                 }
             } catch (e: Exception) {
-                // Error koneksi (timeout/no internet)
+
                 errorMessage = "Gagal terhubung ke server. Pastikan internet Anda aktif."
             } finally {
                 isLoading = false

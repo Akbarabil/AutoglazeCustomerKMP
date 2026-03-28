@@ -2,7 +2,12 @@ package com.example.autoglazecustomer.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import platform.CoreLocation.*
+import platform.CoreLocation.CLLocationManager
+import platform.CoreLocation.CLLocationManagerDelegateProtocol
+import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
+import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
+import platform.CoreLocation.kCLAuthorizationStatusDenied
+import platform.CoreLocation.kCLAuthorizationStatusRestricted
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationOpenSettingsURLString
@@ -10,7 +15,7 @@ import platform.darwin.NSObject
 
 @Composable
 actual fun rememberPermissionHandler(onResult: (Boolean) -> Unit): PermissionHandler {
-    // Kita simpan delegate-nya di luar agar tidak hilang saat recompose
+
     val delegate = remember {
         object : NSObject(), CLLocationManagerDelegateProtocol {
             override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
@@ -18,9 +23,11 @@ actual fun rememberPermissionHandler(onResult: (Boolean) -> Unit): PermissionHan
                 when (status) {
                     kCLAuthorizationStatusAuthorizedWhenInUse,
                     kCLAuthorizationStatusAuthorizedAlways -> onResult(true)
+
                     kCLAuthorizationStatusDenied,
                     kCLAuthorizationStatusRestricted -> onResult(false)
-                    else -> {} // Not determined
+
+                    else -> {}
                 }
             }
         }

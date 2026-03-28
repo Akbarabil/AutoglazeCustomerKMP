@@ -6,7 +6,17 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,7 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.img_onboard1
+import autoglazecustomer.composeapp.generated.resources.img_onboard2
+import autoglazecustomer.composeapp.generated.resources.img_onboard3
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -48,10 +62,10 @@ class OnboardingScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
 
-        // Inisialisasi Settings untuk menyimpan status onboarding
+
         val settings = remember { Settings() }
 
-        // Font & Colors
+
         val satoshiBold = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Bold))
         val myRed = Color(0xFFE30613)
         val greyText = Color(0xFF9E9E9E)
@@ -89,7 +103,7 @@ class OnboardingScreen : Screen {
 
         Box(modifier = Modifier.fillMaxSize().background(backgroundGrey)) {
 
-            // --- LAYER 1: ViewPager (Konten Utama) ---
+
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
@@ -129,7 +143,7 @@ class OnboardingScreen : Screen {
                 }
             }
 
-            // --- LAYER 2: HEADER (Nomor Halaman & Lewati) ---
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,14 +168,14 @@ class OnboardingScreen : Screen {
                 )
             }
 
-            // --- LAYER 3: FOOTER (Navigasi Bawah) ---
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 50.dp, start = 32.dp, end = 32.dp)
             ) {
-                // Tombol Kembali
+
                 if (pagerState.currentPage > 0) {
                     Text(
                         text = "Kembali",
@@ -181,13 +195,14 @@ class OnboardingScreen : Screen {
                     )
                 }
 
-                // Indicators (Dot)
+
                 Row(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     repeat(items.size) { iteration ->
-                        val color = if (pagerState.currentPage == iteration) myRed else Color.LightGray
+                        val color =
+                            if (pagerState.currentPage == iteration) myRed else Color.LightGray
                         Box(
                             modifier = Modifier
                                 .size(10.dp)
@@ -197,7 +212,7 @@ class OnboardingScreen : Screen {
                     }
                 }
 
-                // Tombol Lanjut / Mulai
+
                 Text(
                     text = if (pagerState.currentPage == items.size - 1) "Mulai" else "Lanjut",
                     fontFamily = satoshiBold,

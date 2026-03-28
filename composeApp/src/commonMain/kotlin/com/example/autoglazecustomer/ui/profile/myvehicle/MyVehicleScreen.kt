@@ -1,18 +1,45 @@
 package com.example.autoglazecustomer.ui.profile.myvehicle
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -23,7 +50,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
+import autoglazecustomer.composeapp.generated.resources.sedan
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -51,7 +81,7 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
 
-        // --- ANIMASI SHIMMER ---
+
         val transition = rememberInfiniteTransition()
         val translateAnim by transition.animateFloat(
             initialValue = 0f,
@@ -74,7 +104,7 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
             end = Offset(x = translateAnim, y = translateAnim)
         )
 
-        // Ambil data saat screen dibuka
+
         LaunchedEffect(Unit) {
             screenModel.fetchVehicles()
         }
@@ -85,7 +115,11 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
                     title = { Text("Kendaraan Saya", fontFamily = satoshiBold, fontSize = 19.sp) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.Default.ArrowBackIosNew, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Icon(
+                                Icons.Default.ArrowBackIosNew,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -94,12 +128,12 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
             containerColor = Color(0xFFFAFAFA)
         ) { padding ->
             Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-                // LIST KENDARAAN (Scrollable)
+
                 Box(modifier = Modifier.weight(1f)) {
                     if (screenModel.isLoading) {
-                        // TAMPILKAN SHIMMER LIST
+
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            items(3) { // Tampilkan 3 placeholder shimmer
+                            items(3) {
                                 ShimmerVehicleItem(brush)
                             }
                         }
@@ -127,13 +161,13 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
                     }
                 }
 
-                // TOMBOL TAMBAH KENDARAAN (Statis di bawah)
+
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 20.dp)
                         .clickable {
-                             navigator.push(AddVehicleScreen(authService))
+                            navigator.push(AddVehicleScreen(authService))
                         },
                     shape = RoundedCornerShape(16.dp),
                     color = Color.White,
@@ -145,7 +179,12 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Icon(Icons.Default.Add, null, tint = Color(0xFFD53B1E), modifier = Modifier.size(24.dp))
+                        Icon(
+                            Icons.Default.Add,
+                            null,
+                            tint = Color(0xFFD53B1E),
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(Modifier.width(8.dp))
                         Text(
                             "Tambah Kendaraan",
@@ -170,19 +209,37 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                // Badge Shimmer
-                Box(modifier = Modifier.size(width = 80.dp, height = 16.dp).background(brush, RoundedCornerShape(4.dp)))
+
+                Box(
+                    modifier = Modifier.size(width = 80.dp, height = 16.dp)
+                        .background(brush, RoundedCornerShape(4.dp))
+                )
                 Spacer(Modifier.height(12.dp))
-                // Info Shimmer
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Box(modifier = Modifier.size(width = 120.dp, height = 24.dp).background(brush, RoundedCornerShape(4.dp)))
-                    Box(modifier = Modifier.size(width = 100.dp, height = 24.dp).background(brush, RoundedCornerShape(4.dp)))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Box(
+                        modifier = Modifier.size(width = 120.dp, height = 24.dp)
+                            .background(brush, RoundedCornerShape(4.dp))
+                    )
+                    Box(
+                        modifier = Modifier.size(width = 100.dp, height = 24.dp)
+                            .background(brush, RoundedCornerShape(4.dp))
+                    )
                 }
                 Spacer(Modifier.height(8.dp))
-                // Sub-info Shimmer
-                Box(modifier = Modifier.size(width = 180.dp, height = 16.dp).background(brush, RoundedCornerShape(4.dp)))
-                // Image Shimmer
-                Box(modifier = Modifier.fillMaxWidth().height(160.dp).padding(top = 16.dp).background(brush, RoundedCornerShape(12.dp)))
+
+                Box(
+                    modifier = Modifier.size(width = 180.dp, height = 16.dp)
+                        .background(brush, RoundedCornerShape(4.dp))
+                )
+
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(160.dp).padding(top = 16.dp)
+                        .background(brush, RoundedCornerShape(12.dp))
+                )
             }
         }
     }
@@ -198,7 +255,7 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                // Header: Badge Status
+
                 Surface(
                     color = if (vehicle.isMembership == 1) Color(0xFFD53B1E) else Color(0xFFE0E0E0),
                     shape = RoundedCornerShape(6.dp)
@@ -214,19 +271,45 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
 
                 Spacer(Modifier.height(8.dp))
 
-                // Info Utama: Merek & Plat
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(vehicle.merek ?: "-", fontFamily = bold, fontSize = 22.sp, color = Color.Black)
-                    Text(vehicle.nopol ?: "-", fontFamily = bold, fontSize = 20.sp, color = Color.Black)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        vehicle.merek ?: "-",
+                        fontFamily = bold,
+                        fontSize = 22.sp,
+                        color = Color.Black
+                    )
+                    Text(
+                        vehicle.nopol ?: "-",
+                        fontFamily = bold,
+                        fontSize = 20.sp,
+                        color = Color.Black
+                    )
                 }
 
-                // Info Sekunder: Tipe & Warna
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(vehicle.tipe ?: "-", fontFamily = med, fontSize = 16.sp, color = Color(0xFF757575))
-                    Text(vehicle.warna ?: "-", fontFamily = med, fontSize = 16.sp, color = Color.Black)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        vehicle.tipe ?: "-",
+                        fontFamily = med,
+                        fontSize = 16.sp,
+                        color = Color(0xFF757575)
+                    )
+                    Text(
+                        vehicle.warna ?: "-",
+                        fontFamily = med,
+                        fontSize = 16.sp,
+                        color = Color.Black
+                    )
                 }
 
-                // Gambar Kendaraan
+
                 AsyncImage(
                     model = vehicle.gambarTipe,
                     contentDescription = null,

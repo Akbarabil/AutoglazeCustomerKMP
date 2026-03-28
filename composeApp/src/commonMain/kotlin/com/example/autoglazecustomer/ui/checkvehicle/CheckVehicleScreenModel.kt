@@ -18,7 +18,7 @@ class CheckVehicleScreenModel(private val authService: AuthService) : ScreenMode
     var isLoading by mutableStateOf(false)
     var vehicleData by mutableStateOf<GetCekKendaraan?>(null)
 
-    // State untuk Dialog
+
     var showNotFoundDialog by mutableStateOf(false)
     var showErrorDialog by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
@@ -40,7 +40,10 @@ class CheckVehicleScreenModel(private val authService: AuthService) : ScreenMode
             } catch (e: io.ktor.client.plugins.ResponseException) {
                 val errorBody = e.response.bodyAsText()
                 try {
-                    val jsonResponse = Json { ignoreUnknownKeys = true }.decodeFromString<ChekKendaraanResponse>(errorBody)
+                    val jsonResponse =
+                        Json { ignoreUnknownKeys = true }.decodeFromString<ChekKendaraanResponse>(
+                            errorBody
+                        )
                     errorMessage = jsonResponse.message ?: "Data tidak ditemukan."
                 } catch (parseException: Exception) {
                     errorMessage = when (e.response.status.value) {

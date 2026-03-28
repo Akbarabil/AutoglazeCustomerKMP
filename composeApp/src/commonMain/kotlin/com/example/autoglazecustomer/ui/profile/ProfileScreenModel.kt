@@ -5,9 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.model.ProfileData
 import com.example.autoglazecustomer.data.network.AuthService
-import com.example.autoglazecustomer.data.local.TokenManager
 import kotlinx.coroutines.launch
 
 class ProfileScreenModel(private val authService: AuthService) : ScreenModel {
@@ -34,7 +34,7 @@ class ProfileScreenModel(private val authService: AuthService) : ScreenModel {
                 return@launch
             }
 
-            // Pastikan format Bearer Token benar
+
             val formattedToken = if (tokenFromStorage.startsWith("Bearer ")) {
                 tokenFromStorage
             } else {
@@ -42,14 +42,14 @@ class ProfileScreenModel(private val authService: AuthService) : ScreenModel {
             }
 
             try {
-                // 1. Mengambil Data Profil
+
                 val profileResponse = authService.getProfileData(formattedToken)
 
-                // FIX: Menggunakan .success sesuai data class kamu
+
                 if (profileResponse.success) {
                     profileData = profileResponse.data
 
-                    // Update nama di local storage jika ada
+
                     profileResponse.data?.nama?.let { namaBaru ->
                         TokenManager.saveUserName(namaBaru)
                     }

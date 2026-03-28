@@ -1,17 +1,52 @@
 package com.example.autoglazecustomer.ui.profile.myvehicle.addvehicle
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,7 +56,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
+import autoglazecustomer.composeapp.generated.resources.ic_nomer_rangka
+import autoglazecustomer.composeapp.generated.resources.ic_plat_nomer
+import autoglazecustomer.composeapp.generated.resources.img_vehicle_check
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -149,7 +190,7 @@ class AddVehicleScreen(private val authService: AuthService) : Screen {
                                     }
                                 }
 
-                                // SPACING KONSISTEN
+
                                 Spacer(modifier = Modifier.height(14.dp))
 
                                 VehicleInputField(
@@ -173,7 +214,11 @@ class AddVehicleScreen(private val authService: AuthService) : Screen {
                                     onValueChange = { screenModel.onNoRangkaChange(it) }
                                 )
 
-                                Text("Warna Kendaraan", fontFamily = satoshiMedium, fontSize = 16.sp)
+                                Text(
+                                    "Warna Kendaraan",
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 16.sp
+                                )
 
                                 LazyRow(
                                     contentPadding = PaddingValues(vertical = 12.dp),
@@ -198,9 +243,17 @@ class AddVehicleScreen(private val authService: AuthService) : Screen {
                                     enabled = !state.isLoading
                                 ) {
                                     if (state.isLoading) {
-                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                                        CircularProgressIndicator(
+                                            color = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
                                     } else {
-                                        Text("Simpan Kendaraan", fontFamily = satoshiMedium, fontSize = 20.sp, color = Color.White)
+                                        Text(
+                                            "Simpan Kendaraan",
+                                            fontFamily = satoshiMedium,
+                                            fontSize = 20.sp,
+                                            color = Color.White
+                                        )
                                     }
                                 }
                             }
@@ -211,7 +264,12 @@ class AddVehicleScreen(private val authService: AuthService) : Screen {
                         onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 12.dp, top = 12.dp)
                     ) {
-                        Icon(Icons.Default.ArrowBackIosNew, "Kembali", tint = Color.DarkGray, modifier = Modifier.size(24.dp))
+                        Icon(
+                            Icons.Default.ArrowBackIosNew,
+                            "Kembali",
+                            tint = Color.DarkGray,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
@@ -221,17 +279,50 @@ class AddVehicleScreen(private val authService: AuthService) : Screen {
             if (state.isSuccess) {
                 AlertDialog(
                     onDismissRequest = { },
-                    icon = { Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(64.dp)) },
-                    title = { Text("Berhasil!", fontFamily = satoshiBold, fontSize = 20.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
-                    text = { Text("Kendaraan berhasil ditambahkan ke akun anda.", fontFamily = satoshiMedium, fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+                    icon = {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            null,
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(64.dp)
+                        )
+                    },
+                    title = {
+                        Text(
+                            "Berhasil!",
+                            fontFamily = satoshiBold,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    text = {
+                        Text(
+                            "Kendaraan berhasil ditambahkan ke akun anda.",
+                            fontFamily = satoshiMedium,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
                     confirmButton = {
-                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Button(
                                 onClick = { navigator.pop() },
                                 modifier = Modifier.fillMaxWidth(0.7f).height(48.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
                                 shape = RoundedCornerShape(12.dp)
-                            ) { Text("Selesai", color = Color.White, fontFamily = satoshiBold, fontSize = 16.sp) }
+                            ) {
+                                Text(
+                                    "Selesai",
+                                    color = Color.White,
+                                    fontFamily = satoshiBold,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     },
                     shape = RoundedCornerShape(24.dp),
@@ -249,7 +340,14 @@ class AddVehicleScreen(private val authService: AuthService) : Screen {
                     Snackbar(
                         modifier = Modifier.padding(top = 40.dp, start = 16.dp, end = 16.dp),
                         containerColor = redPrimer,
-                        action = { TextButton(onClick = { screenModel.clearError() }) { Text("OK", color = Color.White) } }
+                        action = {
+                            TextButton(onClick = { screenModel.clearError() }) {
+                                Text(
+                                    "OK",
+                                    color = Color.White
+                                )
+                            }
+                        }
                     ) { Text(msg, color = Color.White) }
                 }
             }
@@ -264,7 +362,16 @@ class AddVehicleScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun VehicleInputField(label: String, value: String, icon: DrawableResource, isError: Boolean, font: FontFamily, colors: TextFieldColors, modifier: Modifier = Modifier.padding(bottom = 14.dp), onValueChange: (String) -> Unit) {
+    private fun VehicleInputField(
+        label: String,
+        value: String,
+        icon: DrawableResource,
+        isError: Boolean,
+        font: FontFamily,
+        colors: TextFieldColors,
+        modifier: Modifier = Modifier.padding(bottom = 14.dp),
+        onValueChange: (String) -> Unit
+    ) {
         OutlinedTextField(
             value = value, onValueChange = onValueChange, modifier = modifier.fillMaxWidth(),
             label = { Text(label, fontFamily = font) },
@@ -274,17 +381,29 @@ class AddVehicleScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun WarnaItemUI(warna: WarnaKendaraanResponse, isSelected: Boolean, font: FontFamily, onClick: () -> Unit) {
+    private fun WarnaItemUI(
+        warna: WarnaKendaraanResponse,
+        isSelected: Boolean,
+        font: FontFamily,
+        onClick: () -> Unit
+    ) {
         Surface(
             modifier = Modifier.widthIn(min = 100.dp).clickable { onClick() },
             shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(width = if (isSelected) 2.dp else 1.dp, color = if (isSelected) Color.DarkGray else Color.LightGray),
+            border = BorderStroke(
+                width = if (isSelected) 2.dp else 1.dp,
+                color = if (isSelected) Color.DarkGray else Color.LightGray
+            ),
             color = Color.White
         ) {
             Text(
-                text = warna.namaWarna, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                fontFamily = font, color = if (isSelected) Color.DarkGray else Color.Gray,
-                fontSize = 14.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, textAlign = TextAlign.Center
+                text = warna.namaWarna,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                fontFamily = font,
+                color = if (isSelected) Color.DarkGray else Color.Gray,
+                fontSize = 14.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                textAlign = TextAlign.Center
             )
         }
     }

@@ -1,16 +1,53 @@
 package com.example.autoglazecustomer.ui.cart
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +70,10 @@ import com.example.autoglazecustomer.data.model.HistoryItem
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.tabs.HomeTab
-import io.github.alexzhirkevich.qrose.options.*
+import io.github.alexzhirkevich.qrose.options.QrBallShape
+import io.github.alexzhirkevich.qrose.options.QrPixelShape
+import io.github.alexzhirkevich.qrose.options.circle
+import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import org.jetbrains.compose.resources.Font
 import kotlin.io.encoding.Base64
@@ -56,7 +96,7 @@ class CartScreen(private val authService: AuthService) : Screen {
         var selectedItemForQr by remember { mutableStateOf<HistoryItem?>(null) }
         var searchQuery by remember { mutableStateOf("") }
 
-        // --- FILTER KENDARAAN ---
+
         val filteredVehicles = remember(searchQuery, screenModel.vehicleList) {
             screenModel.vehicleList.filter {
                 it.nopol?.contains(searchQuery, ignoreCase = true) == true ||
@@ -67,7 +107,7 @@ class CartScreen(private val authService: AuthService) : Screen {
         LaunchedEffect(filteredVehicles) {
             if (filteredVehicles.isEmpty() && searchQuery.isNotEmpty()) {
                 screenModel.selectedVehicle = null
-                screenModel.historyList = emptyList() // Pastikan list history ikut bersih
+                screenModel.historyList = emptyList()
             }
         }
 
@@ -93,7 +133,11 @@ class CartScreen(private val authService: AuthService) : Screen {
                                 navigator.pop()
                             }
                         }) {
-                            Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Kembali", modifier = Modifier.size(20.dp))
+                            Icon(
+                                Icons.Default.ArrowBackIosNew,
+                                contentDescription = "Kembali",
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -108,7 +152,7 @@ class CartScreen(private val authService: AuthService) : Screen {
         ) { padding ->
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
 
-                // --- 1. SEARCH BAR AREA ---
+
                 Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
                     Text("Cari Kendaraan", fontFamily = satoshiBold, fontSize = 14.sp)
                     Spacer(Modifier.height(8.dp))
@@ -118,12 +162,29 @@ class CartScreen(private val authService: AuthService) : Screen {
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("Ketik Nomor Polisi atau Merk", fontSize = 14.sp, fontFamily = satoshiMedium) },
-                            leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray, modifier = Modifier.size(20.dp)) },
+                            placeholder = {
+                                Text(
+                                    "Ketik Nomor Polisi atau Merk",
+                                    fontSize = 14.sp,
+                                    fontFamily = satoshiMedium
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search,
+                                    null,
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
                             trailingIcon = {
                                 if (searchQuery.isNotEmpty()) {
                                     IconButton(onClick = { searchQuery = "" }) {
-                                        Icon(Icons.Default.Close, null, modifier = Modifier.size(20.dp))
+                                        Icon(
+                                            Icons.Default.Close,
+                                            null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
                                     }
                                 }
                             },
@@ -140,14 +201,15 @@ class CartScreen(private val authService: AuthService) : Screen {
                     }
                 }
 
-                // --- 2. HORIZONTAL VEHICLE SELECTOR ---
+
                 if (filteredVehicles.isNotEmpty()) {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(filteredVehicles) { vehicle ->
-                            val isSelected = screenModel.selectedVehicle?.idKendaraan == vehicle.idKendaraan
+                            val isSelected =
+                                screenModel.selectedVehicle?.idKendaraan == vehicle.idKendaraan
                             Surface(
                                 onClick = {
                                     screenModel.selectedVehicle = vehicle
@@ -155,10 +217,18 @@ class CartScreen(private val authService: AuthService) : Screen {
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 color = if (isSelected) redPrimer else Color.White,
-                                border = BorderStroke(1.dp, if (isSelected) redPrimer else Color(0xFFEEEEEE)),
+                                border = BorderStroke(
+                                    1.dp,
+                                    if (isSelected) redPrimer else Color(0xFFEEEEEE)
+                                ),
                                 shadowElevation = 0.dp
                             ) {
-                                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                                Column(
+                                    modifier = Modifier.padding(
+                                        horizontal = 16.dp,
+                                        vertical = 10.dp
+                                    )
+                                ) {
                                     Text(
                                         text = vehicle.nopol ?: "-",
                                         fontFamily = satoshiBold,
@@ -176,7 +246,7 @@ class CartScreen(private val authService: AuthService) : Screen {
                         }
                     }
                 } else if (searchQuery.isNotEmpty()) {
-                    // Tampilan jika hasil cari kosong
+
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -192,7 +262,7 @@ class CartScreen(private val authService: AuthService) : Screen {
 
                 Spacer(Modifier.height(16.dp))
 
-                // --- 3. CONTAINER AREA (RIWAYAT) ---
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color.White,
@@ -214,12 +284,15 @@ class CartScreen(private val authService: AuthService) : Screen {
                                     CircularProgressIndicator(color = redPrimer)
                                 }
                             }
+
                             screenModel.selectedVehicle == null -> {
                                 EmptyStateUI("Pilih kendaraan untuk melihat riwayat", satoshiMedium)
                             }
+
                             screenModel.historyList.isEmpty() -> {
                                 EmptyStateUI("Belum ada riwayat untuk mobil ini", satoshiMedium)
                             }
+
                             else -> {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxSize(),
@@ -227,7 +300,12 @@ class CartScreen(private val authService: AuthService) : Screen {
                                     verticalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
                                     items(screenModel.historyList) { item ->
-                                        HistoryCardItem(item, redPrimer, satoshiBold, satoshiMedium) {
+                                        HistoryCardItem(
+                                            item,
+                                            redPrimer,
+                                            satoshiBold,
+                                            satoshiMedium
+                                        ) {
                                             selectedItemForQr = item
                                             showQrDialog = true
                                         }
@@ -241,37 +319,71 @@ class CartScreen(private val authService: AuthService) : Screen {
         }
 
         if (showQrDialog && selectedItemForQr != null) {
-            QrCodeDialog(selectedItemForQr!!, { showQrDialog = false }, redPrimer, satoshiBold, satoshiMedium)
+            QrCodeDialog(
+                selectedItemForQr!!,
+                { showQrDialog = false },
+                redPrimer,
+                satoshiBold,
+                satoshiMedium
+            )
         }
     }
 
-    // --- FUNGSI PENDUKUNG ---
 
     @OptIn(ExperimentalEncodingApi::class)
     @Composable
-    private fun QrCodeDialog(item: HistoryItem, onDismiss: () -> Unit, accent: Color, bold: FontFamily, med: FontFamily) {
-        val payload = """{"kode_penjualan":"${item.kodePenjualan}","kode_cabang":"${item.kodeCabang}"}"""
+    private fun QrCodeDialog(
+        item: HistoryItem,
+        onDismiss: () -> Unit,
+        accent: Color,
+        bold: FontFamily,
+        med: FontFamily
+    ) {
+        val payload =
+            """{"kode_penjualan":"${item.kodePenjualan}","kode_cabang":"${item.kodeCabang}"}"""
         val encodedPayload = Base64.encode(payload.encodeToByteArray())
 
-        Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
             Card(
                 modifier = Modifier.fillMaxWidth(0.85f),
                 shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text("Kode Penjualan", fontFamily = bold, fontSize = 20.sp)
-                    Text("Tunjukkan ke Kasir", fontFamily = bold, fontSize = 12.sp, color = accent, modifier = Modifier.padding(bottom = 20.dp))
+                    Text(
+                        "Tunjukkan ke Kasir",
+                        fontFamily = bold,
+                        fontSize = 12.sp,
+                        color = accent,
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
 
                     val painter = rememberQrCodePainter(encodedPayload) {
-                        shapes { ball = QrBallShape.circle(); darkPixel = QrPixelShape.roundCorners() }
+                        shapes {
+                            ball = QrBallShape.circle(); darkPixel = QrPixelShape.roundCorners()
+                        }
                     }
-                    Box(modifier = Modifier.size(210.dp).background(Color(0xFFF9F9F9), RoundedCornerShape(16.dp)).padding(12.dp)) {
+                    Box(
+                        modifier = Modifier.size(210.dp)
+                            .background(Color(0xFFF9F9F9), RoundedCornerShape(16.dp)).padding(12.dp)
+                    ) {
                         Image(painter, null, Modifier.fillMaxSize())
                     }
                     Spacer(Modifier.height(16.dp))
                     Text(item.kodePenjualan, fontFamily = FontFamily.Monospace, fontSize = 15.sp)
-                    Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth().padding(top = 24.dp).height(50.dp), colors = ButtonDefaults.buttonColors(accent), shape = RoundedCornerShape(12.dp)) {
+                    Button(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp).height(50.dp),
+                        colors = ButtonDefaults.buttonColors(accent),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
                         Text("Kembali", fontFamily = bold, color = Color.White)
                     }
                 }
@@ -280,22 +392,47 @@ class CartScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun HistoryCardItem(item: HistoryItem, accent: Color, bold: FontFamily, med: FontFamily, onQrClick: () -> Unit) {
+    private fun HistoryCardItem(
+        item: HistoryItem,
+        accent: Color,
+        bold: FontFamily,
+        med: FontFamily,
+        onQrClick: () -> Unit
+    ) {
         Card(
             modifier = Modifier.fillMaxWidth().clickable { onQrClick() },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             border = BorderStroke(1.dp, Color(0xFFF0F0F0))
         ) {
-            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(item.namaCabang.uppercase(), fontFamily = bold, fontSize = 13.sp)
-                    Text(item.kodePenjualan, fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Color.Gray)
+                    Text(
+                        item.kodePenjualan,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
                     Spacer(Modifier.height(8.dp))
                     Text("Total Pembayaran", fontSize = 10.sp, color = Color.Gray, fontFamily = med)
-                    Text(formatRupiah(item.subtotal), color = accent, fontFamily = bold, fontSize = 18.sp)
+                    Text(
+                        formatRupiah(item.subtotal),
+                        color = accent,
+                        fontFamily = bold,
+                        fontSize = 18.sp
+                    )
                 }
-                Icon(Icons.Default.QrCode, null, tint = accent, modifier = Modifier.size(32.dp).background(accent.copy(0.1f), RoundedCornerShape(8.dp)).padding(8.dp))
+                Icon(
+                    Icons.Default.QrCode,
+                    null,
+                    tint = accent,
+                    modifier = Modifier.size(32.dp)
+                        .background(accent.copy(0.1f), RoundedCornerShape(8.dp)).padding(8.dp)
+                )
             }
         }
     }
@@ -304,9 +441,16 @@ class CartScreen(private val authService: AuthService) : Screen {
     private fun EmptyStateUI(msg: String, med: FontFamily) {
         Column(Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
             Icon(Icons.Default.DirectionsCar, null, Modifier.size(64.dp), Color(0xFFE0E0E0))
-            Text(msg, color = Color.Gray, fontFamily = med, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 16.dp))
+            Text(
+                msg,
+                color = Color.Gray,
+                fontFamily = med,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 16.dp)
+            )
         }
     }
 
-    private fun formatRupiah(amount: Double): String = "Rp " + amount.toLong().toString().reversed().chunked(3).joinToString(".").reversed()
+    private fun formatRupiah(amount: Double): String =
+        "Rp " + amount.toLong().toString().reversed().chunked(3).joinToString(".").reversed()
 }

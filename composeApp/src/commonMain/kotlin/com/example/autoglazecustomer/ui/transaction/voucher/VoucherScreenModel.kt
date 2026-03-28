@@ -20,12 +20,12 @@ class VoucherScreenModel(
     private val cartItems: List<CartItem>
 ) : ScreenModel {
 
-    // State Data API (Telah Diterjemahkan ke Model Penengah UI)
+
     var umumVouchers by mutableStateOf<List<VoucherUIModel>>(emptyList())
     var kendaraanVouchers by mutableStateOf<List<VoucherUIModel>>(emptyList())
     var isLoading by mutableStateOf(false)
 
-    // State Interaksi User
+
     var selectedVouchers by mutableStateOf(VoucherManager.selectedVouchers.value)
     var validationMessage by mutableStateOf<String?>(null)
 
@@ -38,14 +38,14 @@ class VoucherScreenModel(
         screenModelScope.launch {
             isLoading = true
             try {
-                // JOSJIS: Hit 2 API secara bersamaan!
+
                 val umumDeferred = async { authService.getVoucherSaya(token) }
                 val kendaraanDeferred = async { authService.getVouchersByVehicle(idKendaraan) }
 
                 val umumRes = umumDeferred.await()
                 val kendaraanRes = kendaraanDeferred.await()
 
-                // Terjemahkan List<VoucherItem> & List<VoucherItemId> menjadi List<VoucherUIModel>
+
                 umumVouchers = (umumRes.data ?: emptyList()).map { it.toUIModel() }
                 kendaraanVouchers = (kendaraanRes.data ?: emptyList()).map { it.toUIModel() }
             } catch (e: Exception) {
@@ -57,48 +57,47 @@ class VoucherScreenModel(
     }
 
     fun toggleVoucher(voucher: VoucherUIModel) {
-        // 1. Jika sudah terpilih, maka HAPUS (Uncheck) menggunakan Functional Filter
+
         if (selectedVouchers.any { it.idVoucher == voucher.idVoucher }) {
             selectedVouchers = selectedVouchers.filterNot { it.idVoucher == voucher.idVoucher }
             validationMessage = null
             return
         }
 
-        // --- Mulai dari sini adalah logika untuk MENAMBAH voucher baru ---
 
-        // 2. Cek Eksklusivitas (0 = Eksklusif, tidak bisa digabung)
         val isNewVoucherExclusive = voucher.allowMultiple == 0
 
-        // Jika voucher yang baru di-klik itu Eksklusif, tapi sudah ada voucher lain yang terpilih
+
         if (isNewVoucherExclusive && selectedVouchers.isNotEmpty()) {
             validationMessage = "${voucher.namaVoucher} eksklusif dan tidak dapat digabung."
             return
         }
 
-        // Jika sebelumnya user sudah memilih voucher Eksklusif, tidak boleh tambah voucher apa-apa lagi
+
         val existingExclusive = selectedVouchers.firstOrNull { it.allowMultiple == 0 }
         if (existingExclusive != null) {
-            validationMessage = "${existingExclusive.namaVoucher} sudah eksklusif. Lepas voucher tersebut dulu."
+            validationMessage =
+                "${existingExclusive.namaVoucher} sudah eksklusif. Lepas voucher tersebut dulu."
             return
         }
 
-        // 3. Cek Batasan Produk di Keranjang
+
         if (!checkProductApplicability(voucher)) {
             validationMessage = "Produk yang sesuai untuk voucher ini tidak ada di keranjang."
             return
         }
 
-        // 4. Sukses Ditambahkan (Gaya Functional Immutable)
+
         selectedVouchers = selectedVouchers + voucher
         validationMessage = null
     }
 
     private fun checkProductApplicability(voucher: VoucherUIModel): Boolean {
-        // Jika idProduk null/kosong, berarti berlaku untuk semua barang
+
         val idString = voucher.idProduk ?: return true
         if (idString.isEmpty()) return true
 
-        // Pecah string "101;53" menjadi List of Integers [101, 53]
+
         val targetProductIds = idString.split(';').mapNotNull { it.toIntOrNull() }
         if (targetProductIds.isEmpty()) return true
 
@@ -106,7 +105,7 @@ class VoucherScreenModel(
         return targetProductIds.any { cartProductIds.contains(it) }
     }
 
-    // Dipanggil saat tombol "Gunakan Voucher" diklik di UI
+
     fun confirmSelection() {
         VoucherManager.setVouchers(selectedVouchers)
     }

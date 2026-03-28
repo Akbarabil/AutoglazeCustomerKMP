@@ -1,13 +1,46 @@
 package com.example.autoglazecustomer.ui.profile.editprofile
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,7 +51,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.ic_profile_white
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -47,7 +83,7 @@ class EditProfileScreen(
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
 
-        // Sync data awal
+
         LaunchedEffect(Unit) {
             if (screenModel.nama.isEmpty()) {
                 screenModel.nama = initialProfileData?.nama ?: ""
@@ -61,7 +97,7 @@ class EditProfileScreen(
         val imagePicker = rememberImagePickerLauncher(
             selectionMode = SelectionMode.Single,
             scope = scope,
-            resizeOptions = ResizeOptions( 
+            resizeOptions = ResizeOptions(
                 width = 1000,
                 height = 1000,
                 compressionQuality = 0.8
@@ -109,9 +145,10 @@ class EditProfileScreen(
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // --- PHOTO SECTION ---
+
                     Box(contentAlignment = Alignment.BottomEnd) {
-                        val displayPhoto: Any? = screenModel.selectedImageBytes ?: screenModel.currentPhotoUrl
+                        val displayPhoto: Any? =
+                            screenModel.selectedImageBytes ?: screenModel.currentPhotoUrl
 
                         AsyncImage(
                             model = displayPhoto,
@@ -145,7 +182,7 @@ class EditProfileScreen(
 
                     Spacer(Modifier.height(32.dp))
 
-                    // --- ERROR MESSAGE (Tampil jika ada error) ---
+
                     if (screenModel.errorMessage != null) {
                         Surface(
                             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
@@ -163,14 +200,32 @@ class EditProfileScreen(
                         }
                     }
 
-                    // --- FORM INPUTS ---
-                    EditField("Nama Lengkap", screenModel.nama, screenModel.isEditing, satoshiMedium, Icons.Default.Person) { screenModel.nama = it }
-                    EditField("Email", screenModel.email, screenModel.isEditing, satoshiMedium, Icons.Default.Email) { screenModel.email = it }
-                    EditField("Nomor Telepon", screenModel.telepon, screenModel.isEditing, satoshiMedium, Icons.Default.Phone) { screenModel.telepon = it }
+
+                    EditField(
+                        "Nama Lengkap",
+                        screenModel.nama,
+                        screenModel.isEditing,
+                        satoshiMedium,
+                        Icons.Default.Person
+                    ) { screenModel.nama = it }
+                    EditField(
+                        "Email",
+                        screenModel.email,
+                        screenModel.isEditing,
+                        satoshiMedium,
+                        Icons.Default.Email
+                    ) { screenModel.email = it }
+                    EditField(
+                        "Nomor Telepon",
+                        screenModel.telepon,
+                        screenModel.isEditing,
+                        satoshiMedium,
+                        Icons.Default.Phone
+                    ) { screenModel.telepon = it }
 
                     Spacer(Modifier.height(40.dp))
 
-                    // --- BUTTON ACTION ---
+
                     Button(
                         onClick = {
                             if (screenModel.isEditing) screenModel.updateProfile()
@@ -181,13 +236,21 @@ class EditProfileScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (screenModel.isEditing) redPrimer else Color.White
                         ),
-                        border = if (!screenModel.isEditing) BorderStroke(1.dp, redPrimer) else null,
+                        border = if (!screenModel.isEditing) BorderStroke(
+                            1.dp,
+                            redPrimer
+                        ) else null,
                         enabled = !screenModel.isLoading
                     ) {
                         if (screenModel.isLoading) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
                         } else {
-                            val text = if (screenModel.isEditing) "Simpan Perubahan" else "Edit Profil"
+                            val text =
+                                if (screenModel.isEditing) "Simpan Perubahan" else "Edit Profil"
                             val color = if (screenModel.isEditing) Color.White else redPrimer
                             Text(text, color = color, fontFamily = satoshiBold, fontSize = 16.sp)
                         }
@@ -196,8 +259,8 @@ class EditProfileScreen(
             }
         }
 
-        // --- SUCCESS DIALOG ---
-        // --- SUCCESS DIALOG (Rata Tengah Profesional) ---
+
+
         if (screenModel.showSuccessDialog) {
             AlertDialog(
                 onDismissRequest = { },
@@ -214,7 +277,7 @@ class EditProfileScreen(
                         text = "Berhasil",
                         fontFamily = satoshiBold,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth() // Memaksa teks mengambil ruang penuh agar bisa center
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 text = {
@@ -222,11 +285,11 @@ class EditProfileScreen(
                         text = "Profil anda telah diperbarui.",
                         fontFamily = satoshiMedium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth() // Memaksa teks mengambil ruang penuh agar bisa center
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 confirmButton = {
-                    // Membungkus Button dengan Box agar tombol bisa rata tengah di dalam dialog
+
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
@@ -238,7 +301,7 @@ class EditProfileScreen(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
                             shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth(0.7f) // Tombol dibuat tidak terlalu lebar agar estetik
+                            modifier = Modifier.fillMaxWidth(0.7f)
                         ) {
                             Text("Oke", fontFamily = satoshiBold, color = Color.White)
                         }
@@ -260,7 +323,13 @@ class EditProfileScreen(
         onValueChange: (String) -> Unit
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
-            Text(label, fontSize = 13.sp, color = Color.Gray, modifier = Modifier.padding(start = 4.dp, bottom = 6.dp), fontFamily = font)
+            Text(
+                label,
+                fontSize = 13.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(start = 4.dp, bottom = 6.dp),
+                fontFamily = font
+            )
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
@@ -268,7 +337,14 @@ class EditProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = font),
-                leadingIcon = { Icon(icon, contentDescription = null, tint = if (enabled) Color(0xFFD53B1E) else Color.Gray, modifier = Modifier.size(20.dp)) },
+                leadingIcon = {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = if (enabled) Color(0xFFD53B1E) else Color.Gray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFD53B1E),
                     unfocusedBorderColor = Color(0xFFEEEEEE),

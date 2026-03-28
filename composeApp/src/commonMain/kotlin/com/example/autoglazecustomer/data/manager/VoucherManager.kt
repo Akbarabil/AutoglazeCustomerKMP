@@ -1,9 +1,9 @@
 package com.example.autoglazecustomer.data.manager
 
+import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
 
 object VoucherManager {
 

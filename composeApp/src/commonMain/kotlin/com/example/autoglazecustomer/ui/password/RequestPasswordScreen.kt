@@ -1,11 +1,30 @@
 package com.example.autoglazecustomer.ui.password
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -14,8 +33,25 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,7 +65,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
+import autoglazecustomer.composeapp.generated.resources.img_catat
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -148,8 +188,9 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
 
                                 Button(
                                     onClick = {
-                                        val data = if (selectedMethod == "email") mapOf("email" to email)
-                                        else mapOf("telepon" to phone)
+                                        val data =
+                                            if (selectedMethod == "email") mapOf("email" to email)
+                                            else mapOf("telepon" to phone)
                                         screenModel.requestPassword(data)
                                     },
                                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -158,9 +199,18 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                                     enabled = selectedMethod != null && !screenModel.isLoading
                                 ) {
                                     if (screenModel.isLoading) {
-                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                        CircularProgressIndicator(
+                                            color = Color.White,
+                                            modifier = Modifier.size(24.dp),
+                                            strokeWidth = 2.dp
+                                        )
                                     } else {
-                                        Text("Kirim", fontFamily = satoshiMedium, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                        Text(
+                                            "Kirim",
+                                            fontFamily = satoshiMedium,
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
                                 }
 
@@ -170,7 +220,11 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.Center
                                 ) {
-                                    Text("Data tidak sesuai? ", fontFamily = satoshiMedium, color = Color(0xFFBDBDBD))
+                                    Text(
+                                        "Data tidak sesuai? ",
+                                        fontFamily = satoshiMedium,
+                                        color = Color(0xFFBDBDBD)
+                                    )
                                     Text(
                                         "Hubungi admin",
                                         modifier = Modifier.clickable { uriHandler.openUri("https://wa.me/628980136066") },
@@ -192,12 +246,17 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                             .padding(start = 12.dp, top = 12.dp)
                             .align(Alignment.TopStart)
                     ) {
-                        Icon(Icons.Default.ArrowBackIosNew, null, tint = Color.DarkGray, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.ArrowBackIosNew,
+                            null,
+                            tint = Color.DarkGray,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
             }
 
-            // Snackbar Sukses Salin
+
             AnimatedVisibility(
                 visible = snackbarVisible,
                 enter = slideInVertically { -it } + fadeIn(),
@@ -210,11 +269,15 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                         .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                     containerColor = greenSuccess,
                 ) {
-                    Text("Sandi berhasil disalin ke papan klip", color = Color.White, fontFamily = satoshiMedium)
+                    Text(
+                        "Sandi berhasil disalin ke papan klip",
+                        color = Color.White,
+                        fontFamily = satoshiMedium
+                    )
                 }
             }
 
-            // Success Dialog
+
             if (showSuccessDialog) {
                 AlertDialog(
                     onDismissRequest = { },
@@ -241,7 +304,11 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Gunakan sandi ini untuk login:", fontFamily = satoshiMedium, color = Color.Gray)
+                            Text(
+                                "Gunakan sandi ini untuk login:",
+                                fontFamily = satoshiMedium,
+                                color = Color.Gray
+                            )
 
                             Surface(
                                 modifier = Modifier
@@ -259,7 +326,10 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                                 border = BorderStroke(1.dp, Color(0xFFEEEEEE))
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                    modifier = Modifier.padding(
+                                        horizontal = 20.dp,
+                                        vertical = 12.dp
+                                    ),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
@@ -317,14 +387,29 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(icon, null, tint = if (isSelected) accentColor else Color.Gray, modifier = Modifier.size(24.dp))
+                Icon(
+                    icon,
+                    null,
+                    tint = if (isSelected) accentColor else Color.Gray,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(Modifier.width(16.dp))
                 Column {
                     Text(label, fontSize = 12.sp, color = Color.Gray, fontFamily = font)
-                    Text(value, fontSize = 16.sp, color = Color.Black, fontFamily = font, fontWeight = FontWeight.Bold)
+                    Text(
+                        value,
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        fontFamily = font,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
                 Spacer(Modifier.weight(1f))
-                RadioButton(selected = isSelected, onClick = onClick, colors = RadioButtonDefaults.colors(selectedColor = accentColor))
+                RadioButton(
+                    selected = isSelected,
+                    onClick = onClick,
+                    colors = RadioButtonDefaults.colors(selectedColor = accentColor)
+                )
             }
         }
     }

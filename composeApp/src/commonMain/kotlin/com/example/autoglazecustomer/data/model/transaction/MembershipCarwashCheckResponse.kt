@@ -9,6 +9,7 @@ data class MembershipCarwashCheckResponse(
     @SerialName("message") val message: String,
     @SerialName("data") val data: List<MembershipItemDetail>? = null
 )
+
 @Serializable
 data class MembershipItemDetail(
     @SerialName("ID_MEMBERSHIP_ITEM") val idMembershipItem: Int,

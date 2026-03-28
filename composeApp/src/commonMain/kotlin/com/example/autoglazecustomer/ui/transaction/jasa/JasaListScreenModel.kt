@@ -47,7 +47,8 @@ class JasaListScreenModel(
                 }
 
                 if (eligibilityResponse.status) {
-                    eligibleForCarwashPriceIds = eligibilityResponse.data?.map { it.idProduk }?.toSet() ?: emptySet()
+                    eligibleForCarwashPriceIds =
+                        eligibilityResponse.data?.map { it.idProduk }?.toSet() ?: emptySet()
                 }
 
                 updateDisplayedList()
@@ -61,7 +62,11 @@ class JasaListScreenModel(
 
     fun updateDisplayedList() {
         displayedServices = allServices.filter { item ->
-            val categoryLayanan = if (item.KATEGORI.equals("Carwash", ignoreCase = true)) "Car Wash" else item.KATEGORI
+            val categoryLayanan = if (item.KATEGORI.equals(
+                    "Carwash",
+                    ignoreCase = true
+                )
+            ) "Car Wash" else item.KATEGORI
 
             val matchCategory = categoryLayanan.equals(selectedCategory, ignoreCase = true)
             val matchSearch = item.namaProduk.contains(searchQuery, ignoreCase = true)

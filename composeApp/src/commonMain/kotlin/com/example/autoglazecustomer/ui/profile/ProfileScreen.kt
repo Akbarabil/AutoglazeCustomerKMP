@@ -1,15 +1,56 @@
 package com.example.autoglazecustomer.ui.profile
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.SupportAgent
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,16 +66,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.*
+import autoglazecustomer.composeapp.generated.resources.Res
+import autoglazecustomer.composeapp.generated.resources.ag_coin_small
+import autoglazecustomer.composeapp.generated.resources.ic_logout
+import autoglazecustomer.composeapp.generated.resources.ic_profile_white
+import autoglazecustomer.composeapp.generated.resources.satoshi_bold
+import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import coil3.compose.AsyncImage
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.local.TokenManager
-import com.example.autoglazecustomer.ui.KmpBackHandler // Import Jembatan KMP
+import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.login.LoginScreen
 import com.example.autoglazecustomer.ui.profile.editprofile.EditProfileScreen
 import com.example.autoglazecustomer.ui.profile.myvehicle.MyVehicleScreen
@@ -60,7 +106,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
         var showLogoutDialog by remember { mutableStateOf(false) }
         val shimmerBrush = rememberShimmerBrush()
 
-        // --- REFRESH DATA ---
+
         LaunchedEffect(Unit) {
             screenModel.fetchProfileAndPoints()
         }
@@ -79,7 +125,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // --- 1. HEADER PROFILE ---
+
                 Box {
                     if (screenModel.isLoading && screenModel.profileData == null) {
                         ProfileHeaderShimmer(shimmerBrush)
@@ -94,7 +140,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                         )
                     }
 
-                    // TOMBOL BACK UI (Sesuai Logika KmpBackHandler)
+
                     IconButton(
                         onClick = {
                             if (tabNavigator.current !is HomeTab) {
@@ -109,13 +155,18 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                             .align(Alignment.TopStart)
                             .background(Color.Black.copy(0.1f), CircleShape)
                     ) {
-                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = Color.White, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.ArrowBackIosNew,
+                            "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
 
                 Column(modifier = Modifier.padding(24.dp)) {
 
-                    // --- 2. GLOW POINTS ---
+
                     ProfileGroup(title = "Point Umum", font = satoshiBold) {
                         if (screenModel.isLoading && screenModel.points == 0) {
                             Box(Modifier.fillMaxWidth().height(60.dp).background(shimmerBrush))
@@ -124,26 +175,52 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Glaze Points", modifier = Modifier.weight(1f), fontFamily = satoshiMedium, fontSize = 16.sp)
-                                Text(text = formatNumber(screenModel.points), fontFamily = satoshiBold, fontSize = 16.sp)
+                                Text(
+                                    "Glaze Points",
+                                    modifier = Modifier.weight(1f),
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    text = formatNumber(screenModel.points),
+                                    fontFamily = satoshiBold,
+                                    fontSize = 16.sp
+                                )
                                 Spacer(Modifier.width(8.dp))
-                                Image(painterResource(Res.drawable.ag_coin_small), null, Modifier.size(20.dp))
+                                Image(
+                                    painterResource(Res.drawable.ag_coin_small),
+                                    null,
+                                    Modifier.size(20.dp)
+                                )
                             }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // --- 3. INFO PENGGUNA ---
+
                     ProfileGroup(title = "Info Pengguna", font = satoshiBold) {
                         ProfileMenuItem(Icons.Default.Edit, "Edit Profil", satoshiMedium) {
                             val mainNavigator = navigator.parent ?: navigator
-                            mainNavigator.push(EditProfileScreen(authService, screenModel.profileData))
+                            mainNavigator.push(
+                                EditProfileScreen(
+                                    authService,
+                                    screenModel.profileData
+                                )
+                            )
                         }
 
-                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), 0.5.dp, Color(0xFFEEEEEE))
+                        HorizontalDivider(
+                            Modifier.padding(horizontal = 16.dp),
+                            0.5.dp,
+                            Color(0xFFEEEEEE)
+                        )
 
-                        ProfileMenuItem(Icons.Default.DirectionsCar, "Kendaraan Saya", satoshiMedium) {
+                        ProfileMenuItem(
+                            Icons.Default.DirectionsCar,
+                            "Kendaraan Saya",
+                            satoshiMedium
+                        ) {
                             val mainNavigator = navigator.parent ?: navigator
                             mainNavigator.push(MyVehicleScreen(authService))
                         }
@@ -151,9 +228,13 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // --- 4. BENEFIT ---
+
                     ProfileGroup(title = "Benefit", font = satoshiBold) {
-                        ProfileMenuItem(Icons.Default.ConfirmationNumber, "Voucher Saya", satoshiMedium) {
+                        ProfileMenuItem(
+                            Icons.Default.ConfirmationNumber,
+                            "Voucher Saya",
+                            satoshiMedium
+                        ) {
                             val mainNavigator = navigator.parent ?: navigator
                             mainNavigator.push(MyVoucherScreen(authService))
                         }
@@ -161,16 +242,20 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // --- 5. BANTUAN ---
+
                     ProfileGroup(title = "Bantuan", font = satoshiBold) {
-                        ProfileMenuItem(Icons.Default.SupportAgent, "Hubungi Kami (WhatsApp)", satoshiMedium) {
+                        ProfileMenuItem(
+                            Icons.Default.SupportAgent,
+                            "Hubungi Kami (WhatsApp)",
+                            satoshiMedium
+                        ) {
                             uriHandler.openUri("https://wa.me/628980136066")
                         }
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // --- 6. LOGOUT ---
+
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -194,13 +279,33 @@ class ProfileScreen(private val authService: AuthService) : Screen {
             }
         }
 
-        // --- DIALOG LOGOUT ---
+
         if (showLogoutDialog) {
             AlertDialog(
                 onDismissRequest = { showLogoutDialog = false },
-                icon = { Image(painterResource(Res.drawable.ic_logout), null, Modifier.size(70.dp)) },
-                title = { Text("Konfirmasi Keluar", fontFamily = satoshiBold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
-                text = { Text("Apakah anda yakin ingin keluar dari akun Autoglaze?", fontFamily = satoshiMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+                icon = {
+                    Image(
+                        painterResource(Res.drawable.ic_logout),
+                        null,
+                        Modifier.size(70.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        "Konfirmasi Keluar",
+                        fontFamily = satoshiBold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                text = {
+                    Text(
+                        "Apakah anda yakin ingin keluar dari akun Autoglaze?",
+                        fontFamily = satoshiMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
                 confirmButton = {
                     Button(
                         onClick = {
@@ -214,7 +319,10 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                     ) { Text("Keluar sekarang", color = Color.White, fontFamily = satoshiBold) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showLogoutDialog = false }, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = { showLogoutDialog = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text("Batal", color = Color.Gray, fontFamily = satoshiBold)
                     }
                 },
@@ -225,7 +333,14 @@ class ProfileScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun ProfileHeader(name: String, email: String, photoUrl: String?, gradientColors: List<Color>, boldFont: FontFamily, medFont: FontFamily) {
+    private fun ProfileHeader(
+        name: String,
+        email: String,
+        photoUrl: String?,
+        gradientColors: List<Color>,
+        boldFont: FontFamily,
+        medFont: FontFamily
+    ) {
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         Box(
             modifier = Modifier
@@ -275,7 +390,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
     @Composable
     private fun ProfileHeaderShimmer(brush: Brush) {
-        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -285,19 +400,48 @@ class ProfileScreen(private val authService: AuthService) : Screen {
     }
 
     @Composable
-    private fun ProfileGroup(title: String, font: FontFamily, content: @Composable ColumnScope.() -> Unit) {
+    private fun ProfileGroup(
+        title: String,
+        font: FontFamily,
+        content: @Composable ColumnScope.() -> Unit
+    ) {
         Column {
-            Text(title, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp), fontSize = 15.sp, fontFamily = font, color = Color.Black)
-            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), color = Color.White, border = BorderStroke(1.dp, Color(0xFFEEEEEE))) { Column { content() } }
+            Text(
+                title,
+                modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
+                fontSize = 15.sp,
+                fontFamily = font,
+                color = Color.Black
+            )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                color = Color.White,
+                border = BorderStroke(1.dp, Color(0xFFEEEEEE))
+            ) { Column { content() } }
         }
     }
 
     @Composable
-    private fun ProfileMenuItem(icon: ImageVector, label: String, font: FontFamily, onClick: () -> Unit) {
-        Row(modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+    private fun ProfileMenuItem(
+        icon: ImageVector,
+        label: String,
+        font: FontFamily,
+        onClick: () -> Unit
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Icon(icon, null, tint = Color.DarkGray, modifier = Modifier.size(24.dp))
             Spacer(Modifier.width(16.dp))
-            Text(label, modifier = Modifier.weight(1f), fontSize = 16.sp, fontFamily = font, color = Color.Black)
+            Text(
+                label,
+                modifier = Modifier.weight(1f),
+                fontSize = 16.sp,
+                fontFamily = font,
+                color = Color.Black
+            )
             Icon(Icons.Default.ChevronRight, null, tint = Color.LightGray)
         }
     }
@@ -327,5 +471,6 @@ class ProfileScreen(private val authService: AuthService) : Screen {
         )
     }
 
-    private fun formatNumber(number: Int): String = number.toString().reversed().chunked(3).joinToString(".").reversed()
+    private fun formatNumber(number: Int): String =
+        number.toString().reversed().chunked(3).joinToString(".").reversed()
 }

@@ -49,44 +49,43 @@ class SplashScreen : Screen {
 
         val scale = remember { Animatable(1.2f) }
 
-        // Sequence Animasi: Zoom In -> Zoom Out -> Meledak
+
         LaunchedEffect(Unit) {
-            // 1. ZOOM IN (Membesar pelan)
+
             scale.animateTo(
                 targetValue = 1.7f,
                 animationSpec = tween(durationMillis = 1500, easing = LinearOutSlowInEasing)
             )
 
-            // 2. ZOOM OUT SEDIKIT (Efek bernapas/antisipasi)
+
             scale.animateTo(
                 targetValue = 1.4f,
                 animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing)
             )
 
-            delay(150) // Jeda dramatis sebelum meledak
+            delay(150)
 
-            // 3. MELEDAK (Full Zoom memenuhi layar)
+
             scale.animateTo(
                 targetValue = 15f,
                 animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing)
             )
 
-            // 4. LOGIKA NAVIGASI JOSJIS
-            // Cek apakah user sudah pernah melewati onboarding
+
             val isFirstTime = settings.getBoolean("is_first_time_onboarding", true)
 
             if (isFirstTime) {
-                // Jika baru pertama kali, arahkan ke Onboarding
+
                 navigator.replace(OnboardingScreen())
             } else {
-                // Jika sudah pernah, langsung ke Check Vehicle (Home)
+
                 navigator.replace(CheckVehicleScreen())
             }
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
 
-            // LAYER 1: Background Pattern
+
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_white),
                 contentDescription = null,
@@ -94,7 +93,7 @@ class SplashScreen : Screen {
                 contentScale = ContentScale.Crop
             )
 
-            // LAYER 2: Wave Black (Animasi Scale)
+
             Image(
                 painter = painterResource(Res.drawable.wave_black),
                 contentDescription = null,
@@ -108,7 +107,7 @@ class SplashScreen : Screen {
                 contentScale = ContentScale.Fit
             )
 
-            // LAYER 3: Logo & Tagline
+
             Column(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally

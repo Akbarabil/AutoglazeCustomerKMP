@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
-import com.example.autoglazecustomer.data.model.*
+import com.example.autoglazecustomer.data.model.WarnaKendaraanResponse
 import com.example.autoglazecustomer.data.model.addvehicle.AddVehicleState
 import com.example.autoglazecustomer.data.network.AuthService
 import kotlinx.coroutines.launch
@@ -35,8 +35,8 @@ class AddVehicleScreenModel(private val authService: AuthService) : ScreenModel 
         val selected = state.listMerek.find { it.namaMerek == merekName }
         state = state.copy(
             merekTerpilih = selected,
-            tipeTerpilih = null, // Reset Tipe
-            tahun = "",          // Reset Tahun
+            tipeTerpilih = null,
+            tahun = "",
             listTipe = emptyList(),
             errorField = null
         )
@@ -59,7 +59,7 @@ class AddVehicleScreenModel(private val authService: AuthService) : ScreenModel 
         val selected = state.listTipe.find { it.namaTipeKendaraan == tipeName }
         state = state.copy(
             tipeTerpilih = selected,
-            tahun = "", // Reset Tahun saat tipe berubah
+            tahun = "",
             errorField = null
         )
     }
@@ -111,11 +111,11 @@ class AddVehicleScreenModel(private val authService: AuthService) : ScreenModel 
             try {
                 val token = TokenManager.getToken() ?: ""
 
-                // 1. Cek Nopol
+
                 val responseNopol = authService.cekNopol(s.nopol)
 
                 if (responseNopol.isSuccessful) {
-                    // 2. Simpan Kendaraan
+
                     val res = authService.addVehicle(
                         token = "Bearer $token",
                         idMerek = s.merekTerpilih!!.idMerek,
@@ -146,5 +146,7 @@ class AddVehicleScreenModel(private val authService: AuthService) : ScreenModel 
         }
     }
 
-    fun clearError() { state = state.copy(errorMessage = null, errorField = null) }
+    fun clearError() {
+        state = state.copy(errorMessage = null, errorField = null)
+    }
 }

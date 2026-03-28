@@ -1,10 +1,14 @@
 package com.example.autoglazecustomer.ui.profile.myvoucher
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
-import com.example.autoglazecustomer.data.model.*
+import com.example.autoglazecustomer.data.model.VehicleData
+import com.example.autoglazecustomer.data.model.VoucherItemId
 import com.example.autoglazecustomer.data.network.AuthService
 import kotlinx.coroutines.launch
 
@@ -13,10 +17,10 @@ class MyVoucherScreenModel(private val authService: AuthService) : ScreenModel {
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var isLoadingVehicles by mutableStateOf(false)
 
-    // Simpan status expand per ID Kendaraan
+
     var expandedStates = mutableStateMapOf<Int, Boolean>()
 
-    // Simpan data voucher per ID Kendaraan (Cache)
+
     var voucherCache = mutableStateMapOf<Int, List<VoucherItemId>>()
     var loadingVouchers = mutableStateMapOf<Int, Boolean>()
 
@@ -27,7 +31,8 @@ class MyVoucherScreenModel(private val authService: AuthService) : ScreenModel {
                 val token = "Bearer ${TokenManager.getToken()}"
                 val res = authService.getVehicles(token)
                 if (res.success) vehicleList = res.data
-            } catch (e: Exception) { /* Handle error */ }
+            } catch (e: Exception) {
+            }
             isLoadingVehicles = false
         }
     }

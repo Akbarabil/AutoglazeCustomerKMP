@@ -1,11 +1,13 @@
 package com.example.autoglazecustomer.ui.transaction
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import androidx.compose.runtime.*
 import com.example.autoglazecustomer.data.model.transaction.CabangData
-import kotlinx.coroutines.launch
 import com.example.autoglazecustomer.data.network.AuthService
+import kotlinx.coroutines.launch
 
 class TransactionScreenModel(private val authService: AuthService) : ScreenModel {
 
@@ -13,20 +15,21 @@ class TransactionScreenModel(private val authService: AuthService) : ScreenModel
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
 
-    // Fungsi pencarian/filter lokal
+
     var searchQuery by mutableStateOf("")
-    val filteredCabang get() = if (searchQuery.isEmpty()) {
-        cabangList
-    } else {
-        cabangList.filter { it.namaCabang.contains(searchQuery, ignoreCase = true) }
-    }
+    val filteredCabang
+        get() = if (searchQuery.isEmpty()) {
+            cabangList
+        } else {
+            cabangList.filter { it.namaCabang.contains(searchQuery, ignoreCase = true) }
+        }
 
     fun fetchCabangTerdekat(lat: Double, lon: Double) {
         screenModelScope.launch {
             isLoading = true
             errorMessage = null
             try {
-                // Pastikan di AuthService kamu sudah ada fungsi getCabangTerdekat
+
                 val response = authService.getCabangTerdekat(lon, lat)
                 if (response.status) {
                     cabangList = response.data

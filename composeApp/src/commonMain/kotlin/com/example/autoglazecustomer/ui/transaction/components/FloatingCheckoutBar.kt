@@ -3,9 +3,20 @@ package com.example.autoglazecustomer.ui.transaction.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCartCheckout
@@ -37,11 +48,11 @@ fun FloatingCheckoutBar(
     val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
     val redPrimer = Color(0xFFD53B1E)
 
-    // Animasi muncul dari bawah
+
     AnimatedVisibility(
         visible = visible,
-        enter = slideInVertically(initialOffsetY = { it }), // Muncul dari bawah
-        exit = slideOutVertically(targetOffsetY = { it })   // Hilang ke bawah
+        enter = slideInVertically(initialOffsetY = { it }),
+        exit = slideOutVertically(targetOffsetY = { it })
     ) {
         Box(
             modifier = Modifier
@@ -52,7 +63,11 @@ fun FloatingCheckoutBar(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = redPrimer.copy(alpha = 0.5f))
+                    .shadow(
+                        12.dp,
+                        RoundedCornerShape(16.dp),
+                        spotColor = redPrimer.copy(alpha = 0.5f)
+                    )
                     .clickable { onClick() },
                 shape = RoundedCornerShape(16.dp),
                 color = redPrimer
@@ -64,7 +79,7 @@ fun FloatingCheckoutBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Kiri: Info Jumlah dan Harga
+
                     Column {
                         Text(
                             text = "$totalQty Item di Keranjang",
@@ -81,7 +96,7 @@ fun FloatingCheckoutBar(
                         )
                     }
 
-                    // Kanan: Icon dan Teks Checkout
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "Checkout",
@@ -113,7 +128,8 @@ fun FloatingCheckoutBar(
 
 private fun formatRupiah(amount: Double): String {
     val absoluteAmount = kotlin.math.abs(amount).toLong()
-    val formattedNumber = absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
+    val formattedNumber =
+        absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
     val sign = if (amount < 0) "-" else ""
     return "${sign}Rp $formattedNumber"
 }

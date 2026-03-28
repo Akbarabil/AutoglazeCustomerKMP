@@ -22,10 +22,10 @@ class TransactionTab : Tab {
 
     @Composable
     override fun Content() {
-        // Inisialisasi AuthService secara lazy
+
         val authService = remember { AuthService() }
 
-        // Panggil TransactionScreen (Halaman pilih cabang yang kita buat tadi)
+
         val transactionScreen = remember(authService) { TransactionScreen(authService) }
 
         transactionScreen.Content()
