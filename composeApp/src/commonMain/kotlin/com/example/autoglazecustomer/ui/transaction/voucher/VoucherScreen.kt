@@ -1,0 +1,265 @@
+package com.example.autoglazecustomer.ui.transaction.voucher
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import autoglazecustomer.composeapp.generated.resources.*
+import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.autoglazecustomer.data.manager.CartItem
+import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
+import com.example.autoglazecustomer.data.network.AuthService
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.Font
+
+class VoucherScreen(
+    private val authService: AuthService,
+    private val idKendaraan: Int,
+    private val cartItems: List<CartItem>,
+    private val isMember: Boolean
+) : Screen {
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val screenModel = rememberScreenModel { VoucherScreenModel(authService, idKendaraan, cartItems) }
+
+        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
+        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val redPrimer = Color(0xFFD53B1E)
+
+        // Setup Tabs (ViewPager2 + TabLayout ala Compose)
+        val tabs = listOf("Voucher Umum", "Voucher Kendaraan")
+        val pagerState = rememberPagerState(pageCount = { tabs.size })
+        val coroutineScope = rememberCoroutineScope()
+
+        Scaffold(
+            containerColor = Color(0xFFF8F9FA),
+            topBar = {
+                Surface(color = Color.White, shadowElevation = 2.dp) {
+                    Column {
+                        CenterAlignedTopAppBar(
+                            title = { Text("Pilih Voucher", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black) },
+                            navigationIcon = {
+                                IconButton(onClick = { navigator.pop() }) {
+                                    Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp), tint = Color.Black)
+                                }
+                            },
+                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                        )
+                        // Tab Layout
+                        TabRow(
+                            selectedTabIndex = pagerState.currentPage,
+                            containerColor = Color.White,
+                            contentColor = redPrimer,
+                            indicator = { tabPositions ->
+                                SecondaryIndicator(
+                                    modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                                    color = redPrimer
+                                )
+                            }
+                        ) {
+                            tabs.forEachIndexed { index, title ->
+                                Tab(
+                                    selected = pagerState.currentPage == index,
+                                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+                                    text = {
+                                        Text(
+                                            text = title,
+                                            fontFamily = if (pagerState.currentPage == index) satoshiBold else satoshiMedium,
+                                            color = if (pagerState.currentPage == index) redPrimer else Color.Gray
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            bottomBar = {
+                // Bottom Panel (Pengganti LinearLayout XML)
+                Surface(
+                    shadowElevation = 16.dp, color = Color.White,
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp).windowInsetsPadding(WindowInsets.navigationBars)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("${screenModel.selectedVouchers.size} Voucher Dipilih", fontFamily = satoshiBold, color = Color.Black)
+                        }
+
+                        // Error Validation Text (Muncul jika ada peringatan voucher eksklusif)
+                        if (!screenModel.validationMessage.isNullOrEmpty()) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(screenModel.validationMessage!!, fontFamily = satoshiMedium, fontSize = 12.sp, color = redPrimer)
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                screenModel.confirmSelection()
+                                navigator.pop() // Simpan ke Manager lalu kembali ke Checkout
+                            },
+                            modifier = Modifier.fillMaxWidth().height(54.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+                        ) {
+                            Text("Gunakan Voucher", fontFamily = satoshiBold, fontSize = 16.sp, color = Color.White)
+                        }
+                    }
+                }
+            }
+        ) { padding ->
+            if (screenModel.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = redPrimer)
+                }
+            } else {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    verticalAlignment = Alignment.Top
+                ) { page ->
+                    val voucherList = if (page == 0) screenModel.umumVouchers else screenModel.kendaraanVouchers
+
+                    if (voucherList.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Tidak ada voucher tersedia.", fontFamily = satoshiMedium, color = Color.Gray)
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(voucherList) { voucher ->
+                                val isSelected = screenModel.selectedVouchers.any { it.idVoucher == voucher.idVoucher }
+                                VoucherCardItem(
+                                    voucher = voucher,
+                                    isSelected = isSelected,
+                                    isMember = isMember,
+                                    bold = satoshiBold,
+                                    med = satoshiMedium,
+                                    red = redPrimer
+                                ) {
+                                    screenModel.toggleVoucher(voucher)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun VoucherCardItem(
+        voucher: VoucherUIModel,
+        isSelected: Boolean,
+        isMember: Boolean,
+        bold: FontFamily,
+        med: FontFamily,
+        red: Color,
+        onClick: () -> Unit
+    ) {
+        val discountLabel = if (isMember) {
+            when {
+                voucher.presentaseMember > 0 -> "Potongan Member ${voucher.presentaseMember.toInt()}%"
+                voucher.potHargaMember > 0 -> "Potongan Member ${formatRupiah(voucher.potHargaMember)}"
+                else -> "Promo Spesial Member"
+            }
+        } else {
+            when {
+                voucher.presentaseNonMember > 0 -> "Potongan ${voucher.presentaseNonMember.toInt()}%"
+                voucher.potHargaNonMember > 0 -> "Potongan ${formatRupiah(voucher.potHargaNonMember)}"
+                else -> "Promo Spesial"
+            }
+        }
+
+        Surface(
+            modifier = Modifier.fillMaxWidth().clickable { onClick() },
+            shape = RoundedCornerShape(12.dp),
+            color = if (isSelected) red.copy(alpha = 0.05f) else Color.White,
+            border = BorderStroke(1.dp, if (isSelected) red else Color(0xFFE0E0E0))
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    // JOSJIS: Label Nominal/Persen (Badge)
+                    Surface(
+                        color = if (isSelected) red else Color(0xFFF5F5F5),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text(
+                            text = discountLabel,
+                            fontFamily = bold,
+                            fontSize = 11.sp,
+                            color = if (isSelected) Color.White else red,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(voucher.namaVoucher, fontFamily = bold, fontSize = 15.sp, color = Color.Black)
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    val expText = voucher.tglExpired ?: "Tanpa batas waktu"
+                    Text("Berlaku hingga: $expText", fontFamily = med, fontSize = 12.sp, color = Color.Gray)
+
+                    // Lencana Eksklusif
+                    if (voucher.allowMultiple == 0) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "• Eksklusif (Tidak bisa digabung)",
+                            fontFamily = med,
+                            fontSize = 11.sp,
+                            color = Color(0xFFE67E22) // Warna oranye agar beda dengan diskon
+                        )
+                    }
+                }
+
+                // Indikator Check
+                Icon(
+                    imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Outlined.Circle,
+                    contentDescription = null,
+                    tint = if (isSelected) red else Color.LightGray,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+
+    // Tambahkan helper formatRupiah jika belum ada di file ini
+    private fun formatRupiah(amount: Double): String {
+        val absoluteAmount = kotlin.math.abs(amount).toLong()
+        val formattedNumber = absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
+        return "Rp $formattedNumber"
+    }
+}

@@ -200,13 +200,13 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
             Column(modifier = Modifier.padding(20.dp)) {
                 // Header: Badge Status
                 Surface(
-                    color = if (vehicle.hasMembership == 1) Color(0xFFD53B1E) else Color(0xFFE0E0E0),
+                    color = if (vehicle.isMembership == 1) Color(0xFFD53B1E) else Color(0xFFE0E0E0),
                     shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
-                        text = if (vehicle.hasMembership == 1) "MEMBER" else "REGULER",
+                        text = if (vehicle.isMembership == 1) "MEMBER" else "REGULER",
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
-                        color = if (vehicle.hasMembership == 1) Color.White else Color.Gray,
+                        color = if (vehicle.isMembership == 1) Color.White else Color.Gray,
                         fontSize = 10.sp,
                         fontFamily = bold
                     )

@@ -67,7 +67,6 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
 
         LaunchedEffect(Unit) { screenModel.initData() }
 
-        // JOSJIS: Tambahkan background putih solid untuk mencegah kebocoran iOS
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),

@@ -1,5 +1,6 @@
 package com.example.autoglazecustomer.data.manager
 
+import com.example.autoglazecustomer.data.manager.VoucherManager.clearVouchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -88,5 +89,6 @@ object CartManager {
     // --------------------------------------------------------
     fun clearCart() {
         _cartItems.value = emptyList()
+        clearVouchers()
     }
 }

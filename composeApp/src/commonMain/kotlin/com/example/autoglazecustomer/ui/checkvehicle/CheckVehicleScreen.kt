@@ -60,9 +60,7 @@ class CheckVehicleScreen : Screen {
             unfocusedTextColor = Color.Black
         )
 
-        // JOSJIS: Tambahkan background putih solid pada Box dasar
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
-            // Batasi tinggi image agar tidak bocor ke bawah
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
                 contentDescription = null,
@@ -93,7 +91,6 @@ class CheckVehicleScreen : Screen {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
-                                // JOSJIS: Pastikan putih mentok sampai area navigasi iOS
                                 .windowInsetsPadding(WindowInsets.navigationBars)
                                 .padding(horizontal = 24.dp)
                                 .verticalScroll(rememberScrollState())

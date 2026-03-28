@@ -83,7 +83,6 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
             unfocusedTextColor = Color.Black
         )
 
-        // JOSJIS: Gunakan dasar Putih agar tidak bocor di Safe Area iOS
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             // Background Pattern hanya di area atas agar tidak bocor ke navigasi bawah
             Image(
@@ -118,7 +117,6 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    // JOSJIS: Tambahkan padding navigasi bars agar warna putih mentok ke bawah iOS
                                     .windowInsetsPadding(WindowInsets.navigationBars)
                                     .padding(horizontal = 24.dp)
                                     .verticalScroll(rememberScrollState())
@@ -227,7 +225,7 @@ data class LoginScreen(val initialEmail: String = "") : Screen {
                     IconButton(
                         onClick = { navigator.pop() },
                         modifier = Modifier
-                            .statusBarsPadding() // JOSJIS: Pastikan tombol tidak tertutup poni/dynamic island
+                            .statusBarsPadding()
                             .padding(start = 12.dp, top = 12.dp)
                             .align(Alignment.TopStart)
                     ) {

@@ -219,11 +219,11 @@ class HomeScreen(private val authService: AuthService) : Screen {
         ) {
             Column(Modifier.padding(20.dp)) {
                 Surface(
-                    color = if (vehicle.hasMembership == 1) Color(0xFFD53B1E) else Color(0xFF757575),
+                    color = if (vehicle.isMembership == 1) Color(0xFFD53B1E) else Color(0xFF757575),
                     shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
-                        text = if (vehicle.hasMembership == 1) "MEMBER" else "REGULER",
+                        text = if (vehicle.isMembership == 1) "MEMBER" else "REGULER",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         color = Color.White, fontSize = 10.sp, fontFamily = bold
                     )

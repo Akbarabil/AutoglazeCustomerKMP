@@ -14,7 +14,7 @@ data class CheckoutDetailPayload(
 
 @Serializable
 data class CheckoutPayload(
-    @SerialName("id_customer") val idCustomer: String,
+    @SerialName("id_customer") val idCustomer: Int,
     @SerialName("nama_pelanggan") val namaPelanggan: String,
     @SerialName("id_kendaraan") val idKendaraan: String,
     @SerialName("jenis_penjualan") val jenisPenjualan: String,

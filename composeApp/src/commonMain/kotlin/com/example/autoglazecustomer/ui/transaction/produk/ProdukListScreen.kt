@@ -31,6 +31,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.manager.CartManager
+import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukItem
@@ -201,7 +202,8 @@ class ProdukListScreen(
                         Button(
                             onClick = {
                                 showExitDialog = false
-                                CartManager.clearCart() // Hapus memori cart saat fix keluar
+                                CartManager.clearCart()
+                                VoucherManager.clearVouchers()
                                 if (navigator.canPop) navigator.pop()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = redPrimer)

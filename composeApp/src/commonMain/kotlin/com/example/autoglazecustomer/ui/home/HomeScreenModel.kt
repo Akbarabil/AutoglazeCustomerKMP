@@ -70,7 +70,7 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
                 }
 
                 voucherJob.await().onSuccess { res ->
-                    if (res.status) promoList = res.data
+                    if (res.status == true) promoList = res.data ?: emptyList()
                 }
 
             } catch (e: Exception) {

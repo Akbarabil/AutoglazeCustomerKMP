@@ -29,9 +29,10 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.example.autoglazecustomer.data.manager.CartItem // JOSJIS: Pastikan import ini
-import com.example.autoglazecustomer.data.manager.CartManager // JOSJIS: Pastikan import ini
-import com.example.autoglazecustomer.data.manager.ItemCategory // JOSJIS: Pastikan import ini
+import com.example.autoglazecustomer.data.manager.CartItem
+import com.example.autoglazecustomer.data.manager.CartManager
+import com.example.autoglazecustomer.data.manager.ItemCategory
+import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.membership.MembershipItem
@@ -62,13 +63,11 @@ class MembershipListScreen(
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 
-        // JOSJIS 1: State Dialog & Observasi Keranjang
         val cartItems by CartManager.cartItems.collectAsState()
         var showExitDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) { screenModel.fetchData() }
 
-        // JOSJIS 2: Fungsi Mencegat Keluar (Interceptor)
         val onLeaveAttempt = {
             if (cartItems.isNotEmpty()) {
                 showExitDialog = true
@@ -79,7 +78,6 @@ class MembershipListScreen(
             }
         }
 
-        // JOSJIS 3: Tahan navigasi dengan KmpBackHandler
         KmpBackHandler {
             onLeaveAttempt()
         }
@@ -96,7 +94,6 @@ class MembershipListScreen(
                             CenterAlignedTopAppBar(
                                 title = { Text("Pilih Membership", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black) },
                                 navigationIcon = {
-                                    // JOSJIS 4: Pasang penahan di tombol back UI
                                     IconButton(onClick = { onLeaveAttempt() }) {
                                         Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp), Color.DarkGray)
                                     }
@@ -155,8 +152,8 @@ class MembershipListScreen(
                                     med = satoshiMedium,
                                     brandRed = redPrimer,
                                     onClick = {
-                                        // JOSJIS 5: Langsung masukkan Membership ke CartManager
-                                        CartManager.clearCart() // Bersihkan sisa cart lama (karena membership cuma bisa beli 1)
+                                        CartManager.clearCart()
+                                        VoucherManager.clearVouchers()
 
                                         val newCartItem = CartItem(
                                             idProduk = item.idMembership, // Pakai ID Membership sbg unique identifier
@@ -188,7 +185,6 @@ class MembershipListScreen(
                 }
             }
 
-            // JOSJIS 6: UI Dialog Peringatan Hapus Keranjang Membership
             if (showExitDialog) {
                 AlertDialog(
                     onDismissRequest = { showExitDialog = false },
@@ -208,7 +204,8 @@ class MembershipListScreen(
                         Button(
                             onClick = {
                                 showExitDialog = false
-                                CartManager.clearCart() // Hapus memori cart saat fix keluar
+                                CartManager.clearCart()
+                                VoucherManager.clearVouchers()
                                 if (navigator.canPop) navigator.pop()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = redPrimer)

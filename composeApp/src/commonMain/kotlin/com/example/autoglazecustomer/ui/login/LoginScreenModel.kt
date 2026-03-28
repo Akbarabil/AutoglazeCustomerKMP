@@ -74,7 +74,6 @@ class LoginScreenModel(
                     errorMessage = response.message ?: "Login gagal, silakan cek kembali data Anda"
                 }
             } catch (e: io.ktor.client.plugins.ResponseException) {
-                // --- JURUS JOSJIS: Bongkar Error API ---
                 try {
                     val errorBody = e.response.bodyAsText()
                     val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }

@@ -89,7 +89,6 @@ class RegisterScreen : Screen {
             unfocusedTextColor = Color.Black
         )
 
-        // JOSJIS: Tambahkan background putih solid untuk mencegah kebocoran iOS
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_grey),
@@ -122,7 +121,6 @@ class RegisterScreen : Screen {
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    // JOSJIS: Menutup area bawah iOS dengan warna putih
                                     .windowInsetsPadding(WindowInsets.navigationBars)
                                     .padding(horizontal = 24.dp)
                                     .verticalScroll(rememberScrollState())

@@ -36,7 +36,6 @@ class MyVoucherScreenModel(private val authService: AuthService) : ScreenModel {
         val isCurrentlyExpanded = expandedStates[idKendaraan] ?: false
         expandedStates[idKendaraan] = !isCurrentlyExpanded
 
-        // Jika mau expand dan belum ada di cache, tarik API
         if (!isCurrentlyExpanded && !voucherCache.containsKey(idKendaraan)) {
             fetchVouchers(idKendaraan)
         }
@@ -47,7 +46,7 @@ class MyVoucherScreenModel(private val authService: AuthService) : ScreenModel {
             loadingVouchers[idKendaraan] = true
             try {
                 val res = authService.getVouchersByVehicle(idKendaraan)
-                voucherCache[idKendaraan] = res.data
+                voucherCache[idKendaraan] = res.data ?: emptyList()
             } catch (e: Exception) {
                 voucherCache[idKendaraan] = emptyList()
             }

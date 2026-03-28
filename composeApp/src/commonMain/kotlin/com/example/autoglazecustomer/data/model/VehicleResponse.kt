@@ -18,6 +18,6 @@ data class VehicleData(
     @SerialName("nopol") val nopol: String? = null,
     @SerialName("no_rangka") val noRangka: String? = null,
     @SerialName("warna") val warna: String? = null,
-    @SerialName("has_membership") val hasMembership: Int = 0,
+    @SerialName("has_membership") val isMembership: Int = 0,
     @SerialName("gambar_tipe") val gambarTipe: String? = null
 )

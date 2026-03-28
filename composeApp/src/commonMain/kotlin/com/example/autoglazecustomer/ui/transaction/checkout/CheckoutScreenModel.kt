@@ -5,15 +5,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.manager.CartItem
 import com.example.autoglazecustomer.data.manager.ItemCategory
+import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutDetailPayload
 import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutPayload
 import com.example.autoglazecustomer.data.network.AuthService
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.math.roundToLong
 
 class CheckoutScreenModel(
@@ -22,25 +25,38 @@ class CheckoutScreenModel(
     private val vehicle: VehicleWithStatus
 ) : ScreenModel {
 
-    // Status UI
     var isLoading by mutableStateOf(false)
     var isSuccess by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
     var successKodePenjualan by mutableStateOf("")
 
-    // Hasil Kalkulasi Finansial
     var subtotalFinal by mutableStateOf(0.0)
     var pajakFinal by mutableStateOf(0.0)
     var nettFinal by mutableStateOf(0.0)
-    var diskonFinal by mutableStateOf(0.0) // Nanti untuk voucher
+    var diskonFinal by mutableStateOf(0.0)
 
-    // JOSJIS: Fungsi Penghitung ala Kasir (PPN & DPP)
+    // JOSJIS: Fungsi Kasir Pintar (Menghitung PPN & Diskon Voucher)
     fun calculateTotals(cartItems: List<CartItem>) {
         val totalBayarAsli = cartItems.sumOf { it.subtotal }
-        val taxRate = 0.11 // PPN 11%
-
-        // Cek pengaturan PPN cabang (asumsi dari kode lama: 1 = pakai PPN)
+        val taxRate = 0.11
         val isUsingPpn = cabang.isUsingPpn == 1
+
+        val selectedVouchers = VoucherManager.selectedVouchers.value
+        val hasMembership = vehicle.vehicle.isMembership == 1
+
+        var tempTotalDiskon = 0.0
+        selectedVouchers.forEach { voucher ->
+            val potHarga = if (hasMembership) voucher.potHargaMember else voucher.potHargaNonMember
+            val persen = if (hasMembership) voucher.presentaseMember else voucher.presentaseNonMember
+
+            if (persen > 0) {
+                tempTotalDiskon += (totalBayarAsli * (persen / 100.0))
+            } else {
+                tempTotalDiskon += potHarga
+            }
+        }
+
+        diskonFinal = tempTotalDiskon
 
         if (isUsingPpn) {
             val dpp = totalBayarAsli / (1.0 + taxRate)
@@ -51,25 +67,29 @@ class CheckoutScreenModel(
             pajakFinal = 0.0
         }
 
-        // Hitung total akhir
-        val totalYangHarusDibayar = (nettFinal + pajakFinal) - diskonFinal
-        subtotalFinal = if (totalYangHarusDibayar < 0) 0.0 else totalYangHarusDibayar
+        val finalAmount = (nettFinal + pajakFinal) - diskonFinal
+        subtotalFinal = if (finalAmount < 0) 0.0 else finalAmount
     }
 
-    // JOSJIS: Mesin Pembentuk Payload
-    fun processCheckout(cartItems: List<CartItem>, customerName: String, customerId: String) {
+    fun processCheckout(cartItems: List<CartItem>) {
         if (cartItems.isEmpty()) return
+
+        val customerIdInt = TokenManager.getCustomerId()
+        val customerName = TokenManager.getUserName()
+
+        if (customerIdInt == -1) {
+            errorMessage = "Sesi login tidak valid. Silakan login kembali."
+            return
+        }
 
         screenModelScope.launch {
             isLoading = true
             errorMessage = null
 
             try {
-                // 1. Deteksi Jenis Penjualan Otomatis
                 val isMembership = cartItems.any { it.category == ItemCategory.MEMBERSHIP }
                 val jenisPenjualan = if (isMembership) "Membership" else "Reguler"
 
-                // 2. Petakan Keranjang ke Format API
                 val detailPayload = cartItems.map { item ->
                     CheckoutDetailPayload(
                         idCabangItem = if (isMembership) null else item.idCabangItem,
@@ -80,17 +100,20 @@ class CheckoutScreenModel(
                     )
                 }
 
-                // 3. Bangun Payload Utama
+                // JOSJIS: Ambil ID Voucher terpilih untuk Payload
+                val selectedVoucherIds = VoucherManager.selectedVouchers.value.map { it.idVoucher }
+                val idVoucherPayload = if (selectedVoucherIds.isEmpty()) "[]" else selectedVoucherIds.toString()
+
                 val payload = CheckoutPayload(
-                    idCustomer = customerId,
+                    idCustomer = customerIdInt,
                     namaPelanggan = customerName,
                     idKendaraan = vehicle.vehicle.idKendaraan?.toString() ?: "",
                     jenisPenjualan = jenisPenjualan,
                     jenisTransaksi = "Reguler",
-                    odometer = null, // Opsional
+                    odometer = null,
                     kodeCabang = cabang.kodeCabang,
                     namaCabang = cabang.namaCabang,
-                    idVoucher = "[]", // Default voucher kosong
+                    idVoucher = idVoucherPayload,
                     subtotal = subtotalFinal.roundToLong().toString(),
                     pajak = pajakFinal.roundToLong().toString(),
                     nett = nettFinal.roundToLong().toString(),
@@ -98,8 +121,13 @@ class CheckoutScreenModel(
                     detail = detailPayload
                 )
 
+                // LOG PAYLOAD SEBELUM TERBANG
+                try {
+                    val jsonString = Json { prettyPrint = true }.encodeToString(payload)
+                    println("🚀 ====== PAYLOAD CHECKOUT DENGAN VOUCHER ======\n$jsonString\n==============================")
+                } catch (e: Exception) { /* ignore log error */ }
 
-                 val response = authService.processCheckout(payload, isMembership)
+                val response = authService.processCheckout(payload, isMembership)
                 if (response.status) {
                     successKodePenjualan = response.kodePenjualan ?: "Sukses"
                     isSuccess = true

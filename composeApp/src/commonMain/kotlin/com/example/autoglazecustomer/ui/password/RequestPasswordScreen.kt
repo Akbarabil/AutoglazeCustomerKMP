@@ -100,7 +100,6 @@ data class RequestPasswordScreen(val email: String, val phone: String) : Screen 
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    // JOSJIS: Pastikan putih mentok sampai area navigasi iOS
                                     .windowInsetsPadding(WindowInsets.navigationBars)
                                     .padding(horizontal = 24.dp)
                                     .verticalScroll(rememberScrollState())

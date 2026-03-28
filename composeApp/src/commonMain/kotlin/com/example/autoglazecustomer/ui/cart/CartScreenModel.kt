@@ -33,7 +33,6 @@ class CartScreenModel(private val authService: AuthService) : ScreenModel {
                 .onSuccess { res ->
                     if (res.success) {
                         vehicleList = res.data
-                        // JOSJIS TIPS: Jika user cuma punya 1 mobil, langsung pilihkan saja
                         if (vehicleList.size == 1) {
                             val singleVehicle = vehicleList.first()
                             selectedVehicle = singleVehicle

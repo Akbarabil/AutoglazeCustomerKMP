@@ -184,7 +184,7 @@ class AuthService {
     }
 
     suspend fun getVoucherSaya(token: String): VoucherUmumResponse {
-        return client.get("list-voucher-customer") {
+        return client.get("list-voucher-umum") {
             header(HttpHeaders.Authorization, token)
         }.body()
     }
@@ -212,10 +212,8 @@ class AuthService {
                     append("telepon", telepon)
 
                     if (imageBytes != null) {
-                        // JURUS JOSJIS: Tambahkan Content-Length agar iOS tidak korupsi datanya
                         append("photo", imageBytes, Headers.build {
                             append(HttpHeaders.ContentType, "image/jpeg")
-                            // Format Content-Disposition yang paling standar untuk Laravel
                             append(HttpHeaders.ContentDisposition, "form-data; name=\"photo\"; filename=\"profile.jpg\"")
                         })
                     }

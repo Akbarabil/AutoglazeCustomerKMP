@@ -197,7 +197,7 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                                 items(vouchers) { voucher ->
                                     ModernTicketVoucher(
                                         voucher = voucher,
-                                        isMember = vehicleAktif?.hasMembership == 1,
+                                        isMember = vehicleAktif?.isMembership == 1,
                                         bold = satoshiBold,
                                         med = satoshiMedium,
                                         red = redPrimer
@@ -264,7 +264,9 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
         ) {
             Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                 Column(modifier = Modifier.weight(1f).padding(16.dp)) {
-                    Text(voucher.namaVoucher, fontFamily = bold, fontSize = 16.sp, color = Color.Black)
+                    Text(text = voucher.kodeVoucher ?: "-", fontFamily = bold, fontSize = 14.sp, color = Color.Black)
+                    val potHarga = (if (memberStatus) voucher.potHargaMember else voucher.potHargaNonMember) ?: 0.0
+
                     if (potHarga > 0) {
                         Text(
                             text = "Potongan Rp ${formatRupiah(potHarga)}",
@@ -289,7 +291,7 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text("KODE", fontFamily = bold, fontSize = 10.sp, color = Color.Gray)
-                    Text(voucher.kodeVoucher, fontFamily = bold, fontSize = 14.sp, color = Color.Black)
+                    Text(text = voucher.kodeVoucher ?: "-", fontFamily = bold, fontSize = 14.sp, color = Color.Black)
                     Spacer(Modifier.height(12.dp))
                     Text("Berlaku s/d", fontFamily = med, fontSize = 9.sp, color = Color.Gray)
                     Text(voucher.tglExpired ?: "-", fontFamily = med, fontSize = 10.sp, color = Color.DarkGray)
@@ -311,7 +313,8 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
         }
     }
 
-    private fun formatRupiah(amount: Int): String {
-        return amount.toString().reversed().chunked(3).joinToString(".").reversed()
+    private fun formatRupiah(amount: Double): String {
+        val absoluteAmount = kotlin.math.abs(amount).toLong()
+        return absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
     }
 }
