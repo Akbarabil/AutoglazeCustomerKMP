@@ -1,3 +1,4 @@
+// VoucherScreenModel.kt
 package com.example.autoglazecustomer.ui.transaction.voucher
 
 import androidx.compose.runtime.getValue
@@ -20,13 +21,10 @@ class VoucherScreenModel(
     private val cartItems: List<CartItem>
 ) : ScreenModel {
 
-
     var umumVouchers by mutableStateOf<List<VoucherUIModel>>(emptyList())
     var kendaraanVouchers by mutableStateOf<List<VoucherUIModel>>(emptyList())
     var isLoading by mutableStateOf(false)
-
-
-    var selectedVouchers by mutableStateOf(VoucherManager.selectedVouchers.value)
+    var selectedVouchers by mutableStateOf<List<VoucherUIModel>>(VoucherManager.selectedVouchers.value)
     var validationMessage by mutableStateOf<String?>(null)
 
     init {
@@ -38,13 +36,11 @@ class VoucherScreenModel(
         screenModelScope.launch {
             isLoading = true
             try {
-
                 val umumDeferred = async { authService.getVoucherSaya(token) }
                 val kendaraanDeferred = async { authService.getVouchersByVehicle(idKendaraan) }
 
                 val umumRes = umumDeferred.await()
                 val kendaraanRes = kendaraanDeferred.await()
-
 
                 umumVouchers = (umumRes.data ?: emptyList()).map { it.toUIModel() }
                 kendaraanVouchers = (kendaraanRes.data ?: emptyList()).map { it.toUIModel() }
@@ -57,56 +53,54 @@ class VoucherScreenModel(
     }
 
     fun toggleVoucher(voucher: VoucherUIModel) {
+        val currentList = selectedVouchers.toMutableList()
+        val isAlreadySelected = currentList.any { it.idVoucher == voucher.idVoucher }
 
-        if (selectedVouchers.any { it.idVoucher == voucher.idVoucher }) {
-            selectedVouchers = selectedVouchers.filterNot { it.idVoucher == voucher.idVoucher }
+        if (isAlreadySelected) {
+            currentList.removeAll { it.idVoucher == voucher.idVoucher }
+            selectedVouchers = currentList
             validationMessage = null
             return
         }
 
-
-        val isNewVoucherExclusive = voucher.allowMultiple == 0
-
-
-        if (isNewVoucherExclusive && selectedVouchers.isNotEmpty()) {
-            validationMessage = "${voucher.namaVoucher} eksklusif dan tidak dapat digabung."
+        if (voucher.allowMultiple == 0 && currentList.isNotEmpty()) {
+            validationMessage = "Voucher eksklusif tidak dapat digabung."
             return
         }
 
-
-        val existingExclusive = selectedVouchers.firstOrNull { it.allowMultiple == 0 }
-        if (existingExclusive != null) {
-            validationMessage =
-                "${existingExclusive.namaVoucher} sudah eksklusif. Lepas voucher tersebut dulu."
+        if (currentList.any { it.allowMultiple == 0 }) {
+            validationMessage = "Lepas voucher eksklusif terlebih dahulu."
             return
         }
 
-
-        if (!checkProductApplicability(voucher)) {
-            validationMessage = "Produk yang sesuai untuk voucher ini tidak ada di keranjang."
+        if (!isVoucherApplicable(voucher)) {
+            validationMessage = "Voucher tidak berlaku untuk isi keranjang Anda."
             return
         }
 
-
-        selectedVouchers = selectedVouchers + voucher
+        currentList.add(voucher)
+        selectedVouchers = currentList
         validationMessage = null
     }
 
-    private fun checkProductApplicability(voucher: VoucherUIModel): Boolean {
+    private fun isVoucherApplicable(voucher: VoucherUIModel): Boolean {
+        val idRaw = voucher.idProduk?.toString()?.trim() ?: ""
 
-        val idString = voucher.idProduk ?: return true
-        if (idString.isEmpty()) return true
+        val isGeneralOrVehicleVoucher = idRaw.isEmpty() || idRaw == "0" || idRaw == "null"
+        if (isGeneralOrVehicleVoucher) return true
 
+        val targetIds = idRaw.split(';').map { it.trim() }
+        val cartIds = cartItems.map { it.idProduk.toString().trim() }
 
-        val targetProductIds = idString.split(';').mapNotNull { it.toIntOrNull() }
-        if (targetProductIds.isEmpty()) return true
-
-        val cartProductIds = cartItems.map { it.idProduk }
-        return targetProductIds.any { cartProductIds.contains(it) }
+        return targetIds.any { it in cartIds }
     }
 
-
     fun confirmSelection() {
+        println("🎫 [DEBUG 1 - VOUCHER SCREEN] Tombol Gunakan ditekan!")
+        println("🎫 [DEBUG 1] Jumlah voucher yang dikirim: ${selectedVouchers.size}")
+        selectedVouchers.forEach {
+            println("🎫 [DEBUG 1] Detail Voucher: ID=${it.idVoucher}, Nama=${it.namaVoucher}, ID_Produk=${it.idProduk}")
+        }
         VoucherManager.setVouchers(selectedVouchers)
     }
 }

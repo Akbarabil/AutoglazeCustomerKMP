@@ -97,6 +97,11 @@ class CheckoutScreen(
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
 
+        LaunchedEffect(cartItems) {
+            val currentProductIds = cartItems.map { it.idProduk.toString() }
+            VoucherManager.removeInvalidVouchers(currentProductIds)
+        }
+
         LaunchedEffect(cartItems, selectedVouchers) {
             screenModel.calculateTotals(cartItems)
             if (cartItems.isEmpty() && !screenModel.isSuccess) {
@@ -146,7 +151,6 @@ class CheckoutScreen(
                         Spacer(Modifier.height(20.dp))
                     }
 
-
                     item {
                         SectionTitle("Pesanan Anda", satoshiBold)
                         Spacer(Modifier.height(10.dp))
@@ -158,19 +162,17 @@ class CheckoutScreen(
                         Spacer(Modifier.height(12.dp))
                     }
 
-
                     item {
                         Spacer(Modifier.height(16.dp))
                         SectionTitle("Promo & Voucher", satoshiBold)
                         Spacer(Modifier.height(10.dp))
 
-                        val cartSubtotal = cartItems.sumOf { it.subtotal }
                         val isMember = vehicle.vehicle.isMembership == 1
 
                         VoucherCard(
                             selectedVouchers = selectedVouchers,
                             isMember = isMember,
-                            cartSubtotal = cartSubtotal,
+                            cartItems = cartItems,
                             bold = satoshiBold,
                             med = satoshiMedium,
                             red = redPrimer
@@ -186,7 +188,6 @@ class CheckoutScreen(
                         }
                         Spacer(Modifier.height(20.dp))
                     }
-
 
                     item {
                         SectionTitle("Ringkasan Transaksi", satoshiBold)
@@ -285,7 +286,6 @@ class CheckoutScreen(
         onDelete: () -> Unit
     ) {
         Surface(
-
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
             color = Color.White,
             shape = RoundedCornerShape(16.dp),
@@ -371,7 +371,7 @@ class CheckoutScreen(
     private fun VoucherCard(
         selectedVouchers: List<VoucherUIModel>,
         isMember: Boolean,
-        cartSubtotal: Double,
+        cartItems: List<CartItem>,
         bold: FontFamily,
         med: FontFamily,
         red: Color,
@@ -435,8 +435,28 @@ class CheckoutScreen(
                             val persen =
                                 if (isMember) voucher.presentaseMember else voucher.presentaseNonMember
 
-                            val discountValue =
-                                if (persen > 0) cartSubtotal * (persen / 100.0) else potHarga
+                            val idProdRaw = voucher.idProduk?.toString()?.trim() ?: ""
+                            val isSpecificProduct = idProdRaw.isNotEmpty() && idProdRaw != "0" && idProdRaw != "null"
+
+                            val targetedSubtotal = if (isSpecificProduct) {
+                                val allowedIds = idProdRaw.split(';').map { it.trim() }
+                                val matchedItems = cartItems.filter { it.idProduk.toString().trim() in allowedIds }
+
+                                if (matchedItems.isNotEmpty()) {
+                                    matchedItems.maxOf { it.hargaUnit }.toDouble()
+                                } else {
+                                    0.0
+                                }
+                            } else {
+                                cartItems.sumOf { it.subtotal }
+                            }
+
+                            var discountValue =
+                                if (persen > 0) targetedSubtotal * (persen / 100.0) else potHarga
+                            if (isSpecificProduct && discountValue > targetedSubtotal) {
+                                discountValue = targetedSubtotal.toDouble()
+                            }
+
                             val tagText =
                                 if (persen > 0) "Diskon ${persen.toInt()}%" else "Potongan Harga"
 

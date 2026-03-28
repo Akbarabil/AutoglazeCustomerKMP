@@ -322,8 +322,7 @@ class TransactionScreen(private val authService: AuthService) : Screen {
                                             ) {
                                                 navigator.parent?.push(
                                                     VehicleSelectionScreen(
-                                                        cabang = cabang,
-                                                        authService = authService
+                                                        cabang = cabang
                                                     )
                                                 )
                                             }

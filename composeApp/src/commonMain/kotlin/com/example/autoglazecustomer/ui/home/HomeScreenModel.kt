@@ -10,6 +10,7 @@ import com.example.autoglazecustomer.data.model.BeritaItem
 import com.example.autoglazecustomer.data.model.SliderItem
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItem
+import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.network.AuthService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -25,6 +26,11 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
 
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
+
+    // JOSJIS: State Khusus Cabang Terdekat
+    var closestCabang by mutableStateOf<CabangData?>(null)
+    var isCabangLoading by mutableStateOf(false)
+    var cabangErrorMessage by mutableStateOf<String?>(null)
 
     init {
         loadAllHomeData()
@@ -44,14 +50,11 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
 
                 val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-
-                val profileJob =
-                    async { runCatching { authService.getProfileData(formattedToken) } }
+                val profileJob = async { runCatching { authService.getProfileData(formattedToken) } }
                 val sliderJob = async { runCatching { authService.getSlider() } }
                 val vehicleJob = async { runCatching { authService.getVehicles(formattedToken) } }
                 val beritaJob = async { runCatching { authService.getBerita() } }
                 val voucherJob = async { runCatching { authService.getVoucherUmum() } }
-
 
                 profileJob.await().onSuccess { res ->
                     if (res.success) {
@@ -81,6 +84,27 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
                 errorMessage = "Gagal memuat data terbaru."
             } finally {
                 isLoading = false
+            }
+        }
+    }
+
+    // JOSJIS: Fungsi mencari cabang sungguhan dari API
+    fun fetchClosestCabang(lat: Double, lon: Double) {
+        screenModelScope.launch {
+            isCabangLoading = true
+            cabangErrorMessage = null
+            try {
+                val response = authService.getCabangTerdekat(lon, lat)
+
+                if (response.status && response.data.isNotEmpty()) {
+                    closestCabang = response.data.first()
+                } else {
+                    cabangErrorMessage = response.message ?: "Tidak ada cabang terdekat ditemukan."
+                }
+            } catch (e: Exception) {
+                cabangErrorMessage = "Gagal memuat cabang: ${e.message}"
+            } finally {
+                isCabangLoading = false
             }
         }
     }

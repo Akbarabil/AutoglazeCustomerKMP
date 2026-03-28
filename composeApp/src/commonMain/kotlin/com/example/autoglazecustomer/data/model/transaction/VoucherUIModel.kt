@@ -18,7 +18,6 @@ data class VoucherUIModel(
     val presentaseNonMember: Double
 )
 
-
 fun VoucherItem.toUIModel(): VoucherUIModel {
     return VoucherUIModel(
         idVoucher = this.idVoucher ?: 0,
@@ -35,7 +34,6 @@ fun VoucherItem.toUIModel(): VoucherUIModel {
         presentaseNonMember = this.presentaseNonMember ?: 0.0
     )
 }
-
 
 fun VoucherItemId.toUIModel(): VoucherUIModel {
     return VoucherUIModel(

@@ -1,3 +1,4 @@
+// CheckoutScreenModel.kt
 package com.example.autoglazecustomer.ui.transaction.checkout
 
 import androidx.compose.runtime.getValue
@@ -35,36 +36,63 @@ class CheckoutScreenModel(
     var nettFinal by mutableStateOf(0.0)
     var diskonFinal by mutableStateOf(0.0)
 
-
     fun calculateTotals(cartItems: List<CartItem>) {
         val totalBayarAsli = cartItems.sumOf { it.subtotal }
         val taxRate = 0.11
         val isUsingPpn = cabang.isUsingPpn == 1
 
         val selectedVouchers = VoucherManager.selectedVouchers.value
+        println("🛒 [DEBUG 3 - CHECKOUT] calculateTotals dipanggil!")
+        println("🛒 [DEBUG 3] Total Bayar Asli: $totalBayarAsli")
+        println("🛒 [DEBUG 3] Jumlah Voucher yang terbaca di Checkout: ${selectedVouchers.size}")
         val hasMembership = vehicle.vehicle.isMembership == 1
 
         var tempTotalDiskon = 0.0
+
         selectedVouchers.forEach { voucher ->
             val potHarga = if (hasMembership) voucher.potHargaMember else voucher.potHargaNonMember
-            val persen =
-                if (hasMembership) voucher.presentaseMember else voucher.presentaseNonMember
+            val persen = if (hasMembership) voucher.presentaseMember else voucher.presentaseNonMember
 
-            if (persen > 0) {
-                tempTotalDiskon += (totalBayarAsli * (persen / 100.0))
+            val idProdRaw = voucher.idProduk?.toString()?.trim() ?: ""
+            println("🛒 [DEBUG 3] Memproses Voucher: ${voucher.namaVoucher} | ID_PRODUK: '$idProdRaw'")
+            val isSpecificProduct = idProdRaw.isNotEmpty() && idProdRaw != "0" && idProdRaw != "null"
+
+            val targetedSubtotal = if (isSpecificProduct) {
+                val allowedIds = idProdRaw.split(';').map { it.trim() }
+                val matchedItems = cartItems.filter { it.idProduk.toString().trim() in allowedIds }
+
+                if (matchedItems.isNotEmpty()) {
+                    matchedItems.maxOf { it.hargaUnit }.toDouble()
+                } else {
+                    0.0
+                }
             } else {
-                tempTotalDiskon += potHarga
+                totalBayarAsli.toDouble()
             }
+             println("🛒 [DEBUG 3] Targeted Subtotal untuk voucher ini: $targetedSubtotal")
+
+            var currentDiscount = if (persen > 0) {
+                targetedSubtotal * (persen / 100.0)
+            } else {
+                potHarga
+            }
+
+            if (isSpecificProduct && currentDiscount > targetedSubtotal) {
+                currentDiscount = targetedSubtotal.toDouble()
+            }
+
+            tempTotalDiskon += currentDiscount
         }
 
         diskonFinal = tempTotalDiskon
+        println("🛒 [DEBUG 3] TOTAL DISKON FINAL: $diskonFinal")
 
         if (isUsingPpn) {
             val dpp = totalBayarAsli / (1.0 + taxRate)
-            nettFinal = dpp.roundToLong().toDouble()
+            nettFinal = kotlin.math.round(dpp).toDouble()
             pajakFinal = totalBayarAsli - nettFinal
         } else {
-            nettFinal = totalBayarAsli.roundToLong().toDouble()
+            nettFinal = totalBayarAsli.toDouble()
             pajakFinal = 0.0
         }
 
@@ -101,7 +129,6 @@ class CheckoutScreenModel(
                     )
                 }
 
-
                 val selectedVoucherIds = VoucherManager.selectedVouchers.value.map { it.idVoucher }
                 val idVoucherPayload =
                     if (selectedVoucherIds.isEmpty()) "[]" else selectedVoucherIds.toString()
@@ -122,7 +149,6 @@ class CheckoutScreenModel(
                     diskonNominal = diskonFinal.roundToLong().toString(),
                     detail = detailPayload
                 )
-
 
                 try {
                     val jsonString = Json { prettyPrint = true }.encodeToString(payload)

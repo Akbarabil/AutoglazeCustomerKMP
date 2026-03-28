@@ -12,9 +12,22 @@ object VoucherManager {
 
     fun setVouchers(vouchers: List<VoucherUIModel>) {
         _selectedVouchers.value = vouchers
+        println("💾 [DEBUG 2 - VOUCHER MANAGER] Data berhasil disimpan ke StateFlow.")
+        println("💾 [DEBUG 2] Isi StateFlow sekarang: ${_selectedVouchers.value.size} voucher")
     }
 
     fun clearVouchers() {
         _selectedVouchers.value = emptyList()
+    }
+
+    fun removeInvalidVouchers(cartProductIds: List<String>) {
+        _selectedVouchers.value = _selectedVouchers.value.filter { voucher ->
+            val idRaw = voucher.idProduk?.toString()?.trim() ?: ""
+            val isGeneral = idRaw.isEmpty() || idRaw == "0" || idRaw == "null"
+            if (isGeneral) return@filter true
+
+            val targetIds = idRaw.split(";").map { it.trim() }
+            targetIds.any { cartProductIds.contains(it) }
+        }
     }
 }

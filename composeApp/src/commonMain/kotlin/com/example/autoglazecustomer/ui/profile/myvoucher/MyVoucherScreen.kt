@@ -64,6 +64,7 @@ import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItemId
 import com.example.autoglazecustomer.data.network.AuthService
 import org.jetbrains.compose.resources.Font
+import kotlin.math.abs
 
 class MyVoucherScreen(private val authService: AuthService) : Screen {
 
@@ -123,7 +124,6 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
         ) { padding ->
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
 
-
                 Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
                     Text(
                         text = "Cari Kendaraan",
@@ -150,7 +150,6 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                                 modifier = Modifier.size(20.dp)
                             )
                         },
-
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
@@ -164,7 +163,6 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                         },
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
-
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.Black,
                             unfocusedTextColor = Color.Black,
@@ -180,7 +178,6 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                         )
                     )
                 }
-
 
                 if (screenModel.isLoadingVehicles) {
                     Row(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -223,7 +220,6 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                 }
 
                 Spacer(Modifier.height(16.dp))
-
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -318,7 +314,14 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
         red: Color
     ) {
         val memberStatus = isMember ?: false
-        if (memberStatus) voucher.potHargaMember else voucher.potHargaNonMember
+        val persen = if (memberStatus) voucher.presentaseMember ?: 0.0 else voucher.presentaseNonMember ?: 0.0
+        val nominal = if (memberStatus) voucher.potHargaMember ?: 0.0 else voucher.potHargaNonMember ?: 0.0
+
+        val discountLabel = when {
+            persen > 0 -> "Diskon ${persen.toInt()}%"
+            nominal > 0 -> "Potongan Rp ${formatRupiah(nominal)}"
+            else -> "Promo Spesial"
+        }
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -329,32 +332,38 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
         ) {
             Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                 Column(modifier = Modifier.weight(1f).padding(16.dp)) {
-                    Text(
-                        text = voucher.kodeVoucher ?: "-",
-                        fontFamily = bold,
-                        fontSize = 14.sp,
-                        color = Color.Black
-                    )
-                    val potHarga =
-                        (if (memberStatus) voucher.potHargaMember else voucher.potHargaNonMember)
-                            ?: 0.0
-
-                    if (potHarga > 0) {
+                    Surface(
+                        color = red.copy(alpha = 0.08f),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
                         Text(
-                            text = "Potongan Rp ${formatRupiah(potHarga)}",
-                            fontFamily = bold, fontSize = 18.sp, color = red
+                            text = discountLabel,
+                            fontFamily = bold,
+                            fontSize = 12.sp,
+                            color = red,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                         )
                     }
+                    Spacer(Modifier.height(10.dp))
                     Text(
-                        text = if (memberStatus) "*Promo Khusus Member" else "*Promo Non-Member",
-                        fontFamily = med, fontSize = 10.sp, color = Color.Gray
+                        text = voucher.namaVoucher ?: voucher.kodeVoucher ?: "Voucher",
+                        fontFamily = bold,
+                        fontSize = 15.sp,
+                        color = Color.Black
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = if (memberStatus) "Berlaku untuk Member" else "Berlaku untuk Reguler",
+                        fontFamily = med,
+                        fontSize = 11.sp,
+                        color = Color.Gray
                     )
                     if (!voucher.keterangan.isNullOrEmpty()) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            voucher.keterangan!!,
+                            text = voucher.keterangan,
                             fontFamily = med,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             color = Color(0xFF00796B)
                         )
                     }
@@ -364,7 +373,7 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
 
                 Column(
                     modifier = Modifier.background(Color(0xFFFAFAFA)).fillMaxHeight()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -376,11 +385,11 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
                         color = Color.Black
                     )
                     Spacer(Modifier.height(12.dp))
-                    Text("Berlaku s/d", fontFamily = med, fontSize = 9.sp, color = Color.Gray)
+                    Text("Berlaku s/d", fontFamily = med, fontSize = 10.sp, color = Color.Gray)
                     Text(
-                        voucher.tglExpired ?: "-",
-                        fontFamily = med,
-                        fontSize = 10.sp,
+                        text = voucher.tglExpired ?: "-",
+                        fontFamily = bold,
+                        fontSize = 11.sp,
                         color = Color.DarkGray
                     )
                 }
@@ -413,7 +422,7 @@ class MyVoucherScreen(private val authService: AuthService) : Screen {
     }
 
     private fun formatRupiah(amount: Double): String {
-        val absoluteAmount = kotlin.math.abs(amount).toLong()
+        val absoluteAmount = abs(amount).toLong()
         return absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
     }
 }

@@ -232,7 +232,7 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                     ProfileGroup(title = "Benefit", font = satoshiBold) {
                         ProfileMenuItem(
                             Icons.Default.ConfirmationNumber,
-                            "Voucher Saya",
+                            "Voucher Kendaraan",
                             satoshiMedium
                         ) {
                             val mainNavigator = navigator.parent ?: navigator

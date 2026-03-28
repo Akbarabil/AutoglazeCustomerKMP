@@ -43,6 +43,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,13 +68,13 @@ import com.example.autoglazecustomer.data.network.AuthService
 import org.jetbrains.compose.resources.Font
 
 class VehicleSelectionScreen(
-    private val cabang: CabangData,
-    private val authService: AuthService
+    private val cabang: CabangData
 ) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        val authService = remember { AuthService() }
         val screenModel =
             rememberScreenModel { VehicleSelectionScreenModel(authService, cabang.kodeCabang) }
         val navigator = LocalNavigator.currentOrThrow

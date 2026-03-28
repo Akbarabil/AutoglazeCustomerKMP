@@ -17,9 +17,7 @@ class MyVoucherScreenModel(private val authService: AuthService) : ScreenModel {
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var isLoadingVehicles by mutableStateOf(false)
 
-
     var expandedStates = mutableStateMapOf<Int, Boolean>()
-
 
     var voucherCache = mutableStateMapOf<Int, List<VoucherItemId>>()
     var loadingVouchers = mutableStateMapOf<Int, Boolean>()

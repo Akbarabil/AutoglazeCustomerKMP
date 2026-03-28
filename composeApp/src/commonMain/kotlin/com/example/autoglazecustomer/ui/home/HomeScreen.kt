@@ -42,6 +42,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -51,6 +53,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,7 +68,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
 import autoglazecustomer.composeapp.generated.resources.ic_home_layanan
@@ -77,27 +79,61 @@ import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import autoglazecustomer.composeapp.generated.resources.sedan
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import com.example.autoglazecustomer.data.model.BeritaItem
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItem
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.rememberLocationService
+import com.example.autoglazecustomer.ui.rememberPermissionHandler
+import com.example.autoglazecustomer.ui.tabs.TransactionTab
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
+import kotlin.math.abs
 
 class HomeScreen(private val authService: AuthService) : Screen {
 
     @Composable
     override fun Content() {
+        val tabNavigator = LocalTabNavigator.current
         val screenModel = rememberScreenModel { HomeScreenModel(authService) }
+        val scope = rememberCoroutineScope()
+        val locationService = rememberLocationService()
+
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         var selectedBerita by remember { mutableStateOf<BeritaItem?>(null) }
+
+        var showHomeServiceDialog by remember { mutableStateOf(false) }
+        var showLocationDialog by remember { mutableStateOf(false) }
+
         val redPrimer = Color(0xFFD53B1E)
         val deepRed = Color(0xFFA62B14)
         val headerGradient = listOf(redPrimer, deepRed)
+
+        val permissionHandler = rememberPermissionHandler { isGranted ->
+            if (isGranted) {
+                scope.launch {
+                    screenModel.isCabangLoading = true
+                    showLocationDialog = true
+
+                    val location = locationService.getCurrentLocation()
+                    if (location != null) {
+                        screenModel.fetchClosestCabang(location.latitude, location.longitude)
+                    } else {
+                        screenModel.isCabangLoading = false
+                        screenModel.cabangErrorMessage = "Gagal mendapat lokasi GPS. Pastikan GPS aktif."
+                    }
+                }
+            } else {
+                screenModel.cabangErrorMessage = "Akses lokasi ditolak. Tidak bisa mencari cabang."
+                showLocationDialog = true
+            }
+        }
 
         LaunchedEffect(Unit) {
             screenModel.loadAllHomeData()
@@ -150,19 +186,41 @@ class HomeScreen(private val authService: AuthService) : Screen {
                         "Home Service",
                         satoshiMedium,
                         Modifier.weight(1f)
-                    )
+                    ) {
+                        showHomeServiceDialog = true
+                    }
+
                     HomeMenuItem(
                         Res.drawable.ic_home_layanan,
                         "Transaksi",
                         satoshiMedium,
                         Modifier.weight(1f)
-                    )
+                    ) {
+                        tabNavigator.current = TransactionTab()
+                    }
+
                     HomeMenuItem(
                         Res.drawable.ic_home_location,
                         "Lokasi Cabang",
                         satoshiMedium,
                         Modifier.weight(1f)
-                    )
+                    ) {
+                        if (permissionHandler.isPermissionGranted()) {
+                            scope.launch {
+                                screenModel.isCabangLoading = true
+                                showLocationDialog = true
+                                val location = locationService.getCurrentLocation()
+                                if (location != null) {
+                                    screenModel.fetchClosestCabang(location.latitude, location.longitude)
+                                } else {
+                                    screenModel.isCabangLoading = false
+                                    screenModel.cabangErrorMessage = "Gagal mengambil GPS."
+                                }
+                            }
+                        } else {
+                            permissionHandler.askPermission()
+                        }
+                    }
                 }
 
                 SectionHeader("Mobil Saya", satoshiBold)
@@ -189,7 +247,7 @@ class HomeScreen(private val authService: AuthService) : Screen {
                     }
                 }
 
-                SectionHeader("Berita Terbaru", satoshiBold, true)
+                SectionHeader("Berita Terbaru", satoshiBold)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 24.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -213,78 +271,91 @@ class HomeScreen(private val authService: AuthService) : Screen {
                 accent = redPrimer
             )
         }
+
+        if (showHomeServiceDialog) {
+            AlertDialog(
+                onDismissRequest = { showHomeServiceDialog = false },
+                title = { Text("Segera Hadir", fontFamily = satoshiBold) },
+                text = { Text("Layanan Home Service belum tersedia untuk saat ini. Nantikan update terbaru dan nikmati kemudahan dari rumah anda", fontFamily = satoshiMedium) },
+                confirmButton = {
+                    Button(onClick = { showHomeServiceDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = redPrimer)) {
+                        Text("Oke, Mengerti", fontFamily = satoshiBold, color = Color.White)
+                    }
+                },
+                containerColor = Color.White
+            )
+        }
+
+        if (showLocationDialog) {
+            AlertDialog(
+                onDismissRequest = { showLocationDialog = false },
+                title = { Text("Cabang Terdekat", fontFamily = satoshiBold) },
+                text = {
+                    when {
+                        screenModel.isCabangLoading -> {
+                            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                CircularProgressIndicator(color = redPrimer)
+                                Spacer(Modifier.height(12.dp))
+                                Text("Melacak lokasi Anda...", fontFamily = satoshiMedium, fontSize = 14.sp, color = Color.Gray)
+                            }
+                        }
+                        screenModel.cabangErrorMessage != null -> {
+                            Text(screenModel.cabangErrorMessage!!, fontFamily = satoshiMedium, color = redPrimer)
+                        }
+                        screenModel.closestCabang != null -> {
+                            val cabang = screenModel.closestCabang!!
+                            Column {
+                                Text("Berdasarkan lokasi Anda saat ini:", fontFamily = satoshiMedium, fontSize = 14.sp, color = Color.Gray)
+                                Spacer(Modifier.height(12.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = redPrimer.copy(alpha = 0.05f),
+                                    border = BorderStroke(1.dp, redPrimer.copy(alpha = 0.2f)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(Modifier.padding(16.dp)) {
+                                        Text(cabang.namaCabang, fontFamily = satoshiBold, fontSize = 16.sp, color = Color.Black)
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(cabang.alamat ?: "Alamat tidak tersedia", fontFamily = satoshiMedium, fontSize = 13.sp, color = Color.DarkGray)
+                                        Spacer(Modifier.height(8.dp))
+
+                                        val jarakText = cabang.distanceKm?.let {
+                                            val rounded = (it * 100).toInt() / 100.0
+                                            "~ $rounded KM"
+                                        } ?: "-"
+
+                                        Text("Jarak: $jarakText", fontFamily = satoshiBold, fontSize = 13.sp, color = redPrimer)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { showLocationDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = redPrimer)) {
+                        Text("Tutup", fontFamily = satoshiBold, color = Color.White)
+                    }
+                },
+                containerColor = Color.White
+            )
+        }
     }
 
     @Composable
-    private fun HeaderSection(
-        name: String,
-        avatarUrl: String?,
-        gradientColors: List<Color>,
-        boldFont: FontFamily,
-        medFont: FontFamily
-    ) {
+    private fun HeaderSection(name: String, avatarUrl: String?, gradientColors: List<Color>, boldFont: FontFamily, medFont: FontFamily) {
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(gradientColors),
-                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
-                )
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(
-                        top = statusBarHeight + 16.dp,
-                        start = 24.dp,
-                        end = 24.dp,
-                        bottom = 54.dp
-                    ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    modifier = Modifier.size(50.dp),
-                    shape = CircleShape,
-                    color = Color.White.copy(0.2f),
-                    border = BorderStroke(1.dp, Color.White.copy(0.3f))
-                ) {
-                    ProfessionalImage(
-                        url = avatarUrl,
-                        modifier = Modifier.fillMaxSize(),
-                        errorRes = Res.drawable.ic_profile_white
-                    )
+        Box(modifier = Modifier.fillMaxWidth().background(brush = Brush.verticalGradient(gradientColors), shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))) {
+            Row(modifier = Modifier.padding(top = statusBarHeight + 16.dp, start = 24.dp, end = 24.dp, bottom = 54.dp), verticalAlignment = Alignment.CenterVertically) {
+                Surface(modifier = Modifier.size(50.dp), shape = CircleShape, color = Color.White.copy(0.2f), border = BorderStroke(1.dp, Color.White.copy(0.3f))) {
+                    ProfessionalImage(url = avatarUrl, modifier = Modifier.fillMaxSize(), errorRes = Res.drawable.ic_profile_white)
                 }
-
                 Spacer(Modifier.width(12.dp))
-
                 Column(Modifier.weight(1f)) {
-                    Text(
-                        "Selamat Datang,",
-                        color = Color.White.copy(0.8f),
-                        fontSize = 12.sp,
-                        fontFamily = medFont
-                    )
-                    Text(
-                        name,
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontFamily = boldFont,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Text("Selamat Datang,", color = Color.White.copy(0.8f), fontSize = 12.sp, fontFamily = medFont)
+                    Text(name, color = Color.White, fontSize = 18.sp, fontFamily = boldFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
-
-                IconButton(
-                    onClick = { },
-                    modifier = Modifier.background(Color.White.copy(0.15f), CircleShape)
-                ) {
-                    Icon(
-                        Icons.Default.Notifications,
-                        null,
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
+                IconButton(onClick = { }, modifier = Modifier.background(Color.White.copy(0.15f), CircleShape)) {
+                    Icon(Icons.Default.Notifications, null, tint = Color.White, modifier = Modifier.size(22.dp))
                 }
             }
         }
@@ -292,242 +363,113 @@ class HomeScreen(private val authService: AuthService) : Screen {
 
     @Composable
     private fun LazyItemScope.SliderItemUI(imageUrl: String?) {
-        Card(
-            modifier = Modifier.fillParentMaxWidth(0.85f).fillMaxHeight(),
-            shape = RoundedCornerShape(20.dp),
-            elevation = CardDefaults.cardElevation(6.dp)
-        ) {
+        Card(modifier = Modifier.fillParentMaxWidth(0.85f).fillMaxHeight(), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(6.dp)) {
             ProfessionalImage(imageUrl)
         }
     }
 
     @Composable
     private fun VehicleItem(vehicle: VehicleData, bold: FontFamily, medium: FontFamily) {
-        Card(
-            modifier = Modifier.width(300.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = BorderStroke(1.dp, Color(0xFFEEEEEE))
-        ) {
+        Card(modifier = Modifier.width(300.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Color(0xFFEEEEEE))) {
             Column(Modifier.padding(20.dp)) {
-                Surface(
-                    color = if (vehicle.isMembership == 1) Color(0xFFD53B1E) else Color(0xFF757575),
-                    shape = RoundedCornerShape(6.dp)
-                ) {
-                    Text(
-                        text = if (vehicle.isMembership == 1) "MEMBER" else "REGULER",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                        color = Color.White, fontSize = 10.sp, fontFamily = bold
-                    )
+                Surface(color = if (vehicle.isMembership == 1) Color(0xFFD53B1E) else Color(0xFF757575), shape = RoundedCornerShape(6.dp)) {
+                    Text(text = if (vehicle.isMembership == 1) "MEMBER" else "REGULER", modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), color = Color.White, fontSize = 10.sp, fontFamily = bold)
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(vehicle.merek ?: "Mobil", fontSize = 20.sp, fontFamily = bold, maxLines = 1)
-                Text(
-                    "${vehicle.tipe} • ${vehicle.nopol}",
-                    fontSize = 14.sp,
-                    color = Color.Gray,
-                    fontFamily = medium
-                )
-
-                ProfessionalImage(
-                    url = vehicle.gambarTipe,
-                    modifier = Modifier.fillMaxWidth().height(120.dp).padding(top = 12.dp),
-                    contentScale = ContentScale.Fit,
-                    errorRes = Res.drawable.sedan
-                )
+                Text("${vehicle.tipe} • ${vehicle.nopol}", fontSize = 14.sp, color = Color.Gray, fontFamily = medium)
+                ProfessionalImage(url = vehicle.gambarTipe, modifier = Modifier.fillMaxWidth().height(120.dp).padding(top = 12.dp), contentScale = ContentScale.Fit, errorRes = Res.drawable.sedan)
             }
         }
     }
 
     @Composable
     private fun PromoItem(promo: VoucherItem, bold: FontFamily, medium: FontFamily) {
-        Card(modifier = Modifier.width(280.dp).height(160.dp), shape = RoundedCornerShape(20.dp)) {
-            Box(Modifier.fillMaxSize()) {
-                SubcomposeAsyncImage(
-                    model = promo.gambarUrl,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    loading = { ShimmerBox() },
-                    error = {
-                        Image(
-                            painter = painterResource(Res.drawable.dummy_promo_dark),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    },
-                    success = { SubcomposeAsyncImageContent() }
-                )
-                Box(
-                    Modifier.fillMaxSize().background(
-                        Brush.verticalGradient(
-                            listOf(
-                                Color.Transparent,
-                                Color.Black.copy(0.7f)
-                            )
-                        )
-                    )
-                )
-                Column(Modifier.align(Alignment.BottomStart).padding(16.dp)) {
-                    Text(
-                        promo.namaVoucher ?: "Promo",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontFamily = bold,
-                        maxLines = 1
-                    )
-                    Text(
-                        promo.keterangan ?: "",
-                        color = Color.White.copy(0.8f),
-                        fontSize = 12.sp,
-                        fontFamily = medium,
-                        maxLines = 1
-                    )
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun BeritaItemUI(
-        berita: BeritaItem,
-        model: HomeScreenModel,
-        bold: FontFamily,
-        medium: FontFamily,
-        onClick: () -> Unit
-    ) {
         Card(
-            modifier = Modifier
-                .width(240.dp)
-                .clickable { onClick() },
+            modifier = Modifier.width(280.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             border = BorderStroke(1.dp, Color(0xFFEEEEEE))
         ) {
             Column {
-                ProfessionalImage(
-                    berita.gambarUrl,
-                    modifier = Modifier.fillMaxWidth().height(130.dp)
-                        .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                )
+                Box(modifier = Modifier.fillMaxWidth().height(130.dp)) {
+                    SubcomposeAsyncImage(
+                        model = promo.gambarUrl, contentDescription = null, modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop, loading = { ShimmerBox() },
+                        error = { Image(painterResource(Res.drawable.dummy_promo_dark), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) },
+                        success = { SubcomposeAsyncImageContent() }
+                    )
+                }
                 Column(Modifier.padding(16.dp)) {
                     Text(
-                        berita.judul ?: "",
-                        fontSize = 15.sp,
+                        text = promo.namaVoucher ?: "Promo Spesial",
                         fontFamily = bold,
-                        maxLines = 2,
-                        minLines = 2,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        model.formatDate(berita.updatedAt),
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        fontFamily = medium
-                    )
+                    Spacer(Modifier.height(12.dp))
+
+                    val diskonMember = if ((promo.presentaseMember ?: 0.0) > 0) "${promo.presentaseMember?.toInt()}% OFF" else formatRupiah(promo.potHargaMember ?: 0.0)
+                    val diskonNonMember = if ((promo.presentaseNonMember ?: 0.0) > 0) "${promo.presentaseNonMember?.toInt()}% OFF" else formatRupiah(promo.potHargaNonMember ?: 0.0)
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("Member", fontFamily = medium, fontSize = 12.sp, color = Color.Gray)
+                        Text(diskonMember, fontFamily = bold, fontSize = 13.sp, color = Color(0xFFD53B1E))
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    HorizontalDivider(color = Color(0xFFF5F5F5))
+                    Spacer(Modifier.height(4.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("Reguler", fontFamily = medium, fontSize = 12.sp, color = Color.Gray)
+                        Text(diskonNonMember, fontFamily = bold, fontSize = 13.sp, color = Color.DarkGray)
+                    }
                 }
             }
         }
     }
 
     @Composable
-    private fun BeritaDialog(
-        berita: BeritaItem,
-        onDismiss: () -> Unit,
-        bold: FontFamily,
-        medium: FontFamily,
-        accent: Color
-    ) {
+    private fun BeritaItemUI(berita: BeritaItem, model: HomeScreenModel, bold: FontFamily, medium: FontFamily, onClick: () -> Unit) {
+        Card(modifier = Modifier.width(240.dp).clickable { onClick() }, shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Color(0xFFEEEEEE))) {
+            Column {
+                ProfessionalImage(berita.gambarUrl, modifier = Modifier.fillMaxWidth().height(130.dp).clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)))
+                Column(Modifier.padding(16.dp)) {
+                    Text(berita.judul ?: "", fontSize = 15.sp, fontFamily = bold, maxLines = 2, minLines = 2, overflow = TextOverflow.Ellipsis)
+                    Spacer(Modifier.height(8.dp))
+                    Text(model.formatDate(berita.updatedAt), fontSize = 12.sp, color = Color.Gray, fontFamily = medium)
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun BeritaDialog(berita: BeritaItem, onDismiss: () -> Unit, bold: FontFamily, medium: FontFamily, accent: Color) {
         AlertDialog(
-            onDismissRequest = onDismiss,
-            containerColor = Color.White,
-            shape = RoundedCornerShape(24.dp),
-            title = {
-                Text(
-                    text = berita.judul ?: "Informasi Berita",
-                    fontFamily = bold,
-                    fontSize = 18.sp,
-                    color = Color.Black
-                )
-            },
+            onDismissRequest = onDismiss, containerColor = Color.White, shape = RoundedCornerShape(24.dp),
+            title = { Text(berita.judul ?: "Informasi", fontFamily = bold, fontSize = 18.sp, color = Color.Black) },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    ProfessionalImage(
-                        url = berita.gambarUrl,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(160.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    )
+                    ProfessionalImage(url = berita.gambarUrl, modifier = Modifier.fillMaxWidth().height(160.dp).clip(RoundedCornerShape(12.dp)))
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = berita.deskripsi
-                            ?: "Detail berita ini belum tersedia untuk saat ini.",
-                        fontFamily = medium,
-                        fontSize = 14.sp,
-                        color = Color.DarkGray,
-                        lineHeight = 20.sp
-                    )
+                    Text(berita.deskripsi ?: "Detail belum tersedia.", fontFamily = medium, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
                 }
             },
-            confirmButton = {
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(containerColor = accent),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text("Tutup", fontFamily = bold, color = Color.White)
-                }
-            },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+            confirmButton = { Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = accent)) { Text("Tutup", fontFamily = bold, color = Color.White) } },
         )
     }
 
     @Composable
-    private fun ProfessionalImage(
-        url: String?,
-        modifier: Modifier = Modifier.fillMaxSize(),
-        contentScale: ContentScale = ContentScale.Crop,
-        errorRes: DrawableResource? = null
-    ) {
-        SubcomposeAsyncImage(
-            model = url,
-            contentDescription = null,
-            modifier = modifier,
-            contentScale = contentScale,
-            loading = { ShimmerBox() },
-            error = {
-                Box(Modifier.fillMaxSize().background(Color(0xFFF5F5F5)), Alignment.Center) {
-                    if (errorRes != null) Image(
-                        painterResource(errorRes),
-                        null,
-                        Modifier.alpha(0.5f)
-                    )
-                    else Icon(Icons.Default.BrokenImage, null, tint = Color.LightGray)
-                }
-            },
-            success = { SubcomposeAsyncImageContent() }
-        )
+    private fun ProfessionalImage(url: String?, modifier: Modifier = Modifier.fillMaxSize(), contentScale: ContentScale = ContentScale.Crop, errorRes: DrawableResource? = null) {
+        SubcomposeAsyncImage(model = url, contentDescription = null, modifier = modifier, contentScale = contentScale, loading = { ShimmerBox() }, error = { Box(Modifier.fillMaxSize().background(Color(0xFFF5F5F5)), Alignment.Center) { if (errorRes != null) Image(painterResource(errorRes), null, Modifier.alpha(0.5f)) else Icon(Icons.Default.BrokenImage, null, tint = Color.LightGray) } }, success = { SubcomposeAsyncImageContent() })
     }
 
     @Composable
     private fun ShimmerBox() {
         val transition = rememberInfiniteTransition()
-        val translateAnim by transition.animateFloat(
-            initialValue = 0f, targetValue = 1000f,
-            animationSpec = infiniteRepeatable(
-                tween(1200, easing = LinearEasing),
-                RepeatMode.Restart
-            )
-        )
-        val brush = Brush.linearGradient(
-            colors = listOf(Color(0xFFE0E0E0), Color(0xFFF5F5F5), Color(0xFFE0E0E0)),
-            start = androidx.compose.ui.geometry.Offset(10f, 10f),
-            end = androidx.compose.ui.geometry.Offset(translateAnim, translateAnim)
-        )
+        val translateAnim by transition.animateFloat(initialValue = 0f, targetValue = 1000f, animationSpec = infiniteRepeatable(tween(1200, easing = LinearEasing), RepeatMode.Restart))
+        val brush = Brush.linearGradient(colors = listOf(Color(0xFFE0E0E0), Color(0xFFF5F5F5), Color(0xFFE0E0E0)), start = androidx.compose.ui.geometry.Offset(10f, 10f), end = androidx.compose.ui.geometry.Offset(translateAnim, translateAnim))
         Box(Modifier.fillMaxSize().background(brush))
     }
 
@@ -536,10 +478,14 @@ class HomeScreen(private val authService: AuthService) : Screen {
         iconRes: DrawableResource,
         label: String,
         font: FontFamily,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+        onClick: () -> Unit
     ) {
         Surface(
-            modifier = modifier.height(100.dp).clickable { },
+            modifier = modifier
+                .height(100.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .clickable { onClick() },
             shape = RoundedCornerShape(16.dp),
             color = Color.White,
             border = BorderStroke(1.dp, Color(0xFFEEEEEE))
@@ -549,52 +495,28 @@ class HomeScreen(private val authService: AuthService) : Screen {
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(8.dp)
             ) {
-                Icon(
-                    painter = painterResource(iconRes),
-                    null,
-                    modifier = Modifier.size(32.dp),
-                    tint = Color.Unspecified
-                )
+                Icon(painter = painterResource(iconRes), null, modifier = Modifier.size(32.dp), tint = Color.Unspecified)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    label,
-                    fontSize = 11.sp,
-                    fontFamily = font,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 14.sp,
-                    color = Color.Black
-                )
+                Text(label, fontSize = 11.sp, fontFamily = font, textAlign = TextAlign.Center, lineHeight = 14.sp, color = Color.Black)
             }
         }
     }
 
     @Composable
-    private fun SectionHeader(title: String, font: FontFamily, showAll: Boolean = false) {
-        Row(
-            Modifier.fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 12.dp),
-            Arrangement.SpaceBetween,
-            Alignment.CenterVertically
-        ) {
+    private fun SectionHeader(title: String, font: FontFamily) {
+        Box(Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 12.dp)) {
             Text(title, fontSize = 18.sp, fontFamily = font, fontWeight = FontWeight.Bold)
-            if (showAll) Text(
-                "Lihat Semua",
-                fontSize = 13.sp,
-                color = Color(0xFFD53B1E),
-                fontFamily = font,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 
     @Composable
     private fun EmptyState(msg: String, font: FontFamily) {
-        Text(
-            msg,
-            modifier = Modifier.padding(horizontal = 24.dp),
-            fontSize = 14.sp,
-            color = Color.Gray,
-            fontFamily = font
-        )
+        Text(msg, modifier = Modifier.padding(horizontal = 24.dp), fontSize = 14.sp, color = Color.Gray, fontFamily = font)
+    }
+
+    private fun formatRupiah(amount: Double): String {
+        val absoluteAmount = abs(amount).toLong()
+        val formattedNumber = absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
+        return "Rp $formattedNumber"
     }
 }
