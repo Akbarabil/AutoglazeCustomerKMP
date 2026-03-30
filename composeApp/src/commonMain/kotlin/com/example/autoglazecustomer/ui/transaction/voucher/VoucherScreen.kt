@@ -185,7 +185,7 @@ class VoucherScreen(
             Icon(Icons.Default.ConfirmationNumber, null, modifier = Modifier.size(64.dp), tint = Color.LightGray)
             Spacer(Modifier.height(16.dp))
             Text(
-                "Tidak ada voucher tersedia.",
+                "Tidak ada voucher tersedia",
                 textAlign = TextAlign.Center,
                 fontFamily = med,
                 color = Color.Gray

@@ -588,10 +588,10 @@ class CheckoutScreen(
         if (sm.isSuccess) {
             AlertDialog(
                 onDismissRequest = {},
-                title = { Text("Berhasil! 🎉", fontFamily = bold) },
+                title = { Text("Berhasil", fontFamily = bold) },
                 text = {
                     Text(
-                        "Pesanan diproses. Kode: ${sm.successKodePenjualan}",
+                        "Pesanan telah diproses. Silahkan ke halaman pesanan untuk melihat kode QR!",
                         fontFamily = med
                     )
                 },

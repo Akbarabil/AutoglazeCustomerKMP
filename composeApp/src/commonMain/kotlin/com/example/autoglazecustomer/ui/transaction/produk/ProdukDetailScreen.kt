@@ -1,5 +1,6 @@
 package com.example.autoglazecustomer.ui.transaction.produk
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -107,7 +108,45 @@ class ProdukDetailScreen(
             snackbarHost = {
                 SnackbarHost(
                     hostState = snackbarHostState,
-                    modifier = Modifier.padding(bottom = 100.dp)
+                    modifier = Modifier.padding(bottom = 100.dp),
+                    snackbar = { data ->
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 8.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, redPrimer.copy(alpha = 0.2f)),
+                            shadowElevation = 8.dp
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = redPrimer.copy(alpha = 0.1f),
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.ShoppingCart,
+                                            contentDescription = null,
+                                            tint = redPrimer,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = data.visuals.message,
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF1A1A1A)
+                                )
+                            }
+                        }
+                    }
                 )
             },
             containerColor = bgLight,
@@ -183,12 +222,6 @@ class ProdukDetailScreen(
                                         .padding(horizontal = 12.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        Icons.Default.Verified,
-                                        null,
-                                        tint = redPrimer,
-                                        modifier = Modifier.size(16.dp)
-                                    )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         "Harga Member",
@@ -341,11 +374,9 @@ class ProdukDetailScreen(
                                 category = ItemCategory.PRODUK
                             )
                             CartManager.addItemToCart(newCartItem)
-
-
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar(
-                                    message = "Sip! $quantity ${item.namaProduk} masuk keranjang \uD83D\uDED2",
+                                    message = "$quantity ${item.namaProduk} masuk ke keranjang",
                                     duration = SnackbarDuration.Short
                                 )
                             }

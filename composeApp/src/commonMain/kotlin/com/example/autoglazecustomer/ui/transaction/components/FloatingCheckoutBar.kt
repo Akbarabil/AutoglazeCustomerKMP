@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCartCheckout
 import androidx.compose.material3.Icon
@@ -48,45 +48,49 @@ fun FloatingCheckoutBar(
     val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
     val redPrimer = Color(0xFFD53B1E)
 
-
     AnimatedVisibility(
         visible = visible,
-        enter = slideInVertically(initialOffsetY = { it }),
-        exit = slideOutVertically(targetOffsetY = { it })
+        enter = slideInVertically(initialOffsetY = { it * 2 }),
+        exit = slideOutVertically(targetOffsetY = { it * 2 })
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 24.dp)
-                .windowInsetsPadding(WindowInsets.navigationBars)
+                .padding(horizontal = 24.dp, vertical = 24.dp)
+                .windowInsetsPadding(WindowInsets.navigationBars),
+            contentAlignment = Alignment.BottomCenter
         ) {
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(
-                        12.dp,
-                        RoundedCornerShape(16.dp),
-                        spotColor = redPrimer.copy(alpha = 0.5f)
-                    )
+                    .shadow(16.dp, CircleShape, spotColor = redPrimer.copy(alpha = 0.4f))
                     .clickable { onClick() },
-                shape = RoundedCornerShape(16.dp),
+                shape = CircleShape,
                 color = redPrimer
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                        .padding(start = 24.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-
                     Column {
-                        Text(
-                            text = "$totalQty Item di Keranjang",
-                            fontFamily = satoshiMedium,
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.ShoppingCartCheckout,
+                                contentDescription = null,
+                                tint = Color.White.copy(alpha = 0.8f),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = "$totalQty Item",
+                                fontFamily = satoshiMedium,
+                                fontSize = 13.sp,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = formatRupiah(totalPrice),
@@ -96,28 +100,21 @@ fun FloatingCheckoutBar(
                         )
                     }
 
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Checkout",
-                            fontFamily = satoshiBold,
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color.White.copy(alpha = 0.2f),
-                            modifier = Modifier.size(36.dp)
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.White,
+                        modifier = Modifier.height(44.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.ShoppingCartCheckout,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                            Text(
+                                "Checkout",
+                                fontFamily = satoshiBold,
+                                fontSize = 15.sp,
+                                color = redPrimer
+                            )
                         }
                     }
                 }

@@ -208,23 +208,51 @@ class ProdukListScreen(
                             color = redPrimer,
                             modifier = Modifier.align(Alignment.Center)
                         )
-                    } else if (screenModel.displayedProducts.isEmpty()) {
+                    } else if (screenModel.errorMessage != null) {
                         Column(
-                            modifier = Modifier.align(Alignment.Center),
+                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
                                 Icons.Default.Search,
-                                null,
+                                contentDescription = null,
                                 tint = Color.LightGray,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                screenModel.errorMessage ?: "Produk kosong pada cabang ini",
+                                text = screenModel.errorMessage!!,
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
-                                fontSize = 16.sp
+                                fontSize = 16.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    } else if (screenModel.displayedProducts.isEmpty()) {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = null,
+                                tint = Color.LightGray,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            val emptyText = if (screenModel.searchQuery.isNotEmpty()) {
+                                "Produk '${screenModel.searchQuery}' tidak ditemukan"
+                            } else {
+                                "Belum ada produk di cabang ini"
+                            }
+
+                            Text(
+                                text = emptyText,
+                                fontFamily = satoshiMedium,
+                                color = Color.Gray,
+                                fontSize = 16.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
                     } else {

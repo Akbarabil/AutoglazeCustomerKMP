@@ -99,7 +99,7 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
                 if (response.status && response.data.isNotEmpty()) {
                     closestCabang = response.data.first()
                 } else {
-                    cabangErrorMessage = response.message ?: "Tidak ada cabang terdekat ditemukan."
+                    cabangErrorMessage = response.message ?: "Tidak ada cabang terdekat ditemukan"
                 }
             } catch (e: Exception) {
                 cabangErrorMessage = "Gagal memuat cabang: ${e.message}"

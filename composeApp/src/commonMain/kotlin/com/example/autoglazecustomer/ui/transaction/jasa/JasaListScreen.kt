@@ -265,9 +265,9 @@ class JasaListScreen(
                             color = redPrimer,
                             modifier = Modifier.align(Alignment.Center)
                         )
-                    } else if (screenModel.displayedServices.isEmpty()) {
+                    } else if (screenModel.errorMessage != null) {
                         Column(
-                            modifier = Modifier.align(Alignment.Center),
+                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
@@ -278,10 +278,38 @@ class JasaListScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = screenModel.errorMessage ?: "Tidak ada layanan ditemukan.",
+                                text = screenModel.errorMessage!!,
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
-                                fontSize = 16.sp
+                                fontSize = 16.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    } else if (screenModel.displayedServices.isEmpty()) {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = null,
+                                tint = Color.LightGray,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            val emptyText = if (screenModel.searchQuery.isNotEmpty()) {
+                                "Layanan '${screenModel.searchQuery}' tidak ditemukan"
+                            } else {
+                                "Belum ada layanan ${screenModel.selectedCategory} di cabang ini"
+                            }
+
+                            Text(
+                                text = emptyText,
+                                fontFamily = satoshiMedium,
+                                color = Color.Gray,
+                                fontSize = 16.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
                     } else {

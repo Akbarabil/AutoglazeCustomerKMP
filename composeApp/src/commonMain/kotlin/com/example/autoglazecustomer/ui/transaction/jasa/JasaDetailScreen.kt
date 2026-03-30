@@ -1,5 +1,6 @@
 package com.example.autoglazecustomer.ui.transaction.jasa
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -109,7 +109,45 @@ class JasaDetailScreen(
             snackbarHost = {
                 SnackbarHost(
                     hostState = snackbarHostState,
-                    modifier = Modifier.padding(bottom = 100.dp)
+                    modifier = Modifier.padding(bottom = 100.dp),
+                    snackbar = { data ->
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 8.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, redPrimer.copy(alpha = 0.2f)),
+                            shadowElevation = 8.dp
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = redPrimer.copy(alpha = 0.1f),
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.ShoppingCart,
+                                            contentDescription = null,
+                                            tint = redPrimer,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = data.visuals.message,
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF1A1A1A)
+                                )
+                            }
+                        }
+                    }
                 )
             },
             containerColor = bgLight,
@@ -226,14 +264,12 @@ class JasaDetailScreen(
 
                                 if (finalPrice < originalPrice) {
                                     InfoChip(
-                                        icon = Icons.Default.Verified,
                                         text = if (finalPrice == 0.0) "Gratis Carwash" else "Harga Member",
                                         font = satoshiMedium,
                                         bgColor = if (finalPrice == 0.0) Color(0xFFE8F5E9) else redPrimer.copy(
                                             alpha = 0.08f
                                         ),
-                                        textColor = if (finalPrice == 0.0) Color(0xFF4CAF50) else redPrimer,
-                                        iconColor = if (finalPrice == 0.0) Color(0xFF4CAF50) else redPrimer
+                                        textColor = if (finalPrice == 0.0) Color(0xFF4CAF50) else redPrimer
                                     )
                                 }
                             }
@@ -408,7 +444,7 @@ class JasaDetailScreen(
 
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar(
-                                    message = "Sip! $quantity ${item.namaProduk} masuk keranjang \uD83D\uDED2",
+                                    message = "$quantity ${item.namaProduk} masuk ke keranjang",
                                     duration = SnackbarDuration.Short
                                 )
                             }
@@ -421,9 +457,9 @@ class JasaDetailScreen(
 
     @Composable
     private fun InfoChip(
-        icon: ImageVector,
         text: String,
         font: FontFamily,
+        icon: ImageVector? = null,
         bgColor: Color = Color(0xFFF5F5F5),
         textColor: Color = Color.DarkGray,
         iconColor: Color = Color.Gray
@@ -435,8 +471,10 @@ class JasaDetailScreen(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(6.dp))
+            if (icon != null) {
+                Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+            }
             Text(text, fontFamily = font, color = textColor, fontSize = 13.sp)
         }
     }
