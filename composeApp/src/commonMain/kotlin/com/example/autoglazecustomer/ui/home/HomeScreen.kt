@@ -95,10 +95,11 @@ import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.abs
 
-class HomeScreen(private val authService: AuthService) : Screen {
+class HomeScreen : Screen {
 
     @Composable
     override fun Content() {
+        val authService = remember { AuthService() }
         val tabNavigator = LocalTabNavigator.current
         val screenModel = rememberScreenModel { HomeScreenModel(authService) }
         val scope = rememberCoroutineScope()
@@ -238,24 +239,33 @@ class HomeScreen(private val authService: AuthService) : Screen {
                 }
 
                 SectionHeader("Promo Berlangsung", satoshiBold)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(screenModel.promoList) { promo ->
-                        PromoItem(promo, satoshiBold, satoshiMedium)
+                if (screenModel.promoList.isEmpty() && !screenModel.isLoading) {
+                    EmptyState("Belum ada promo saat ini", satoshiMedium)
+                } else {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(screenModel.promoList) { promo ->
+                            PromoItem(promo, satoshiBold, satoshiMedium)
+                        }
                     }
                 }
 
                 SectionHeader("Berita Terbaru", satoshiBold)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.padding(bottom = 100.dp)
-                ) {
-                    items(screenModel.beritaList) { berita ->
-                        BeritaItemUI(berita, screenModel, satoshiBold, satoshiMedium) {
-                            selectedBerita = berita
+                if (screenModel.beritaList.isEmpty() && !screenModel.isLoading) {
+                    EmptyState("Belum ada berita terbaru", satoshiMedium)
+                    Spacer(modifier = Modifier.height(100.dp))
+                } else {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(bottom = 100.dp)
+                    ) {
+                        items(screenModel.beritaList) { berita ->
+                            BeritaItemUI(berita, screenModel, satoshiBold, satoshiMedium) {
+                                selectedBerita = berita
+                            }
                         }
                     }
                 }

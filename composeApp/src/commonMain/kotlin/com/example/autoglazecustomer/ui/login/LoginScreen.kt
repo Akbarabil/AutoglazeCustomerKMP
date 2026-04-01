@@ -75,7 +75,7 @@ import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
-data class LoginScreen(val initialEmail: String = "") : Screen {
+class LoginScreen(val initialEmail: String = "") : Screen {
 
     @Composable
     override fun Content() {
