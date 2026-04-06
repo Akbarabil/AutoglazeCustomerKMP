@@ -7,11 +7,13 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.model.transaction.jasa.LayananItem
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.ProductService
+import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class JasaListScreenModel(
-    private val authService: AuthService,
+    private val productService: ProductService,
     private val kodeCabang: String,
     private val idKendaraan: Int,
     private val membershipStatusInt: Int
@@ -34,8 +36,8 @@ class JasaListScreenModel(
             errorMessage = null
 
             try {
-                val servicesDeferred = async { authService.getAllServices(kodeCabang) }
-                val eligibilityDeferred = async { authService.checkMembershipCarwash(idKendaraan) }
+                val servicesDeferred = async { productService.getAllServices(kodeCabang) }
+                val eligibilityDeferred = async { productService.checkMembershipCarwash(idKendaraan) }
 
                 val servicesResponse = servicesDeferred.await()
                 val eligibilityResponse = eligibilityDeferred.await()

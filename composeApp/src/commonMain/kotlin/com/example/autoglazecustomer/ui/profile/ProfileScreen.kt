@@ -72,28 +72,29 @@ import autoglazecustomer.composeapp.generated.resources.ic_logout
 import autoglazecustomer.composeapp.generated.resources.ic_profile_white
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.local.TokenManager
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.login.LoginScreen
 import com.example.autoglazecustomer.ui.profile.editprofile.EditProfileScreen
 import com.example.autoglazecustomer.ui.profile.myvehicle.MyVehicleScreen
 import com.example.autoglazecustomer.ui.profile.myvoucher.MyVoucherScreen
 import com.example.autoglazecustomer.ui.tabs.HomeTab
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
-class ProfileScreen(private val authService: AuthService) : Screen {
+class ProfileScreen : Screen {
 
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { ProfileScreenModel(authService) }
+        val screenModel = getScreenModel<ProfileScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
         val tabNavigator = LocalTabNavigator.current
         val uriHandler = LocalUriHandler.current
@@ -166,7 +167,6 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                 Column(modifier = Modifier.padding(24.dp)) {
 
-
                     ProfileGroup(title = "Point Umum", font = satoshiBold) {
                         if (screenModel.isLoading && screenModel.points == 0) {
                             Box(Modifier.fillMaxWidth().height(60.dp).background(shimmerBrush))
@@ -198,16 +198,11 @@ class ProfileScreen(private val authService: AuthService) : Screen {
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-
                     ProfileGroup(title = "Info Pengguna", font = satoshiBold) {
                         ProfileMenuItem(Icons.Default.Edit, "Edit Profil", satoshiMedium) {
                             val mainNavigator = navigator.parent ?: navigator
-                            mainNavigator.push(
-                                EditProfileScreen(
-                                    authService,
-                                    screenModel.profileData
-                                )
-                            )
+                            val dataJson = screenModel.profileData?.let { Json.encodeToString(it) }
+                            mainNavigator.push(EditProfileScreen(dataJson))
                         }
 
                         HorizontalDivider(
@@ -222,12 +217,11 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                             satoshiMedium
                         ) {
                             val mainNavigator = navigator.parent ?: navigator
-                            mainNavigator.push(MyVehicleScreen(authService))
+                            mainNavigator.push(MyVehicleScreen())
                         }
                     }
 
                     Spacer(modifier = Modifier.height(18.dp))
-
 
                     ProfileGroup(title = "Benefit", font = satoshiBold) {
                         ProfileMenuItem(
@@ -236,12 +230,11 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                             satoshiMedium
                         ) {
                             val mainNavigator = navigator.parent ?: navigator
-                            mainNavigator.push(MyVoucherScreen(authService))
+                            mainNavigator.push(MyVoucherScreen())
                         }
                     }
 
                     Spacer(modifier = Modifier.height(18.dp))
-
 
                     ProfileGroup(title = "Bantuan", font = satoshiBold) {
                         ProfileMenuItem(
@@ -254,7 +247,6 @@ class ProfileScreen(private val authService: AuthService) : Screen {
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
-
 
                     Surface(
                         modifier = Modifier

@@ -65,26 +65,27 @@ import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.autoglazecustomer.data.model.transaction.CabangData
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.rememberLocationService
 import com.example.autoglazecustomer.ui.rememberPermissionHandler
 import com.example.autoglazecustomer.ui.tabs.HomeTab
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
 
-class TransactionScreen(private val authService: AuthService) : Screen {
+class TransactionScreen : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { TransactionScreenModel(authService) }
+        val screenModel = getScreenModel<TransactionScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
         val tabNavigator = LocalTabNavigator.current
         val locationService = rememberLocationService()
@@ -320,9 +321,10 @@ class TransactionScreen(private val authService: AuthService) : Screen {
                                                 satoshiBold,
                                                 satoshiMedium
                                             ) {
+                                                val cabangJson = Json.encodeToString(cabang)
                                                 navigator.parent?.push(
                                                     VehicleSelectionScreen(
-                                                        cabang = cabang
+                                                        cabangJson = cabangJson
                                                     )
                                                 )
                                             }

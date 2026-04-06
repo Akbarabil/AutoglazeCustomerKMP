@@ -67,8 +67,8 @@ import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
@@ -77,26 +77,27 @@ import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.jasa.LayananItem
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.transaction.checkout.CheckoutScreen
 import com.example.autoglazecustomer.ui.transaction.components.FloatingCheckoutBar
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
+import org.koin.core.parameter.parametersOf
 
 class JasaListScreen(
-    private val cabang: CabangData,
-    private val vehicle: VehicleWithStatus,
-    private val authService: AuthService
+    private val cabangJson: String,
+    private val vehicleJson: String
 ) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel {
-            JasaListScreenModel(
-                authService,
+        val cabang = remember { Json.decodeFromString<CabangData>(cabangJson) }
+        val vehicle = remember { Json.decodeFromString<VehicleWithStatus>(vehicleJson) }
+        val screenModel = getScreenModel<JasaListScreenModel> {
+            parametersOf(
                 cabang.kodeCabang,
                 vehicle.vehicle.idKendaraan ?: -1,
                 vehicle.membershipStatusInt
@@ -337,8 +338,8 @@ class JasaListScreen(
                                             JasaDetailScreen(
                                                 item = item,
                                                 finalPrice = final,
-                                                cabang = cabang,
-                                                vehicle = vehicle
+                                                cabangJson = cabangJson,
+                                                vehicleJson = vehicleJson
                                             )
                                         )
                                     }
@@ -358,7 +359,7 @@ class JasaListScreen(
                     totalQty = totalQty,
                     totalPrice = totalPrice,
                     onClick = {
-                        navigator.push(CheckoutScreen(cabang, vehicle, authService))
+                        navigator.push(CheckoutScreen(cabangJson, vehicleJson))
                     }
                 )
             }

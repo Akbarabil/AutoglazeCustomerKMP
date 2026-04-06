@@ -79,6 +79,7 @@ import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import autoglazecustomer.composeapp.generated.resources.sedan
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
@@ -99,9 +100,8 @@ class HomeScreen : Screen {
 
     @Composable
     override fun Content() {
-        val authService = remember { AuthService() }
         val tabNavigator = LocalTabNavigator.current
-        val screenModel = rememberScreenModel { HomeScreenModel(authService) }
+        val screenModel = getScreenModel<HomeScreenModel>()
         val scope = rememberCoroutineScope()
         val locationService = rememberLocationService()
 

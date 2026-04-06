@@ -78,13 +78,14 @@ import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import org.jetbrains.compose.resources.Font
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import cafe.adriel.voyager.koin.getScreenModel
 
-class CartScreen(private val authService: AuthService) : Screen {
+class CartScreen : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { CartScreenModel(authService) }
+        val screenModel = getScreenModel<CartScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
         val tabNavigator = LocalTabNavigator.current
 

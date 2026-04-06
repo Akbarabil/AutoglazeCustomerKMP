@@ -64,6 +64,7 @@ import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
@@ -72,26 +73,25 @@ import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukItem
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.transaction.checkout.CheckoutScreen
 import com.example.autoglazecustomer.ui.transaction.components.FloatingCheckoutBar
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
 class ProdukListScreen(
-    private val cabang: CabangData,
-    private val vehicle: VehicleWithStatus,
-    private val authService: AuthService
+    private val cabangJson: String,
+    private val vehicleJson: String
 ) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel {
-            ProdukListScreenModel(authService, cabang.kodeCabang, vehicle.membershipStatusInt)
-        }
+        val cabang = remember { Json.decodeFromString<CabangData>(cabangJson) }
+        val vehicle = remember { Json.decodeFromString<VehicleWithStatus>(vehicleJson) }
+        val screenModel = getScreenModel<ProdukListScreenModel>()
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
@@ -281,10 +281,10 @@ class ProdukListScreen(
                                     onClick = {
                                         navigator.push(
                                             ProdukDetailScreen(
-                                                item,
+                                                item = item,
                                                 finalPrice = final,
-                                                cabang,
-                                                vehicle
+                                                cabangJson = cabangJson,
+                                                vehicleJson = vehicleJson
                                             )
                                         )
                                     }
@@ -304,7 +304,7 @@ class ProdukListScreen(
                     totalQty = totalQty,
                     totalPrice = totalPrice,
                     onClick = {
-                        navigator.push(CheckoutScreen(cabang, vehicle, authService))
+                        navigator.push(CheckoutScreen(cabangJson, vehicleJson))
                     }
                 )
             }

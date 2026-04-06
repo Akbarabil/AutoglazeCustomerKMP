@@ -40,7 +40,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,11 +56,10 @@ import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
 import autoglazecustomer.composeapp.generated.resources.img_vehicle_check
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.login.LoginScreen
 import com.example.autoglazecustomer.ui.password.RequestPasswordScreen
 import com.example.autoglazecustomer.ui.register.RegisterScreen
@@ -73,8 +71,7 @@ class CheckVehicleScreen : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val authService = remember { AuthService() }
-        val screenModel = rememberScreenModel { CheckVehicleScreenModel(authService) }
+        val screenModel = getScreenModel<CheckVehicleScreenModel>()
 
         val redPrimer = Color(0xFFD53B1E)
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))

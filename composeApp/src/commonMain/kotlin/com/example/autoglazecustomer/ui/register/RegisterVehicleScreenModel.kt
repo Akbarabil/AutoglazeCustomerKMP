@@ -8,10 +8,11 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.model.DaftarData
 import com.example.autoglazecustomer.data.model.register.RegisterVehicleState
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.launch
 
 class RegisterVehicleScreenModel(
-    private val authService: AuthService
+    private val vehicleService: VehicleService
 ) : ScreenModel {
 
     var state by mutableStateOf(RegisterVehicleState())
@@ -21,8 +22,8 @@ class RegisterVehicleScreenModel(
         screenModelScope.launch {
             state = state.copy(isLoadingMerek = true)
             try {
-                val merek = authService.getMerek()
-                val warna = authService.getWarna()
+                val merek = vehicleService.getMerek()
+                val warna = vehicleService.getWarna()
 
                 state = state.copy(
                     listMerek = merek,
@@ -53,7 +54,7 @@ class RegisterVehicleScreenModel(
         merek?.let {
             screenModelScope.launch {
                 try {
-                    val tipe = authService.getTipe(it.idMerek)
+                    val tipe = vehicleService.getTipe(it.idMerek)
                     state = state.copy(
                         listTipe = tipe,
                         isLoadingTipe = false
@@ -138,7 +139,7 @@ class RegisterVehicleScreenModel(
         screenModelScope.launch {
             state = state.copy(isLoading = true, errorMessage = null)
             try {
-                val response = authService.cekNopol(s.nopol)
+                val response = vehicleService.cekNopol(s.nopol)
 
                 if (response.isSuccessful) {
                     val finalData = dataRegistrasi.copy(

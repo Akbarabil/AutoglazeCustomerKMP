@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -34,6 +33,7 @@ kotlin {
             implementation("io.ktor:ktor-client-cio:2.3.12")
             implementation(libs.play.services.location)
             implementation(libs.kotlinx.coroutines.play.services)
+            implementation("io.insert-koin:koin-android:3.5.3")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -69,6 +69,15 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
 
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+
+            // 1. Koin Core (Mesin Utama Koin)
+            implementation("io.insert-koin:koin-core:3.5.3")
+
+            // 2. Koin Compose (Agar Koin bisa jalan di UI Jetpack Compose)
+            implementation("io.insert-koin:koin-compose:1.1.2")
+
+            // 3. Voyager - Koin Integration (Ini yang bikin koinScreenModel() bisa jalan!)
+            implementation("cafe.adriel.voyager:voyager-koin:1.0.0")
 
         }
 

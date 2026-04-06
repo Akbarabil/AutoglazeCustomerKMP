@@ -66,6 +66,7 @@ import autoglazecustomer.composeapp.generated.resources.img_hello
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.network.AuthService
@@ -80,8 +81,7 @@ class LoginScreen(val initialEmail: String = "") : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val authService = remember { AuthService() }
-        val screenModel = rememberScreenModel { LoginScreenModel(authService) }
+        val screenModel = getScreenModel<LoginScreenModel>()
 
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)

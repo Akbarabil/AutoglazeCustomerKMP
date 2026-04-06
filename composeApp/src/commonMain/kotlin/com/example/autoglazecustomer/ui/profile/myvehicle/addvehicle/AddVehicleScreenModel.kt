@@ -9,17 +9,18 @@ import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.model.WarnaKendaraanResponse
 import com.example.autoglazecustomer.data.model.addvehicle.AddVehicleState
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.launch
 
-class AddVehicleScreenModel(private val authService: AuthService) : ScreenModel {
+class AddVehicleScreenModel(private val vehicleService: VehicleService) : ScreenModel {
     var state by mutableStateOf(AddVehicleState())
 
     fun initData() {
         screenModelScope.launch {
             state = state.copy(isLoadingMerek = true)
             try {
-                val merekRes = authService.getMerek()
-                val warnaRes = authService.getWarna()
+                val merekRes = vehicleService.getMerek()
+                val warnaRes = vehicleService.getWarna()
                 state = state.copy(
                     listMerek = merekRes,
                     listWarna = warnaRes,
@@ -47,7 +48,7 @@ class AddVehicleScreenModel(private val authService: AuthService) : ScreenModel 
         screenModelScope.launch {
             state = state.copy(isLoadingTipe = true)
             try {
-                val tipeRes = authService.getTipe(idMerek)
+                val tipeRes = vehicleService.getTipe(idMerek)
                 state = state.copy(listTipe = tipeRes, isLoadingTipe = false)
             } catch (e: Exception) {
                 state = state.copy(isLoadingTipe = false)
@@ -112,11 +113,11 @@ class AddVehicleScreenModel(private val authService: AuthService) : ScreenModel 
                 val token = TokenManager.getToken() ?: ""
 
 
-                val responseNopol = authService.cekNopol(s.nopol)
+                val responseNopol = vehicleService.cekNopol(s.nopol)
 
                 if (responseNopol.isSuccessful) {
 
-                    val res = authService.addVehicle(
+                    val res = vehicleService.addVehicle(
                         token = "Bearer $token",
                         idMerek = s.merekTerpilih!!.idMerek,
                         idTipe = s.tipeTerpilih!!.idTipeKendaraan,

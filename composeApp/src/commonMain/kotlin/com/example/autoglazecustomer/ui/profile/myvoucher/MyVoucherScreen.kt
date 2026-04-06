@@ -58,6 +58,7 @@ import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.VehicleData
@@ -66,13 +67,13 @@ import com.example.autoglazecustomer.data.network.AuthService
 import org.jetbrains.compose.resources.Font
 import kotlin.math.abs
 
-class MyVoucherScreen(private val authService: AuthService) : Screen {
+class MyVoucherScreen : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { MyVoucherScreenModel(authService) }
+        val screenModel = getScreenModel<MyVoucherScreenModel>()
 
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))

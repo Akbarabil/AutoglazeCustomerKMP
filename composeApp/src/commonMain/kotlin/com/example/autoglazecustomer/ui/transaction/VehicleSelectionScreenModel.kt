@@ -8,12 +8,16 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.CabangService
+import com.example.autoglazecustomer.data.network.ProductService
+import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 class VehicleSelectionScreenModel(
-    private val authService: AuthService,
+    private val vehicleService: VehicleService,
+    private val productService: ProductService,
     private val kodeCabang: String
 ) : ScreenModel {
 
@@ -45,7 +49,7 @@ class VehicleSelectionScreenModel(
                 }
 
                 val bearerToken = "Bearer $rawToken"
-                val response = authService.getVehicles(bearerToken)
+                val response = vehicleService.getVehicles(bearerToken)
                 val vehicles = response.data
 
                 if (vehicles.isEmpty()) {
@@ -62,7 +66,7 @@ class VehicleSelectionScreenModel(
                 val deferredStatuses = vehicles.map { vehicle ->
                     async {
                         val id = vehicle.idKendaraan ?: 0
-                        runCatching { authService.checkMembership(id, kodeCabang) }.getOrDefault(0)
+                        runCatching { productService.checkMembership(id, kodeCabang) }.getOrDefault(0)
                     }
                 }
 

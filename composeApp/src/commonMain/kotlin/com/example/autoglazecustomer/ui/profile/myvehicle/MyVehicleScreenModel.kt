@@ -8,9 +8,10 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.launch
 
-class MyVehicleScreenModel(private val authService: AuthService) : ScreenModel {
+class MyVehicleScreenModel(private val vehicleService: VehicleService) : ScreenModel {
 
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var isLoading by mutableStateOf(false)
@@ -24,7 +25,7 @@ class MyVehicleScreenModel(private val authService: AuthService) : ScreenModel {
                 val token = TokenManager.getToken() ?: ""
                 val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-                val response = authService.getVehicles(formattedToken)
+                val response = vehicleService.getVehicles(formattedToken)
                 if (response.success) {
                     vehicleList = response.data
                 } else {

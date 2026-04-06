@@ -12,11 +12,12 @@ import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
 import com.example.autoglazecustomer.data.model.transaction.toUIModel
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class VoucherScreenModel(
-    private val authService: AuthService,
+    private val transactionService: TransactionService,
     private val idKendaraan: Int,
     private val cartItems: List<CartItem>
 ) : ScreenModel {
@@ -36,8 +37,8 @@ class VoucherScreenModel(
         screenModelScope.launch {
             isLoading = true
             try {
-                val umumDeferred = async { authService.getVoucherSaya(token) }
-                val kendaraanDeferred = async { authService.getVouchersByVehicle(idKendaraan) }
+                val umumDeferred = async { transactionService.getVoucherSaya(token) }
+                val kendaraanDeferred = async { transactionService.getVouchersByVehicle(idKendaraan) }
 
                 val umumRes = umumDeferred.await()
                 val kendaraanRes = kendaraanDeferred.await()

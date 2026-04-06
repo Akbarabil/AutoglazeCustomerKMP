@@ -1,12 +1,10 @@
 package com.example.autoglazecustomer.ui.tabs
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.ic_profile
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.profile.ProfileScreen
 import org.jetbrains.compose.resources.painterResource
 
@@ -23,12 +21,6 @@ class ProfileTab : Tab {
 
     @Composable
     override fun Content() {
-
-        val authService = remember { AuthService() }
-
-
-        val profileScreen = remember(authService) { ProfileScreen(authService) }
-
-        profileScreen.Content()
+        ProfileScreen().Content()
     }
 }

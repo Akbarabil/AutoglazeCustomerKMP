@@ -6,10 +6,10 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.model.transaction.CabangData
-import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.CabangService
 import kotlinx.coroutines.launch
 
-class TransactionScreenModel(private val authService: AuthService) : ScreenModel {
+class TransactionScreenModel(private val cabangService: CabangService) : ScreenModel {
 
     var cabangList by mutableStateOf<List<CabangData>>(emptyList())
     var isLoading by mutableStateOf(false)
@@ -30,7 +30,7 @@ class TransactionScreenModel(private val authService: AuthService) : ScreenModel
             errorMessage = null
             try {
 
-                val response = authService.getCabangTerdekat(lon, lat)
+                val response = cabangService.getCabangTerdekat(lon, lat)
                 if (response.status) {
                     cabangList = response.data
                 } else {

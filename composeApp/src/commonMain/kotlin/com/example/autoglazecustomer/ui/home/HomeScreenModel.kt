@@ -11,11 +11,22 @@ import com.example.autoglazecustomer.data.model.SliderItem
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItem
 import com.example.autoglazecustomer.data.model.transaction.CabangData
+// IMPORT 5 SERVICE JOSJIS
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.CabangService
+import com.example.autoglazecustomer.data.network.HomeService
+import com.example.autoglazecustomer.data.network.TransactionService
+import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-class HomeScreenModel(private val authService: AuthService) : ScreenModel {
+class HomeScreenModel(
+    private val authService: AuthService,
+    private val homeService: HomeService,
+    private val vehicleService: VehicleService,
+    private val transactionService: TransactionService,
+    private val cabangService: CabangService
+) : ScreenModel {
 
     var userName by mutableStateOf(TokenManager.getUserName() ?: "Sobat Glaze")
     var userAvatar by mutableStateOf<String?>(null)
@@ -27,7 +38,6 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
 
-    // JOSJIS: State Khusus Cabang Terdekat
     var closestCabang by mutableStateOf<CabangData?>(null)
     var isCabangLoading by mutableStateOf(false)
     var cabangErrorMessage by mutableStateOf<String?>(null)
@@ -51,10 +61,10 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
                 val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
                 val profileJob = async { runCatching { authService.getProfileData(formattedToken) } }
-                val sliderJob = async { runCatching { authService.getSlider() } }
-                val vehicleJob = async { runCatching { authService.getVehicles(formattedToken) } }
-                val beritaJob = async { runCatching { authService.getBerita() } }
-                val voucherJob = async { runCatching { authService.getVoucherUmum() } }
+                val sliderJob = async { runCatching { homeService.getSlider() } }
+                val vehicleJob = async { runCatching { vehicleService.getVehicles(formattedToken) } }
+                val beritaJob = async { runCatching { homeService.getBerita() } }
+                val voucherJob = async { runCatching { transactionService.getVoucherUmum() } }
 
                 profileJob.await().onSuccess { res ->
                     if (res.success) {
@@ -88,13 +98,13 @@ class HomeScreenModel(private val authService: AuthService) : ScreenModel {
         }
     }
 
-    // JOSJIS: Fungsi mencari cabang sungguhan dari API
     fun fetchClosestCabang(lat: Double, lon: Double) {
         screenModelScope.launch {
             isCabangLoading = true
             cabangErrorMessage = null
             try {
-                val response = authService.getCabangTerdekat(lon, lat)
+                // JOSJIS: Panggil dari cabangService
+                val response = cabangService.getCabangTerdekat(lon, lat)
 
                 if (response.status && response.data.isNotEmpty()) {
                     closestCabang = response.data.first()

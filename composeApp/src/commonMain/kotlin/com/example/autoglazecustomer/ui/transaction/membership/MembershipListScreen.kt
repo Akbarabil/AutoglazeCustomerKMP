@@ -68,6 +68,7 @@ import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.manager.CartItem
@@ -81,22 +82,22 @@ import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.transaction.checkout.CheckoutScreen
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
 
 
 class MembershipListScreen(
-    private val cabang: CabangData,
-    private val vehicle: VehicleWithStatus,
-    private val authService: AuthService
+    private val cabangJson: String,
+    private val vehicleJson: String
 ) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel =
-            rememberScreenModel { MembershipListScreenModel(authService, cabang.kodeCabang) }
-
+        val cabang = remember { Json.decodeFromString<CabangData>(cabangJson) }
+        val vehicle = remember { Json.decodeFromString<VehicleWithStatus>(vehicleJson) }
+        val screenModel = getScreenModel<MembershipListScreenModel>()
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
 
@@ -297,9 +298,7 @@ class MembershipListScreen(
 
                                         navigator.push(
                                             CheckoutScreen(
-                                                cabang = cabang,
-                                                vehicle = vehicle,
-                                                authService
+                                                cabangJson, vehicleJson
                                             )
                                         )
                                     }

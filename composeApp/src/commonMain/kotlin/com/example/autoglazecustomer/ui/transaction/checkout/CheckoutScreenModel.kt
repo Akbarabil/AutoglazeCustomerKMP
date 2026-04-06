@@ -15,13 +15,14 @@ import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutDetailPayload
 import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutPayload
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.math.roundToLong
 
 class CheckoutScreenModel(
-    private val authService: AuthService,
+    private val transactionService: TransactionService,
     private val cabang: CabangData,
     private val vehicle: VehicleWithStatus
 ) : ScreenModel {
@@ -156,7 +157,7 @@ class CheckoutScreenModel(
                 } catch (e: Exception) {
                 }
 
-                val response = authService.processCheckout(payload, isMembership)
+                val response = transactionService.processCheckout(payload, isMembership)
                 if (response.status) {
                     successKodePenjualan = response.kodePenjualan ?: "Sukses"
                     isSuccess = true

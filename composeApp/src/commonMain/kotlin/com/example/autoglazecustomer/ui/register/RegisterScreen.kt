@@ -82,6 +82,7 @@ import autoglazecustomer.composeapp.generated.resources.img_catat
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.register.Country
@@ -98,8 +99,7 @@ class RegisterScreen : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val authService = remember { AuthService() }
-        val screenModel = rememberScreenModel { RegisterScreenModel(authService) }
+        val screenModel = getScreenModel<RegisterScreenModel>()
         val state = screenModel.state
 
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))

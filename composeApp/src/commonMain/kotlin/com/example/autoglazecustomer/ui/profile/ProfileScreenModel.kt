@@ -8,9 +8,13 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.model.ProfileData
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.launch
 
-class ProfileScreenModel(private val authService: AuthService) : ScreenModel {
+class ProfileScreenModel(
+    private val authService: AuthService,
+    private val transactionService: TransactionService
+) : ScreenModel {
 
     var profileData by mutableStateOf<ProfileData?>(null)
     var points by mutableStateOf(0)
@@ -55,7 +59,7 @@ class ProfileScreenModel(private val authService: AuthService) : ScreenModel {
                     }
 
                     profileResponse.data?.id?.let { customerId ->
-                        val pointResponse = authService.getPoint(customerId)
+                        val pointResponse = transactionService.getPoint(customerId)
 
                         if (pointResponse.status) {
                             points = pointResponse.data?.point ?: 0

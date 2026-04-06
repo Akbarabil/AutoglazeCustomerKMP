@@ -22,12 +22,6 @@ class TransactionTab : Tab {
 
     @Composable
     override fun Content() {
-
-        val authService = remember { AuthService() }
-
-
-        val transactionScreen = remember(authService) { TransactionScreen(authService) }
-
-        transactionScreen.Content()
+        TransactionScreen().Content()
     }
 }

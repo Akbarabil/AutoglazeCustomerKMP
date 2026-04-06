@@ -27,7 +27,6 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 
-
 class MainTabScreen : Screen {
     @Composable
     override fun Content() {

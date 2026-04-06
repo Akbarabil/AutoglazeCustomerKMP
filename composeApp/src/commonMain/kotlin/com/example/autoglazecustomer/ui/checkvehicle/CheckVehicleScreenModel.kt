@@ -8,11 +8,12 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.model.ChekKendaraanResponse
 import com.example.autoglazecustomer.data.model.GetCekKendaraan
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.VehicleService
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
-class CheckVehicleScreenModel(private val authService: AuthService) : ScreenModel {
+class CheckVehicleScreenModel(private val vehicleService: VehicleService) : ScreenModel {
 
     var nopol by mutableStateOf("")
     var isLoading by mutableStateOf(false)
@@ -30,7 +31,7 @@ class CheckVehicleScreenModel(private val authService: AuthService) : ScreenMode
             isLoading = true
             errorMessage = ""
             try {
-                val response = authService.cekKendaraan(nopol.replace(" ", ""))
+                val response = vehicleService.cekKendaraan(nopol.replace(" ", ""))
 
                 if (response.success && response.data != null) {
                     vehicleData = response.data

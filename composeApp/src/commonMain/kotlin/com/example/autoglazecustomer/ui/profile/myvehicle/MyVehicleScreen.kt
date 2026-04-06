@@ -56,6 +56,7 @@ import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import autoglazecustomer.composeapp.generated.resources.sedan
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
@@ -65,14 +66,14 @@ import com.example.autoglazecustomer.ui.profile.myvehicle.addvehicle.AddVehicleS
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
-class MyVehicleScreen(private val authService: AuthService) : Screen {
+class MyVehicleScreen : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
 
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { MyVehicleScreenModel(authService) }
+        val screenModel = getScreenModel<MyVehicleScreenModel>()
         LaunchedEffect(navigator.lastItem) {
             if (navigator.lastItem is MyVehicleScreen) {
                 screenModel.fetchVehicles()
@@ -167,7 +168,7 @@ class MyVehicleScreen(private val authService: AuthService) : Screen {
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 20.dp)
                         .clickable {
-                            navigator.push(AddVehicleScreen(authService))
+                            navigator.push(AddVehicleScreen())
                         },
                     shape = RoundedCornerShape(16.dp),
                     color = Color.White,

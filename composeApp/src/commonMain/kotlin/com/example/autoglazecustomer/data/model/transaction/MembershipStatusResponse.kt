@@ -12,7 +12,7 @@ data class MembershipStatusResponse(
     @SerialName("id_kendaraan") val idKendaraan: Int? = null
 )
 
-
+@Serializable
 data class VehicleWithStatus(
     val vehicle: VehicleData,
     val membershipStatusText: String,

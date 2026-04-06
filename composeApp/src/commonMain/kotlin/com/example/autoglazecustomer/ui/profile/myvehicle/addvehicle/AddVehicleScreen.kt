@@ -65,6 +65,7 @@ import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.WarnaKendaraanResponse
@@ -75,12 +76,12 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
-class AddVehicleScreen(private val authService: AuthService) : Screen {
+class AddVehicleScreen : Screen {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { AddVehicleScreenModel(authService) }
+        val screenModel = getScreenModel<AddVehicleScreenModel>()
         val state = screenModel.state
 
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))

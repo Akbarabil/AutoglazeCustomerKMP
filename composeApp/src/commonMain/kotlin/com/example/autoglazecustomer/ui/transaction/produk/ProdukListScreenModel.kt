@@ -7,10 +7,12 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukItem
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.ProductService
+import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.launch
 
 class ProdukListScreenModel(
-    private val authService: AuthService,
+    private val productService: ProductService,
     private val kodeCabang: String,
     private val membershipStatusInt: Int
 ) : ScreenModel {
@@ -29,7 +31,7 @@ class ProdukListScreenModel(
             errorMessage = null
 
             try {
-                val response = authService.getProduk(kodeCabang)
+                val response = productService.getProduk(kodeCabang)
                 if (response.status == true) {
                     allProducts = response.data ?: emptyList()
                     updateDisplayedList()

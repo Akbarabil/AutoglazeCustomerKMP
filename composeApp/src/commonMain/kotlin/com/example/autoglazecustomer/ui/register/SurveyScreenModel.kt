@@ -8,9 +8,14 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.model.DaftarData
 import com.example.autoglazecustomer.data.model.register.SurveyState
 import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.CabangService
+import com.example.autoglazecustomer.data.network.HomeService
 import kotlinx.coroutines.launch
 
-class SurveyScreenModel(private val authService: AuthService) : ScreenModel {
+class SurveyScreenModel(
+    private val authService: AuthService,
+    private val cabangService: CabangService
+) : ScreenModel {
 
     var state by mutableStateOf(SurveyState())
         private set
@@ -18,7 +23,7 @@ class SurveyScreenModel(private val authService: AuthService) : ScreenModel {
     fun initData() {
         screenModelScope.launch {
             try {
-                val list = authService.getAsalTahu()
+                val list = cabangService.getAsalTahu()
                 state = state.copy(asalTahuList = list)
             } catch (e: Exception) {
                 state = state.copy(errorMessage = "Gagal memuat data survey")

@@ -58,25 +58,26 @@ import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
-import com.example.autoglazecustomer.data.network.AuthService
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
+import org.koin.core.parameter.parametersOf
 
 class VehicleSelectionScreen(
-    private val cabang: CabangData
+    private val cabangJson: String
 ) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val authService = remember { AuthService() }
-        val screenModel =
-            rememberScreenModel { VehicleSelectionScreenModel(authService, cabang.kodeCabang) }
+        val cabang = remember {Json.decodeFromString<CabangData>(cabangJson)}
+        val screenModel = getScreenModel<VehicleSelectionScreenModel> { parametersOf(cabang.kodeCabang) }
         val navigator = LocalNavigator.currentOrThrow
 
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
@@ -119,7 +120,10 @@ class VehicleSelectionScreen(
                     Button(
                         onClick = {
                             screenModel.selectedVehicle?.let { vehicleWithStatus ->
-                                navigator.push(MenuTransactionScreen(cabang, vehicleWithStatus))
+                                val cabangJson = Json.encodeToString(cabang)
+                                val vehicelJson = Json.encodeToString(vehicleWithStatus)
+
+                                navigator.push(MenuTransactionScreen(cabangJson,vehicelJson))
                             }
                         },
                         enabled = screenModel.selectedVehicle != null,

@@ -1,12 +1,10 @@
 package com.example.autoglazecustomer.ui.tabs
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.ic_cart
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.cart.CartScreen
 import org.jetbrains.compose.resources.painterResource
 
@@ -22,9 +20,6 @@ class CartTab : Tab {
 
     @Composable
     override fun Content() {
-        val authService = remember { AuthService() }
-        val cartScreen = remember(authService) { CartScreen(authService) }
-
-        cartScreen.Content()
+        CartScreen().Content()
     }
 }

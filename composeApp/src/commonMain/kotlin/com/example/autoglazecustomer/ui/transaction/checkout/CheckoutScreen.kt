@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +65,7 @@ import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
@@ -75,21 +77,24 @@ import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.transaction.voucher.VoucherScreen
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
+import org.koin.core.parameter.parametersOf
 import kotlin.math.abs
 
 class CheckoutScreen(
-    private val cabang: CabangData,
-    private val vehicle: VehicleWithStatus,
-    private val authService: AuthService
+    private val cabangJson: String,
+    private val vehicleJson: String
 ) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { CheckoutScreenModel(authService, cabang, vehicle) }
+        val cabang = remember { Json.decodeFromString<CabangData>(cabangJson) }
+        val vehicle = remember { Json.decodeFromString<VehicleWithStatus>(vehicleJson) }
+        val screenModel = getScreenModel<CheckoutScreenModel> { parametersOf(cabang, vehicle) }
         val cartItems by CartManager.cartItems.collectAsState()
         val selectedVouchers by VoucherManager.selectedVouchers.collectAsState()
 
@@ -179,7 +184,6 @@ class CheckoutScreen(
                         ) {
                             navigator.push(
                                 VoucherScreen(
-                                    authService = authService,
                                     idKendaraan = vehicle.vehicle.idKendaraan ?: -1,
                                     cartItems = cartItems,
                                     isMember = isMember

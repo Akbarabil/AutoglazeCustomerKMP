@@ -25,7 +25,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -61,14 +60,13 @@ import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.manager.CartItem
 import com.example.autoglazecustomer.data.manager.CartManager
 import com.example.autoglazecustomer.data.manager.ItemCategory
-import com.example.autoglazecustomer.data.model.transaction.CabangData
-import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukItem
 import com.example.autoglazecustomer.ui.transaction.components.AddToCartBottomSheet
 import kotlinx.coroutines.launch
@@ -78,15 +76,14 @@ import org.jetbrains.compose.resources.painterResource
 class ProdukDetailScreen(
     private val item: ProdukItem,
     private val finalPrice: Double,
-    private val cabang: CabangData,
-    private val vehicle: VehicleWithStatus
+    private val cabangJson: String,
+    private val vehicleJson: String
 ) : Screen {
-
+    override val key: ScreenKey = "ProdukDetail_${item.idProduk}"
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val scrollState = rememberScrollState()
-
 
         val coroutineScope = rememberCoroutineScope()
         val snackbarHostState = remember { SnackbarHostState() }
@@ -287,10 +284,10 @@ class ProdukDetailScreen(
                         modifier = Modifier.fillMaxWidth()
                             .padding(horizontal = 20.dp, vertical = 20.dp)
                             .windowInsetsPadding(WindowInsets.navigationBars).shadow(
-                            16.dp,
-                            RoundedCornerShape(24.dp),
-                            spotColor = Color.Black.copy(alpha = 0.15f)
-                        ),
+                                16.dp,
+                                RoundedCornerShape(24.dp),
+                                spotColor = Color.Black.copy(alpha = 0.15f)
+                            ),
                         shape = RoundedCornerShape(24.dp), color = Color.White
                     ) {
                         Row(

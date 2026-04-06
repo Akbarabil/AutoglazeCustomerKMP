@@ -8,10 +8,14 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.model.HistoryItem
 import com.example.autoglazecustomer.data.model.VehicleData
-import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.TransactionService
+import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.launch
 
-class CartScreenModel(private val authService: AuthService) : ScreenModel {
+class CartScreenModel(
+    private val vehicleService: VehicleService,
+    private val transactionService: TransactionService
+) : ScreenModel {
 
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var historyList by mutableStateOf<List<HistoryItem>>(emptyList())
@@ -29,7 +33,7 @@ class CartScreenModel(private val authService: AuthService) : ScreenModel {
         screenModelScope.launch {
             isLoadingVehicles = true
             val token = "Bearer ${TokenManager.getToken()}"
-            runCatching { authService.getVehicles(token) }
+            runCatching { vehicleService.getVehicles(token) }
                 .onSuccess { res ->
                     if (res.success) {
                         vehicleList = res.data
@@ -58,7 +62,7 @@ class CartScreenModel(private val authService: AuthService) : ScreenModel {
             errorMessage = null
             val customerId = TokenManager.getCustomerId()
 
-            runCatching { authService.getHistoryPesanan(customerId, idKendaraan) }
+            runCatching { transactionService.getHistoryPesanan(customerId, idKendaraan) }
                 .onSuccess { res ->
                     historyList = if (res.status) {
                         res.data.sortedByDescending { it.createdAt }

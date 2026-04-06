@@ -9,10 +9,14 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItemId
-import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.data.network.TransactionService
+import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.launch
 
-class MyVoucherScreenModel(private val authService: AuthService) : ScreenModel {
+class MyVoucherScreenModel(
+    private val vehicleService: VehicleService,
+    private val transactionService: TransactionService
+) : ScreenModel {
 
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var isLoadingVehicles by mutableStateOf(false)
@@ -27,7 +31,7 @@ class MyVoucherScreenModel(private val authService: AuthService) : ScreenModel {
             isLoadingVehicles = true
             try {
                 val token = "Bearer ${TokenManager.getToken()}"
-                val res = authService.getVehicles(token)
+                val res = vehicleService.getVehicles(token)
                 if (res.success) vehicleList = res.data
             } catch (e: Exception) {
             }
@@ -48,7 +52,7 @@ class MyVoucherScreenModel(private val authService: AuthService) : ScreenModel {
         screenModelScope.launch {
             loadingVouchers[idKendaraan] = true
             try {
-                val res = authService.getVouchersByVehicle(idKendaraan)
+                val res = transactionService.getVouchersByVehicle(idKendaraan)
                 voucherCache[idKendaraan] = res.data ?: emptyList()
             } catch (e: Exception) {
                 voucherCache[idKendaraan] = emptyList()
