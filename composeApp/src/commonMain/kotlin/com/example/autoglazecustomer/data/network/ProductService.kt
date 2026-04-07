@@ -1,5 +1,6 @@
 package com.example.autoglazecustomer.data.network
 
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.transaction.MembershipCarwashCheckResponse
 import com.example.autoglazecustomer.data.model.transaction.MembershipStatusResponse
 import com.example.autoglazecustomer.data.model.transaction.jasa.JasaResponse
@@ -19,7 +20,9 @@ class ProductService {
                 url { parameters.append("kode_cabang", kodeCabang) }
             }.body()
         } catch (e: Exception) {
-            JasaResponse(status = false, message = "Gagal memuat layanan: ${e.message}", data = emptyList())
+            JasaResponse(status = false,
+                message = e.toUserMessage(),
+                data = emptyList())
         }
     }
 
@@ -29,7 +32,9 @@ class ProductService {
                 url { parameters.append("kode_cabang", kodeCabang) }
             }.body()
         } catch (e: Exception) {
-            ProdukResponse(status = false, message = "Gagal memuat produk: ${e.message}", data = emptyList())
+            ProdukResponse(status = false,
+                message = e.toUserMessage(),
+                data = emptyList())
         }
     }
 
@@ -39,7 +44,11 @@ class ProductService {
                 url { parameters.append("kode_cabang", kodeCabang) }
             }.body()
         } catch (e: Exception) {
-            MembershipResponse(status = false, data = emptyList())
+            MembershipResponse(
+                status = false,
+                message = e.toUserMessage(),
+                data = emptyList()
+            )
         }
     }
 

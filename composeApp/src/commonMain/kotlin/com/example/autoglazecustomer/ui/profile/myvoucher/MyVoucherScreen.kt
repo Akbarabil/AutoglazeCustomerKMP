@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -56,14 +58,12 @@ import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItemId
-import com.example.autoglazecustomer.data.network.AuthService
 import org.jetbrains.compose.resources.Font
 import kotlin.math.abs
 
@@ -111,11 +111,7 @@ class MyVoucherScreen : Screen {
                     title = { Text("Voucher Saya", fontFamily = satoshiBold, fontSize = 19.sp) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
-                            Icon(
-                                Icons.Default.ArrowBackIosNew,
-                                null,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Icon(Icons.Default.ArrowBackIosNew, null, modifier = Modifier.size(20.dp))
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -139,26 +135,18 @@ class MyVoucherScreen : Screen {
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = {
                             Text(
-                                "Ketik Nomor Polisi atau Merk kendaraan",
+                                "Ketik Nomor Polisi atau Merk",
                                 fontSize = 14.sp,
                                 fontFamily = satoshiMedium
                             )
                         },
                         leadingIcon = {
-                            Icon(
-                                Icons.Default.Search,
-                                null,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Icon(Icons.Default.Search, null, modifier = Modifier.size(20.dp))
                         },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        "Clear",
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                    Icon(Icons.Default.Close, "Clear", modifier = Modifier.size(20.dp))
                                 }
                             }
                         },
@@ -229,7 +217,8 @@ class MyVoucherScreen : Screen {
                     shadowElevation = 8.dp
                 ) {
                     val vouchers = screenModel.voucherCache[selectedId ?: 0]
-                    val isLoading = screenModel.loadingVouchers[selectedId ?: 0] ?: false
+                    val isLoadingVouchers = screenModel.loadingVouchers[selectedId ?: 0] ?: false
+                    val voucherError = screenModel.voucherErrorCache[selectedId ?: 0]
                     val vehicleAktif = screenModel.vehicleList.find { it.idKendaraan == selectedId }
 
                     Column(modifier = Modifier.fillMaxSize()) {
@@ -241,29 +230,48 @@ class MyVoucherScreen : Screen {
                                 .align(Alignment.CenterHorizontally)
                         )
 
-                        if (isLoading) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(color = redPrimer)
+                        when {
+                            screenModel.isLoadingVehicles -> {
+                                Box(Modifier.fillMaxSize(), Alignment.Center) {
+                                    CircularProgressIndicator(color = redPrimer)
+                                }
                             }
-                        } else if (vouchers.isNullOrEmpty()) {
-                            EmptyVoucherModern(satoshiMedium)
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(24.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                items(vouchers) { voucher ->
-                                    ModernTicketVoucher(
-                                        voucher = voucher,
-                                        isMember = vehicleAktif?.isMembership == 1,
-                                        bold = satoshiBold,
-                                        med = satoshiMedium,
-                                        red = redPrimer
-                                    )
+                            screenModel.vehicleErrorMessage != null -> {
+                                ErrorVoucherMsg(screenModel.vehicleErrorMessage!!, satoshiMedium, satoshiBold, redPrimer) {
+                                    screenModel.fetchVehicles()
+                                }
+                            }
+                            selectedId == null -> {
+                                EmptyVoucherModern(satoshiMedium)
+                            }
+                            isLoadingVouchers -> {
+                                Box(Modifier.fillMaxSize(), Alignment.Center) {
+                                    CircularProgressIndicator(color = redPrimer)
+                                }
+                            }
+                            voucherError != null -> {
+                                ErrorVoucherMsg(voucherError, satoshiMedium, satoshiBold, redPrimer) {
+                                    screenModel.retryFetchVouchers(selectedId!!)
+                                }
+                            }
+                            vouchers.isNullOrEmpty() -> {
+                                EmptyVoucherModern(satoshiMedium)
+                            }
+                            else -> {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(24.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    items(vouchers) { voucher ->
+                                        ModernTicketVoucher(
+                                            voucher = voucher,
+                                            isMember = vehicleAktif?.isMembership == 1,
+                                            bold = satoshiBold,
+                                            med = satoshiMedium,
+                                            red = redPrimer
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -419,6 +427,38 @@ class MyVoucherScreen : Screen {
                 fontSize = 16.sp,
                 color = Color.Gray
             )
+        }
+    }
+
+    @Composable
+    private fun ErrorVoucherMsg(msg: String, med: FontFamily, bold: FontFamily, red: Color, onRetry: () -> Unit) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                Icons.Default.ConfirmationNumber,
+                null,
+                modifier = Modifier.size(64.dp),
+                tint = Color(0xFFE0E0E0)
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                msg,
+                textAlign = TextAlign.Center,
+                fontFamily = med,
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
+            Spacer(Modifier.height(24.dp))
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(containerColor = red),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Coba Lagi", fontFamily = bold, color = Color.White)
+            }
         }
     }
 

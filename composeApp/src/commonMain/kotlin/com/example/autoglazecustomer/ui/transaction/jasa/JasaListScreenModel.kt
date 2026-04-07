@@ -5,10 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.transaction.jasa.LayananItem
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.ProductService
-import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
@@ -37,15 +36,35 @@ class JasaListScreenModel(
 
             try {
                 val servicesDeferred = async { productService.getAllServices(kodeCabang) }
-                val eligibilityDeferred = async { productService.checkMembershipCarwash(idKendaraan) }
+                val eligibilityDeferred =
+                    async { productService.checkMembershipCarwash(idKendaraan) }
 
                 val servicesResponse = servicesDeferred.await()
                 val eligibilityResponse = eligibilityDeferred.await()
 
                 if (servicesResponse.status) {
-                    allServices = servicesResponse.data ?: emptyList()
+                    val data = servicesResponse.data
+                    if (data.isNullOrEmpty()) {
+                        errorMessage = "Belum ada layanan yang tersedia di cabang ini"
+                        allServices = emptyList()
+                    } else {
+                        allServices = data
+                    }
                 } else {
-                    errorMessage = servicesResponse.message.ifEmpty { "Gagal memuat layanan." }
+                    val msg = servicesResponse.message?.trim() ?: ""
+                    if (msg.isBlank() || msg.equals(
+                            "null",
+                            ignoreCase = true
+                        ) || msg.contains("failed", ignoreCase = true) || msg.contains(
+                            "host",
+                            ignoreCase = true
+                        ) || msg.contains("timeout", ignoreCase = true)
+                    ) {
+                        errorMessage =
+                            "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
+                    } else {
+                        errorMessage = msg
+                    }
                 }
 
                 if (eligibilityResponse.status) {
@@ -55,7 +74,14 @@ class JasaListScreenModel(
 
                 updateDisplayedList()
             } catch (e: Exception) {
-                errorMessage = "Terjadi kesalahan jaringan."
+                // JOSJIS: Filter Super Ketat Anti-"null" dari Ktor/Exception
+                val exMsg = e.toUserMessage().trim()
+                if (exMsg.isBlank() || exMsg.contains("null", ignoreCase = true)) {
+                    errorMessage =
+                        "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
+                } else {
+                    errorMessage = exMsg
+                }
             } finally {
                 isLoading = false
             }
@@ -95,5 +121,4 @@ class JasaListScreenModel(
 
         return Pair(originalPrice, finalPrice)
     }
-
 }

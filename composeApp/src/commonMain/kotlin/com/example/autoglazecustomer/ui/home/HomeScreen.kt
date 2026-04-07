@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -141,130 +142,170 @@ class HomeScreen : Screen {
         }
 
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFBFBFB))) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                HeaderSection(
-                    screenModel.userName,
-                    screenModel.userAvatar,
-                    headerGradient,
-                    satoshiBold,
-                    satoshiMedium
-                )
 
-                if (screenModel.sliderList.isNotEmpty()) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth().height(180.dp).offset(y = (-35).dp)
-                    ) {
-                        items(screenModel.sliderList) { slider ->
-                            SliderItemUI(slider.gambar)
-                        }
+            when {
+                screenModel.isLoading && screenModel.sliderList.isEmpty() -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = redPrimer)
                     }
-                } else {
-                    Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                Text(
-                    text = "Layanan Utama",
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    fontSize = 17.sp,
-                    fontFamily = satoshiBold,
-                    color = Color.Black
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    HomeMenuItem(
-                        Res.drawable.ic_home_service,
-                        "Home Service",
-                        satoshiMedium,
-                        Modifier.weight(1f)
+                screenModel.errorMessage != null && screenModel.sliderList.isEmpty() -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        showHomeServiceDialog = true
+                        Icon(
+                            Icons.Default.BrokenImage,
+                            contentDescription = null,
+                            modifier = Modifier.size(72.dp),
+                            tint = Color(0xFFE0E0E0)
+                        )
+                        Text(
+                            text = screenModel.errorMessage!!,
+                            color = Color.Gray,
+                            fontFamily = satoshiMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
+                        )
+                        Button(
+                            onClick = { screenModel.loadAllHomeData() },
+                            colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
+                        }
                     }
+                }
 
-                    HomeMenuItem(
-                        Res.drawable.ic_home_layanan,
-                        "Transaksi",
-                        satoshiMedium,
-                        Modifier.weight(1f)
+                else -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
                     ) {
-                        tabNavigator.current = TransactionTab()
-                    }
+                        HeaderSection(
+                            screenModel.userName,
+                            screenModel.userAvatar,
+                            headerGradient,
+                            satoshiBold,
+                            satoshiMedium
+                        )
 
-                    HomeMenuItem(
-                        Res.drawable.ic_home_location,
-                        "Lokasi Cabang",
-                        satoshiMedium,
-                        Modifier.weight(1f)
-                    ) {
-                        if (permissionHandler.isPermissionGranted()) {
-                            scope.launch {
-                                screenModel.isCabangLoading = true
-                                showLocationDialog = true
-                                val location = locationService.getCurrentLocation()
-                                if (location != null) {
-                                    screenModel.fetchClosestCabang(location.latitude, location.longitude)
-                                } else {
-                                    screenModel.isCabangLoading = false
-                                    screenModel.cabangErrorMessage = "Gagal mengambil GPS."
+                        if (screenModel.sliderList.isNotEmpty()) {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 20.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.fillMaxWidth().height(180.dp).offset(y = (-35).dp)
+                            ) {
+                                items(screenModel.sliderList) { slider ->
+                                    SliderItemUI(slider.gambar)
                                 }
                             }
                         } else {
-                            permissionHandler.askPermission()
+                            Spacer(modifier = Modifier.height(10.dp))
                         }
-                    }
-                }
 
-                SectionHeader("Mobil Saya", satoshiBold)
-                if (screenModel.vehicleList.isEmpty() && !screenModel.isLoading) {
-                    EmptyState("Belum ada kendaraan terdaftar", satoshiMedium)
-                } else {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(screenModel.vehicleList) { vehicle ->
-                            VehicleItem(vehicle, satoshiBold, satoshiMedium)
+                        Text(
+                            text = "Layanan Utama",
+                            modifier = Modifier.padding(horizontal = 24.dp),
+                            fontSize = 17.sp,
+                            fontFamily = satoshiBold,
+                            color = Color.Black
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            HomeMenuItem(
+                                Res.drawable.ic_home_service,
+                                "Home Service",
+                                satoshiMedium,
+                                Modifier.weight(1f)
+                            ) {
+                                showHomeServiceDialog = true
+                            }
+
+                            HomeMenuItem(
+                                Res.drawable.ic_home_layanan,
+                                "Transaksi",
+                                satoshiMedium,
+                                Modifier.weight(1f)
+                            ) {
+                                tabNavigator.current = TransactionTab()
+                            }
+
+                            HomeMenuItem(
+                                Res.drawable.ic_home_location,
+                                "Lokasi Cabang",
+                                satoshiMedium,
+                                Modifier.weight(1f)
+                            ) {
+                                if (permissionHandler.isPermissionGranted()) {
+                                    scope.launch {
+                                        screenModel.isCabangLoading = true
+                                        showLocationDialog = true
+                                        val location = locationService.getCurrentLocation()
+                                        if (location != null) {
+                                            screenModel.fetchClosestCabang(location.latitude, location.longitude)
+                                        } else {
+                                            screenModel.isCabangLoading = false
+                                            screenModel.cabangErrorMessage = "Gagal mengambil GPS."
+                                        }
+                                    }
+                                } else {
+                                    permissionHandler.askPermission()
+                                }
+                            }
                         }
-                    }
-                }
 
-                SectionHeader("Promo Berlangsung", satoshiBold)
-                if (screenModel.promoList.isEmpty() && !screenModel.isLoading) {
-                    EmptyState("Belum ada promo saat ini", satoshiMedium)
-                } else {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(screenModel.promoList) { promo ->
-                            PromoItem(promo, satoshiBold, satoshiMedium)
+                        SectionHeader("Mobil Saya", satoshiBold)
+                        if (screenModel.vehicleList.isEmpty() && !screenModel.isLoading) {
+                            EmptyState("Belum ada kendaraan terdaftar", satoshiMedium)
+                        } else {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 24.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(screenModel.vehicleList) { vehicle ->
+                                    VehicleItem(vehicle, satoshiBold, satoshiMedium)
+                                }
+                            }
                         }
-                    }
-                }
 
-                SectionHeader("Berita Terbaru", satoshiBold)
-                if (screenModel.beritaList.isEmpty() && !screenModel.isLoading) {
-                    EmptyState("Belum ada berita terbaru", satoshiMedium)
-                    Spacer(modifier = Modifier.height(100.dp))
-                } else {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(bottom = 100.dp)
-                    ) {
-                        items(screenModel.beritaList) { berita ->
-                            BeritaItemUI(berita, screenModel, satoshiBold, satoshiMedium) {
-                                selectedBerita = berita
+                        SectionHeader("Promo Berlangsung", satoshiBold)
+                        if (screenModel.promoList.isEmpty() && !screenModel.isLoading) {
+                            EmptyState("Belum ada promo saat ini", satoshiMedium)
+                        } else {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 24.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(screenModel.promoList) { promo ->
+                                    PromoItem(promo, satoshiBold, satoshiMedium)
+                                }
+                            }
+                        }
+
+                        SectionHeader("Berita Terbaru", satoshiBold)
+                        if (screenModel.beritaList.isEmpty() && !screenModel.isLoading) {
+                            EmptyState("Belum ada berita terbaru", satoshiMedium)
+                            Spacer(modifier = Modifier.height(100.dp))
+                        } else {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 24.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.padding(bottom = 100.dp)
+                            ) {
+                                items(screenModel.beritaList) { berita ->
+                                    BeritaItemUI(berita, screenModel, satoshiBold, satoshiMedium) {
+                                        selectedBerita = berita
+                                    }
+                                }
                             }
                         }
                     }
@@ -306,16 +347,36 @@ class HomeScreen : Screen {
                             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                                 CircularProgressIndicator(color = redPrimer)
                                 Spacer(Modifier.height(12.dp))
-                                Text("Melacak lokasi Anda...", fontFamily = satoshiMedium, fontSize = 14.sp, color = Color.Gray)
+                                Text("Melacak lokasi anda...", fontFamily = satoshiMedium, fontSize = 14.sp, color = Color.Gray)
                             }
                         }
+
                         screenModel.cabangErrorMessage != null -> {
-                            Text(screenModel.cabangErrorMessage!!, fontFamily = satoshiMedium, color = redPrimer)
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    Icons.Default.CloudOff,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(56.dp),
+                                    tint = Color(0xFFE0E0E0)
+                                )
+                                Spacer(Modifier.height(16.dp))
+                                Text(
+                                    text = screenModel.cabangErrorMessage!!,
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 14.sp,
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
+
                         screenModel.closestCabang != null -> {
                             val cabang = screenModel.closestCabang!!
                             Column {
-                                Text("Berdasarkan lokasi Anda saat ini:", fontFamily = satoshiMedium, fontSize = 14.sp, color = Color.Gray)
+                                Text("Berdasarkan lokasi anda saat ini:", fontFamily = satoshiMedium, fontSize = 14.sp, color = Color.Gray)
                                 Spacer(Modifier.height(12.dp))
                                 Surface(
                                     shape = RoundedCornerShape(12.dp),
@@ -342,7 +403,13 @@ class HomeScreen : Screen {
                     }
                 },
                 confirmButton = {
-                    Button(onClick = { showLocationDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = redPrimer)) {
+                    Button(
+                        onClick = {
+                            showLocationDialog = false
+                            screenModel.cabangErrorMessage = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+                    ) {
                         Text("Tutup", fontFamily = satoshiBold, color = Color.White)
                     }
                 },

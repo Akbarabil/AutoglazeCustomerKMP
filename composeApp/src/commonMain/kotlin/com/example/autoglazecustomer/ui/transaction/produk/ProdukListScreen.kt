@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -54,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -62,7 +64,6 @@ import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -79,6 +80,7 @@ import com.example.autoglazecustomer.ui.transaction.components.FloatingCheckoutB
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
+import org.koin.core.parameter.parametersOf
 
 class ProdukListScreen(
     private val cabangJson: String,
@@ -91,7 +93,12 @@ class ProdukListScreen(
         val navigator = LocalNavigator.currentOrThrow
         val cabang = remember { Json.decodeFromString<CabangData>(cabangJson) }
         val vehicle = remember { Json.decodeFromString<VehicleWithStatus>(vehicleJson) }
-        val screenModel = getScreenModel<ProdukListScreenModel>()
+        val screenModel = getScreenModel<ProdukListScreenModel> {
+            parametersOf(
+                cabang.kodeCabang,
+                vehicle.membershipStatusInt
+            )
+        }
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
@@ -209,24 +216,46 @@ class ProdukListScreen(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     } else if (screenModel.errorMessage != null) {
+                        val isDataNotFound = screenModel.errorMessage?.contains("Belum ada produk", ignoreCase = true) == true ||
+                                screenModel.errorMessage?.contains("tidak ditemukan", ignoreCase = true) == true
+
+                        val safeErrorMsg = screenModel.errorMessage!!.let { msg ->
+                            if (msg.trim().equals("null", ignoreCase = true) || msg.isBlank()) {
+                                "Koneksi jaringan terputus. Silakan coba lagi. (Err: Offline)"
+                            } else {
+                                msg
+                            }
+                        }
+
                         Column(
                             modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                Icons.Default.Search,
+                                imageVector = if (isDataNotFound) Icons.Default.Search else Icons.Default.ShoppingCart,
                                 contentDescription = null,
                                 tint = Color.LightGray,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = screenModel.errorMessage!!,
+                                text = safeErrorMsg,
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
                                 fontSize = 16.sp,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = Center
                             )
+
+                            if (!isDataNotFound) {
+                                Spacer(modifier = Modifier.height(24.dp))
+                                Button(
+                                    onClick = { screenModel.fetchData() },
+                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
+                                }
+                            }
                         }
                     } else if (screenModel.displayedProducts.isEmpty()) {
                         Column(
@@ -252,7 +281,7 @@ class ProdukListScreen(
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
                                 fontSize = 16.sp,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = Center
                             )
                         }
                     } else {

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage // JOSJIS: Tambahkan import ini
 import com.example.autoglazecustomer.data.network.AuthService
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsText
@@ -65,7 +66,7 @@ class EditProfileScreenModel(private val authService: AuthService) : ScreenModel
                     TokenManager.saveUserName(nama)
                     showSuccessDialog = true
                 } else {
-                    errorMessage = response.message
+                    errorMessage = response.message ?: "Gagal memperbarui profil."
                 }
             } catch (e: ClientRequestException) {
                 try {
@@ -77,12 +78,12 @@ class EditProfileScreenModel(private val authService: AuthService) : ScreenModel
                         ?.jsonArray?.firstOrNull()?.jsonPrimitive?.content
 
                     errorMessage = firstError ?: errorObj["message"]?.jsonPrimitive?.content
-                            ?: "Data tidak valid"
+                            ?: "Data yang Anda masukkan tidak valid."
                 } catch (parseEx: Exception) {
-                    errorMessage = "Gagal memproses data server. Silakan cek koneksi Anda."
+                    errorMessage = e.toUserMessage()
                 }
             } catch (e: Exception) {
-                errorMessage = "Gagal terhubung ke server. Pastikan internet Anda stabil."
+                errorMessage = e.toUserMessage()
             } finally {
                 isLoading = false
             }

@@ -5,10 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukItem
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.ProductService
-import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.launch
 
 class ProdukListScreenModel(
@@ -34,12 +33,22 @@ class ProdukListScreenModel(
                 val response = productService.getProduk(kodeCabang)
                 if (response.status == true) {
                     allProducts = response.data ?: emptyList()
-                    updateDisplayedList()
+
+                    if (allProducts.isEmpty()) {
+                        errorMessage = "Belum ada produk yang tersedia di cabang ini"
+                    } else {
+                        updateDisplayedList()
+                    }
                 } else {
-                    errorMessage = response.message ?: "Gagal memuat produk."
+                    val msg = response.message?.lowercase() ?: ""
+                    if (msg == "null" || msg.contains("failed") || msg.contains("host") || msg.contains("timeout")) {
+                        errorMessage = "Koneksi internet terputus. Mohon periksa koneksi jaringan anda. (Err: Offline)"
+                    } else {
+                        errorMessage = response.message?.takeIf { it != "null" } ?: "Gagal memuat produk."
+                    }
                 }
             } catch (e: Exception) {
-                errorMessage = "Terjadi kesalahan koneksi."
+                errorMessage = e.toUserMessage()
             } finally {
                 isLoading = false
             }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItemId
 import com.example.autoglazecustomer.data.network.TransactionService
@@ -20,22 +21,31 @@ class MyVoucherScreenModel(
 
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var isLoadingVehicles by mutableStateOf(false)
+    var vehicleErrorMessage by mutableStateOf<String?>(null)
 
     var expandedStates = mutableStateMapOf<Int, Boolean>()
 
     var voucherCache = mutableStateMapOf<Int, List<VoucherItemId>>()
     var loadingVouchers = mutableStateMapOf<Int, Boolean>()
+    var voucherErrorCache = mutableStateMapOf<Int, String?>()
 
     fun fetchVehicles() {
         screenModelScope.launch {
             isLoadingVehicles = true
+            vehicleErrorMessage = null
             try {
                 val token = "Bearer ${TokenManager.getToken()}"
                 val res = vehicleService.getVehicles(token)
-                if (res.success) vehicleList = res.data
+                if (res.success) {
+                    vehicleList = res.data
+                } else {
+                    vehicleErrorMessage = "Gagal memuat data kendaraan."
+                }
             } catch (e: Exception) {
+                vehicleErrorMessage = e.toUserMessage()
+            } finally {
+                isLoadingVehicles = false
             }
-            isLoadingVehicles = false
         }
     }
 
@@ -43,21 +53,27 @@ class MyVoucherScreenModel(
         val isCurrentlyExpanded = expandedStates[idKendaraan] ?: false
         expandedStates[idKendaraan] = !isCurrentlyExpanded
 
-        if (!isCurrentlyExpanded && !voucherCache.containsKey(idKendaraan)) {
+        if (!isCurrentlyExpanded && (!voucherCache.containsKey(idKendaraan) || voucherErrorCache[idKendaraan] != null)) {
             fetchVouchers(idKendaraan)
         }
+    }
+
+    fun retryFetchVouchers(idKendaraan: Int) {
+        fetchVouchers(idKendaraan)
     }
 
     private fun fetchVouchers(idKendaraan: Int) {
         screenModelScope.launch {
             loadingVouchers[idKendaraan] = true
+            voucherErrorCache[idKendaraan] = null
             try {
                 val res = transactionService.getVouchersByVehicle(idKendaraan)
                 voucherCache[idKendaraan] = res.data ?: emptyList()
             } catch (e: Exception) {
-                voucherCache[idKendaraan] = emptyList()
+                voucherErrorCache[idKendaraan] = e.toUserMessage()
+            } finally {
+                loadingVouchers[idKendaraan] = false
             }
-            loadingVouchers[idKendaraan] = false
         }
     }
 }

@@ -6,7 +6,10 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
+import com.example.autoglazecustomer.data.model.LoginResponse
 import com.example.autoglazecustomer.data.network.AuthService
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
 
@@ -68,32 +71,26 @@ class LoginScreenModel(
 
                         onSuccess(user.name)
                     } else {
-                        errorMessage = "Data login tidak lengkap"
+                        errorMessage = "Data login tidak lengkap dari server."
                     }
                 } else {
-                    errorMessage = response.message ?: "Login gagal, silakan cek kembali data Anda"
+                    errorMessage = response.message ?: "Login gagal, silakan cek kembali data anda"
                 }
-            } catch (e: io.ktor.client.plugins.ResponseException) {
+            } catch (e: ClientRequestException) {
                 try {
                     val errorBody = e.response.bodyAsText()
                     val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-                    val errorResponse =
-                        json.decodeFromString<com.example.autoglazecustomer.data.model.LoginResponse>(
-                            errorBody
-                        )
-
+                    val errorResponse = json.decodeFromString<LoginResponse>(errorBody)
                     errorMessage = errorResponse.message ?: "Email atau Password salah"
                 } catch (parseException: Exception) {
-                    errorMessage = when (e.response.status.value) {
-                        401 -> "Email atau Password salah"
-                        404 -> "Akun tidak ditemukan"
-                        500 -> "Server sedang bermasalah"
-                        else -> "Terjadi kesalahan sistem (${e.response.status.value})"
+                    errorMessage = if (e.response.status.value == 401) {
+                        "Email atau Password salah"
+                    } else {
+                        "Gagal masuk. Cek kembali data anda."
                     }
                 }
             } catch (e: Exception) {
-
-                errorMessage = "Gagal terhubung ke server. Pastikan internet Anda aktif."
+                errorMessage = e.toUserMessage()
             } finally {
                 isLoading = false
             }

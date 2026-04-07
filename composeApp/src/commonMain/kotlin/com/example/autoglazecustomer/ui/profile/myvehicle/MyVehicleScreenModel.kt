@@ -6,8 +6,8 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.VehicleData
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.launch
 
@@ -32,7 +32,7 @@ class MyVehicleScreenModel(private val vehicleService: VehicleService) : ScreenM
                     errorMessage = "Gagal memuat data kendaraan."
                 }
             } catch (e: Exception) {
-                errorMessage = "Terjadi kesalahan jaringan."
+                errorMessage = e.toUserMessage()
             } finally {
                 isLoading = false
             }

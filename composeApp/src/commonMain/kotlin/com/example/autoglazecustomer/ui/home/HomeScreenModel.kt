@@ -6,12 +6,12 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.BeritaItem
 import com.example.autoglazecustomer.data.model.SliderItem
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItem
 import com.example.autoglazecustomer.data.model.transaction.CabangData
-// IMPORT 5 SERVICE JOSJIS
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.CabangService
 import com.example.autoglazecustomer.data.network.HomeService
@@ -54,7 +54,7 @@ class HomeScreenModel(
             try {
                 val token = TokenManager.getToken()
                 if (token.isNullOrBlank()) {
-                    errorMessage = "Sesi berakhir, silakan login kembali."
+                    errorMessage = "Sesi anda telah berakhir. Silakan masuk kembali ke aplikasi."
                     return@launch
                 }
 
@@ -72,26 +72,26 @@ class HomeScreenModel(
                         userAvatar = res.data?.photo
                         res.data?.nama?.let { TokenManager.saveUserName(it) }
                     }
-                }
+                }.onFailure { throw it }
 
                 sliderJob.await().onSuccess { res ->
                     if (res.status == "ok") sliderList = res.data
-                }
+                }.onFailure { throw it }
 
                 vehicleJob.await().onSuccess { res ->
                     if (res.success) vehicleList = res.data
-                }
+                }.onFailure { throw it }
 
                 beritaJob.await().onSuccess { res ->
                     if (res.statusCode == 200) beritaList = res.data
-                }
+                }.onFailure { throw it }
 
                 voucherJob.await().onSuccess { res ->
                     if (res.status == true) promoList = res.data ?: emptyList()
-                }
+                }.onFailure { throw it }
 
             } catch (e: Exception) {
-                errorMessage = "Gagal memuat data terbaru."
+                errorMessage = e.toUserMessage()
             } finally {
                 isLoading = false
             }
@@ -103,7 +103,6 @@ class HomeScreenModel(
             isCabangLoading = true
             cabangErrorMessage = null
             try {
-                // JOSJIS: Panggil dari cabangService
                 val response = cabangService.getCabangTerdekat(lon, lat)
 
                 if (response.status && response.data.isNotEmpty()) {
@@ -112,7 +111,7 @@ class HomeScreenModel(
                     cabangErrorMessage = response.message ?: "Tidak ada cabang terdekat ditemukan"
                 }
             } catch (e: Exception) {
-                cabangErrorMessage = "Gagal memuat cabang: ${e.message}"
+                cabangErrorMessage = e.toUserMessage()
             } finally {
                 isCabangLoading = false
             }

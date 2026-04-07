@@ -61,12 +61,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -78,12 +78,12 @@ import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.membership.MembershipItem
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.transaction.checkout.CheckoutScreen
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.Font
+import org.koin.core.parameter.parametersOf
 
 
 class MembershipListScreen(
@@ -97,7 +97,9 @@ class MembershipListScreen(
         val navigator = LocalNavigator.currentOrThrow
         val cabang = remember { Json.decodeFromString<CabangData>(cabangJson) }
         val vehicle = remember { Json.decodeFromString<VehicleWithStatus>(vehicleJson) }
-        val screenModel = getScreenModel<MembershipListScreenModel>()
+        val screenModel = getScreenModel<MembershipListScreenModel> {
+            parametersOf(cabang.kodeCabang)
+        }
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
 
@@ -214,24 +216,42 @@ class MembershipListScreen(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     } else if (screenModel.errorMessage != null) {
+                        val isDataNotFound = screenModel.errorMessage?.contains("tidak ditemukan", ignoreCase = true) == true
+
+                        val safeErrorMsg = screenModel.errorMessage!!
+                            .replace("null", "Koneksi terputus", ignoreCase = true)
+                            .ifBlank { "Gagal memuat data" }
+
                         Column(
                             modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                Icons.Default.Search,
+                                imageVector = if (isDataNotFound) Icons.Default.Search else Icons.Default.WorkspacePremium,
                                 contentDescription = null,
                                 tint = Color.LightGray,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
+
                             Text(
-                                text = screenModel.errorMessage!!,
+                                text = if (isDataNotFound) "Belum ada paket membership yang tersedia untuk cabang ini" else safeErrorMsg,
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
-                                fontSize = 16.sp,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                fontSize = 15.sp,
+                                textAlign = Center
                             )
+
+                            if (!isDataNotFound) {
+                                Spacer(modifier = Modifier.height(24.dp))
+                                Button(
+                                    onClick = { screenModel.fetchData() },
+                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
+                                }
+                            }
                         }
                     } else if (screenModel.displayedMemberships.isEmpty()) {
                         Column(
@@ -257,7 +277,7 @@ class MembershipListScreen(
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
                                 fontSize = 16.sp,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = Center
                             )
                         }
                     } else {

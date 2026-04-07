@@ -5,20 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.example.autoglazecustomer.data.model.ChekKendaraanResponse
+import com.example.autoglazecustomer.data.local.toUserMessage // JOSJIS: Import ini wajib!
 import com.example.autoglazecustomer.data.model.GetCekKendaraan
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.VehicleService
-import io.ktor.client.statement.bodyAsText
+import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 
 class CheckVehicleScreenModel(private val vehicleService: VehicleService) : ScreenModel {
 
     var nopol by mutableStateOf("")
     var isLoading by mutableStateOf(false)
     var vehicleData by mutableStateOf<GetCekKendaraan?>(null)
-
 
     var showNotFoundDialog by mutableStateOf(false)
     var showErrorDialog by mutableStateOf(false)
@@ -38,31 +35,13 @@ class CheckVehicleScreenModel(private val vehicleService: VehicleService) : Scre
                 } else {
                     showNotFoundDialog = true
                 }
-            } catch (e: io.ktor.client.plugins.ResponseException) {
-                val errorBody = e.response.bodyAsText()
-                try {
-                    val jsonResponse =
-                        Json { ignoreUnknownKeys = true }.decodeFromString<ChekKendaraanResponse>(
-                            errorBody
-                        )
-                    errorMessage = jsonResponse.message ?: "Data tidak ditemukan."
-                } catch (parseException: Exception) {
-                    errorMessage = when (e.response.status.value) {
-                        404 -> "Nomor Polisi tidak ditemukan."
-                        500 -> "Server sedang bermasalah, coba lagi nanti."
-                        else -> "Terjadi kesalahan pada server."
-                    }
-                }
-
-                if (errorMessage.contains("tidak ditemukan", ignoreCase = true)) {
+            } catch (e: Exception) {
+                if (e is ClientRequestException && e.response.status.value == 404) {
                     showNotFoundDialog = true
                 } else {
+                    errorMessage = e.toUserMessage()
                     showErrorDialog = true
                 }
-
-            } catch (e: Exception) {
-                errorMessage = "Koneksi gagal. Pastikan internetmu aktif."
-                showErrorDialog = true
             } finally {
                 isLoading = false
             }
@@ -73,5 +52,6 @@ class CheckVehicleScreenModel(private val vehicleService: VehicleService) : Scre
         vehicleData = null
         showNotFoundDialog = false
         showErrorDialog = false
+        errorMessage = ""
     }
 }

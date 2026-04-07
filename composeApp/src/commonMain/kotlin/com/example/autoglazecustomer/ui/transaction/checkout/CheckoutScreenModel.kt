@@ -1,4 +1,3 @@
-// CheckoutScreenModel.kt
 package com.example.autoglazecustomer.ui.transaction.checkout
 
 import androidx.compose.runtime.getValue
@@ -7,6 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.manager.CartItem
 import com.example.autoglazecustomer.data.manager.ItemCategory
 import com.example.autoglazecustomer.data.manager.VoucherManager
@@ -14,11 +14,8 @@ import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutDetailPayload
 import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutPayload
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlin.math.roundToLong
 
 class CheckoutScreenModel(
@@ -43,9 +40,6 @@ class CheckoutScreenModel(
         val isUsingPpn = cabang.isUsingPpn == 1
 
         val selectedVouchers = VoucherManager.selectedVouchers.value
-        println("🛒 [DEBUG 3 - CHECKOUT] calculateTotals dipanggil!")
-        println("🛒 [DEBUG 3] Total Bayar Asli: $totalBayarAsli")
-        println("🛒 [DEBUG 3] Jumlah Voucher yang terbaca di Checkout: ${selectedVouchers.size}")
         val hasMembership = vehicle.vehicle.isMembership == 1
 
         var tempTotalDiskon = 0.0
@@ -55,7 +49,6 @@ class CheckoutScreenModel(
             val persen = if (hasMembership) voucher.presentaseMember else voucher.presentaseNonMember
 
             val idProdRaw = voucher.idProduk?.toString()?.trim() ?: ""
-            println("🛒 [DEBUG 3] Memproses Voucher: ${voucher.namaVoucher} | ID_PRODUK: '$idProdRaw'")
             val isSpecificProduct = idProdRaw.isNotEmpty() && idProdRaw != "0" && idProdRaw != "null"
 
             val targetedSubtotal = if (isSpecificProduct) {
@@ -70,7 +63,6 @@ class CheckoutScreenModel(
             } else {
                 totalBayarAsli.toDouble()
             }
-             println("🛒 [DEBUG 3] Targeted Subtotal untuk voucher ini: $targetedSubtotal")
 
             var currentDiscount = if (persen > 0) {
                 targetedSubtotal * (persen / 100.0)
@@ -86,7 +78,6 @@ class CheckoutScreenModel(
         }
 
         diskonFinal = tempTotalDiskon
-        println("🛒 [DEBUG 3] TOTAL DISKON FINAL: $diskonFinal")
 
         if (isUsingPpn) {
             val dpp = totalBayarAsli / (1.0 + taxRate)
@@ -151,22 +142,16 @@ class CheckoutScreenModel(
                     detail = detailPayload
                 )
 
-                try {
-                    val jsonString = Json { prettyPrint = true }.encodeToString(payload)
-                    println("🚀 ====== PAYLOAD CHECKOUT DENGAN VOUCHER ======\n$jsonString\n==============================")
-                } catch (e: Exception) {
-                }
-
                 val response = transactionService.processCheckout(payload, isMembership)
                 if (response.status) {
                     successKodePenjualan = response.kodePenjualan ?: "Sukses"
                     isSuccess = true
                 } else {
-                    errorMessage = response.message
+                    errorMessage = response.message ?: "Gagal memproses. Silakan coba lagi."
                 }
 
             } catch (e: Exception) {
-                errorMessage = "Gagal memproses pembayaran: ${e.message}"
+                errorMessage = e.toUserMessage()
             } finally {
                 isLoading = false
             }

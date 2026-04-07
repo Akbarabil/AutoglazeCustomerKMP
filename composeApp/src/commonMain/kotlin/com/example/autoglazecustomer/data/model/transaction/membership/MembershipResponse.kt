@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MembershipResponse(
     @SerialName("status") val status: Boolean? = false,
+    @SerialName("message") val message: String? = null,
     @SerialName("data") val data: List<MembershipItem>? = emptyList()
 )
 

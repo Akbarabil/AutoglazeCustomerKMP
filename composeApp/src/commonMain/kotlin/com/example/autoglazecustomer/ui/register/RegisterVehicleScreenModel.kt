@@ -5,9 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.DaftarData
 import com.example.autoglazecustomer.data.model.register.RegisterVehicleState
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.launch
 
@@ -25,14 +25,21 @@ class RegisterVehicleScreenModel(
                 val merek = vehicleService.getMerek()
                 val warna = vehicleService.getWarna()
 
-                state = state.copy(
-                    listMerek = merek,
-                    listWarna = warna,
-                    isLoadingMerek = false
-                )
+                if (merek.isEmpty() || warna.isEmpty()) {
+                    state = state.copy(
+                        errorMessage = "Gagal memuat Merk Mobil. Koneksi internet terputus (Err: Offline)",
+                        isLoadingMerek = false
+                    )
+                } else {
+                    state = state.copy(
+                        listMerek = merek,
+                        listWarna = warna,
+                        isLoadingMerek = false
+                    )
+                }
             } catch (e: Exception) {
                 state = state.copy(
-                    errorMessage = "Gagal memuat data awal",
+                    errorMessage = e.toUserMessage(),
                     isLoadingMerek = false
                 )
             }
@@ -55,13 +62,21 @@ class RegisterVehicleScreenModel(
             screenModelScope.launch {
                 try {
                     val tipe = vehicleService.getTipe(it.idMerek)
-                    state = state.copy(
-                        listTipe = tipe,
-                        isLoadingTipe = false
-                    )
+
+                    if (tipe.isEmpty()) {
+                        state = state.copy(
+                            errorMessage = "Gagal memuat Tipe Mobil. Koneksi internet terputus (Err: Offline)",
+                            isLoadingTipe = false
+                        )
+                    } else {
+                        state = state.copy(
+                            listTipe = tipe,
+                            isLoadingTipe = false
+                        )
+                    }
                 } catch (e: Exception) {
                     state = state.copy(
-                        errorMessage = "Gagal memuat tipe mobil",
+                        errorMessage = e.toUserMessage(),
                         isLoadingTipe = false
                     )
                 }
@@ -158,7 +173,7 @@ class RegisterVehicleScreenModel(
                     )
                 }
             } catch (e: Exception) {
-                state = state.copy(errorMessage = "Terjadi gangguan koneksi")
+                state = state.copy(errorMessage = e.toUserMessage())
             } finally {
                 state = state.copy(isLoading = false)
             }

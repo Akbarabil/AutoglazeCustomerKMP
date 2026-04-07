@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.ProfileData
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.TransactionService
@@ -38,7 +39,6 @@ class ProfileScreenModel(
                 return@launch
             }
 
-
             val formattedToken = if (tokenFromStorage.startsWith("Bearer ")) {
                 tokenFromStorage
             } else {
@@ -46,13 +46,10 @@ class ProfileScreenModel(
             }
 
             try {
-
                 val profileResponse = authService.getProfileData(formattedToken)
-
 
                 if (profileResponse.success) {
                     profileData = profileResponse.data
-
 
                     profileResponse.data?.nama?.let { namaBaru ->
                         TokenManager.saveUserName(namaBaru)
@@ -66,13 +63,17 @@ class ProfileScreenModel(
                         }
                     }
                 } else {
-                    errorMessage = "Gagal memuat data profil"
+                    errorMessage = "Gagal memuat data profil. Pastikan sesi anda aktif."
                 }
             } catch (exception: Exception) {
-                errorMessage = "Koneksi bermasalah: ${exception.message}"
+                errorMessage = exception.toUserMessage()
             } finally {
                 isLoading = false
             }
         }
+    }
+
+    fun clearError() {
+        errorMessage = null
     }
 }

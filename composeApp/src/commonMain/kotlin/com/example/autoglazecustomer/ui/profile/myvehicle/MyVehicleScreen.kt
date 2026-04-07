@@ -27,6 +27,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -48,20 +51,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.satoshi_bold
 import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import autoglazecustomer.composeapp.generated.resources.sedan
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.model.VehicleData
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.profile.myvehicle.addvehicle.AddVehicleScreen
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
@@ -131,14 +133,46 @@ class MyVehicleScreen : Screen {
             Column(modifier = Modifier.padding(padding).fillMaxSize()) {
 
                 Box(modifier = Modifier.weight(1f)) {
-                    if (screenModel.isLoading) {
 
+                    if (screenModel.isLoading) {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
                             items(3) {
                                 ShimmerVehicleItem(brush)
                             }
                         }
-                    } else if (screenModel.vehicleList.isEmpty()) {
+                    } else if (screenModel.errorMessage != null) {
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Default.DirectionsCar,
+                                contentDescription = null,
+                                modifier = Modifier.size(72.dp),
+                                tint = Color(0xFFE0E0E0)
+                            )
+                            Text(
+                                text = screenModel.errorMessage!!,
+                                color = Color.Gray,
+                                fontFamily = satoshiMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
+                            )
+                            Button(
+                                onClick = { screenModel.fetchVehicles() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(
+                                        0xFFD53B1E
+                                    )
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
+                            }
+                        }
+                    }
+                    else if (screenModel.vehicleList.isEmpty()) {
                         Column(
                             modifier = Modifier.align(Alignment.Center),
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -150,7 +184,8 @@ class MyVehicleScreen : Screen {
                                 fontSize = 16.sp
                             )
                         }
-                    } else {
+                    }
+                    else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 16.dp)
@@ -161,7 +196,6 @@ class MyVehicleScreen : Screen {
                         }
                     }
                 }
-
 
                 Surface(
                     modifier = Modifier

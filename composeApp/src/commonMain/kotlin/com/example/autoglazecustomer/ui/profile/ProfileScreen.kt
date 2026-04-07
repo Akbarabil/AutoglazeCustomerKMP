@@ -1,11 +1,16 @@
 package com.example.autoglazecustomer.ui.profile
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -110,6 +115,13 @@ class ProfileScreen : Screen {
 
         LaunchedEffect(Unit) {
             screenModel.fetchProfileAndPoints()
+        }
+
+        LaunchedEffect(screenModel.errorMessage) {
+            if (screenModel.errorMessage != null) {
+                kotlinx.coroutines.delay(4000)
+                screenModel.clearError()
+            }
         }
 
         KmpBackHandler {
@@ -267,6 +279,29 @@ class ProfileScreen : Screen {
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+
+            AnimatedVisibility(
+                visible = screenModel.errorMessage != null,
+                enter = slideInVertically { -it } + fadeIn(),
+                exit = slideOutVertically { -it } + fadeOut(),
+                modifier = Modifier.align(Alignment.TopCenter)
+            ) {
+                screenModel.errorMessage?.let { msg ->
+                    androidx.compose.material3.Snackbar(
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                        containerColor = redPrimer,
+                        action = {
+                            TextButton(onClick = { screenModel.clearError() }) {
+                                Text("OK", color = Color.White, fontFamily = satoshiBold)
+                            }
+                        }
+                    ) {
+                        Text(msg, color = Color.White, fontFamily = satoshiMedium)
+                    }
                 }
             }
         }

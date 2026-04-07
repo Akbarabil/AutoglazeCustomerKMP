@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.WarnaKendaraanResponse
 import com.example.autoglazecustomer.data.model.addvehicle.AddVehicleState
 import com.example.autoglazecustomer.data.network.AuthService
@@ -21,13 +22,21 @@ class AddVehicleScreenModel(private val vehicleService: VehicleService) : Screen
             try {
                 val merekRes = vehicleService.getMerek()
                 val warnaRes = vehicleService.getWarna()
-                state = state.copy(
-                    listMerek = merekRes,
-                    listWarna = warnaRes,
-                    isLoadingMerek = false
-                )
+
+                if (merekRes.isEmpty() || warnaRes.isEmpty()) {
+                    state = state.copy(
+                        errorMessage = "Gagal memuat Merk Mobil. Koneksi internet terputus (Err: Offline)",
+                        isLoadingMerek = false
+                    )
+                } else {
+                    state = state.copy(
+                        listMerek = merekRes,
+                        listWarna = warnaRes,
+                        isLoadingMerek = false
+                    )
+                }
             } catch (e: Exception) {
-                state = state.copy(errorMessage = "Gagal memuat data awal", isLoadingMerek = false)
+                state = state.copy(errorMessage = e.toUserMessage(), isLoadingMerek = false)
             }
         }
     }
@@ -49,17 +58,24 @@ class AddVehicleScreenModel(private val vehicleService: VehicleService) : Screen
             state = state.copy(isLoadingTipe = true)
             try {
                 val tipeRes = vehicleService.getTipe(idMerek)
-                state = state.copy(listTipe = tipeRes, isLoadingTipe = false)
+
+                if (tipeRes.isEmpty()) {
+                    state = state.copy(
+                        errorMessage = "Gagal memuat Tipe Mobil. Koneksi internet terputus (Err: Offline)",
+                        isLoadingTipe = false
+                    )
+                } else {
+                    state = state.copy(listTipe = tipeRes, isLoadingTipe = false)
+                }
             } catch (e: Exception) {
-                state = state.copy(isLoadingTipe = false)
+                state = state.copy(errorMessage = e.toUserMessage(), isLoadingTipe = false)
             }
         }
     }
 
     fun onTipeSelected(tipeName: String) {
-        val selected = state.listTipe.find { it.namaTipeKendaraan == tipeName }
         state = state.copy(
-            tipeTerpilih = selected,
+            tipeTerpilih = state.listTipe.find { it.namaTipeKendaraan == tipeName },
             tahun = "",
             errorField = null
         )
@@ -112,11 +128,9 @@ class AddVehicleScreenModel(private val vehicleService: VehicleService) : Screen
             try {
                 val token = TokenManager.getToken() ?: ""
 
-
                 val responseNopol = vehicleService.cekNopol(s.nopol)
 
                 if (responseNopol.isSuccessful) {
-
                     val res = vehicleService.addVehicle(
                         token = "Bearer $token",
                         idMerek = s.merekTerpilih!!.idMerek,
@@ -140,7 +154,7 @@ class AddVehicleScreenModel(private val vehicleService: VehicleService) : Screen
                     )
                 }
             } catch (e: Exception) {
-                state = state.copy(errorMessage = "Terjadi gangguan koneksi")
+                state = state.copy(errorMessage = e.toUserMessage())
             } finally {
                 state = state.copy(isLoading = false)
             }

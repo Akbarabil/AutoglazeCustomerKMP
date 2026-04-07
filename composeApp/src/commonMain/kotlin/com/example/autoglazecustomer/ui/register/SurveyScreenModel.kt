@@ -5,11 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.DaftarData
 import com.example.autoglazecustomer.data.model.register.SurveyState
 import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.CabangService
-import com.example.autoglazecustomer.data.network.HomeService
 import kotlinx.coroutines.launch
 
 class SurveyScreenModel(
@@ -24,9 +24,13 @@ class SurveyScreenModel(
         screenModelScope.launch {
             try {
                 val list = cabangService.getAsalTahu()
-                state = state.copy(asalTahuList = list)
+                if (list.isEmpty()) {
+                    state = state.copy(errorMessage = "Gagal memuat data survey. Koneksi internet terputus (Err: Offline)")
+                } else {
+                    state = state.copy(asalTahuList = list)
+                }
             } catch (e: Exception) {
-                state = state.copy(errorMessage = "Gagal memuat data survey")
+                state = state.copy(errorMessage = e.toUserMessage())
             }
         }
     }
@@ -49,20 +53,21 @@ class SurveyScreenModel(
         }
 
         screenModelScope.launch {
-            state = state.copy(isLoading = true)
+            state = state.copy(isLoading = true, errorMessage = null)
             try {
                 val finalData = dataRegistrasi.copy(
                     sumberInfo = state.selectedAsalTahu?.idGeneral.toString()
                 )
+
                 val response = authService.registerCustomer(finalData)
 
                 if (response.success == true) {
                     state = state.copy(showSuccessDialog = true)
                 } else {
-                    state = state.copy(errorMessage = response.message ?: "Pendaftaran gagal")
+                    state = state.copy(errorMessage = response.message ?: "Pendaftaran gagal diproses oleh server.")
                 }
             } catch (e: Exception) {
-                state = state.copy(errorMessage = "Terjadi kesalahan pendaftaran: ${e.message}")
+                state = state.copy(errorMessage = e.toUserMessage())
             } finally {
                 state = state.copy(isLoading = false)
             }

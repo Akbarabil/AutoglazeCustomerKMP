@@ -45,6 +45,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -104,6 +105,13 @@ class RequestPasswordScreen(val email: String, val phone: String) : Screen {
             if (screenModel.isSuccess) {
                 generatedPass = screenModel.generatedPassword
                 showSuccessDialog = true
+            }
+        }
+
+        LaunchedEffect(screenModel.errorMessage) {
+            if (screenModel.errorMessage != null) {
+                delay(4000)
+                screenModel.clearError()
             }
         }
 
@@ -255,7 +263,6 @@ class RequestPasswordScreen(val email: String, val phone: String) : Screen {
                 }
             }
 
-
             AnimatedVisibility(
                 visible = snackbarVisible,
                 enter = slideInVertically { -it } + fadeIn(),
@@ -273,6 +280,29 @@ class RequestPasswordScreen(val email: String, val phone: String) : Screen {
                         color = Color.White,
                         fontFamily = satoshiMedium
                     )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = screenModel.errorMessage != null,
+                enter = slideInVertically { -it } + fadeIn(),
+                exit = slideOutVertically { -it } + fadeOut(),
+                modifier = Modifier.align(Alignment.TopCenter)
+            ) {
+                screenModel.errorMessage?.let { msg ->
+                    Snackbar(
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                        containerColor = redPrimer,
+                        action = {
+                            TextButton(onClick = { screenModel.clearError() }) {
+                                Text("OK", color = Color.White, fontFamily = satoshiBold)
+                            }
+                        }
+                    ) {
+                        Text(msg, color = Color.White, fontFamily = satoshiMedium)
+                    }
                 }
             }
 

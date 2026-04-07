@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.DaftarData
 import com.example.autoglazecustomer.data.model.register.Country
 import com.example.autoglazecustomer.data.model.register.RegisterState
@@ -12,7 +13,6 @@ import com.example.autoglazecustomer.data.network.AuthService
 import kotlinx.coroutines.launch
 
 class RegisterScreenModel(private val authService: AuthService) : ScreenModel {
-
 
     var state by mutableStateOf(RegisterState())
         private set
@@ -58,14 +58,12 @@ class RegisterScreenModel(private val authService: AuthService) : ScreenModel {
         state = state.copy(isPasswordVisible = !state.isPasswordVisible)
     }
 
-
     fun clearError() {
         state = state.copy(errorMessage = null, errorField = null)
     }
 
     fun validateAndCheckEmail(onSuccess: (DaftarData) -> Unit) {
         val s = state
-
 
         val validation = when {
             s.nama.isBlank() -> "nama" to "Nama lengkap tidak boleh kosong"
@@ -89,23 +87,21 @@ class RegisterScreenModel(private val authService: AuthService) : ScreenModel {
         screenModelScope.launch {
             state = state.copy(isLoading = true, errorField = null)
             try {
-
                 val response = authService.cekEmail(s.email)
-
 
                 if (response.isSuccessful) {
                     val fullPhone =
                         if (s.selectedCountry.phoneCode.isEmpty()) s.phone else "+${s.selectedCountry.phoneCode}${s.phone}"
+
                     onSuccess(DaftarData(s.nama, s.email, s.tglLahir, fullPhone, s.password))
                 } else {
-
                     state = state.copy(
                         errorMessage = response.message ?: "Email sudah terdaftar",
                         errorField = "email"
                     )
                 }
             } catch (e: Exception) {
-                state = state.copy(errorMessage = "Gagal menghubungi server: ${e.message}")
+                state = state.copy(errorMessage = e.toUserMessage())
             } finally {
                 state = state.copy(isLoading = false)
             }

@@ -1,5 +1,6 @@
 package com.example.autoglazecustomer.data.network
 
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.HistoryResponse
 import com.example.autoglazecustomer.data.model.PointResponse
 import com.example.autoglazecustomer.data.model.VoucherKendaraanResponse
@@ -19,13 +20,14 @@ class TransactionService {
 
     suspend fun processCheckout(payload: CheckoutPayload, isMembership: Boolean): CheckoutResponse {
         return try {
-            val targetUrl = if (isMembership) "insert-penjualan-customer-membership" else "insert-penjualan-customer"
+            val targetUrl =
+                if (isMembership) "insert-penjualan-customer-membership" else "insert-penjualan-customer"
             ApiClient.client.post(targetUrl) {
                 contentType(ContentType.Application.Json)
                 setBody(payload)
             }.body()
         } catch (e: Exception) {
-            CheckoutResponse(status = false, message = "Terjadi kesalahan koneksi: ${e.message}", kodePenjualan = null)
+            CheckoutResponse(status = false, message = e.toUserMessage(), kodePenjualan = null)
         }
     }
 

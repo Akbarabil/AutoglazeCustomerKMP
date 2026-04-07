@@ -6,9 +6,8 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
-import com.example.autoglazecustomer.data.network.AuthService
-import com.example.autoglazecustomer.data.network.CabangService
 import com.example.autoglazecustomer.data.network.ProductService
 import com.example.autoglazecustomer.data.network.VehicleService
 import kotlinx.coroutines.async
@@ -43,7 +42,7 @@ class VehicleSelectionScreenModel(
             try {
                 val rawToken = TokenManager.getToken()
                 if (rawToken.isNullOrEmpty()) {
-                    errorMessage = "Sesi Anda telah habis. Silakan login kembali."
+                    errorMessage = "Sesi anda telah berakhir. Silakan masuk kembali ke aplikasi."
                     isLoading = false
                     return@launch
                 }
@@ -58,7 +57,7 @@ class VehicleSelectionScreenModel(
                 }
 
                 vehicleList = vehicles.map {
-                    VehicleWithStatus(it, "Memeriksa status...", 0)
+                    VehicleWithStatus(it, "Memuat status...", 0)
                 }
 
                 isLoading = false
@@ -74,12 +73,12 @@ class VehicleSelectionScreenModel(
 
                 vehicleList = vehicles.mapIndexed { index, vehicle ->
                     val statusInt = membershipStatuses[index]
-                    val statusText = membershipStatusMap[statusInt] ?: "Tidak Diketahui"
+                    val statusText = membershipStatusMap[statusInt] ?: "Tidak diketahui"
                     VehicleWithStatus(vehicle, statusText, statusInt)
                 }
 
             } catch (e: Exception) {
-                errorMessage = "Gagal memuat kendaraan: ${e.message}"
+                errorMessage = e.toUserMessage()
                 isLoading = false
             }
         }

@@ -1,4 +1,3 @@
-// VoucherScreenModel.kt
 package com.example.autoglazecustomer.ui.transaction.voucher
 
 import androidx.compose.runtime.getValue
@@ -7,14 +6,15 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.autoglazecustomer.data.local.TokenManager
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.manager.CartItem
 import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
 import com.example.autoglazecustomer.data.model.transaction.toUIModel
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.data.network.TransactionService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 
 class VoucherScreenModel(
     private val transactionService: TransactionService,
@@ -25,6 +25,7 @@ class VoucherScreenModel(
     var umumVouchers by mutableStateOf<List<VoucherUIModel>>(emptyList())
     var kendaraanVouchers by mutableStateOf<List<VoucherUIModel>>(emptyList())
     var isLoading by mutableStateOf(false)
+    var errorMessage by mutableStateOf<String?>(null)
     var selectedVouchers by mutableStateOf<List<VoucherUIModel>>(VoucherManager.selectedVouchers.value)
     var validationMessage by mutableStateOf<String?>(null)
 
@@ -32,21 +33,30 @@ class VoucherScreenModel(
         fetchVouchers()
     }
 
-    private fun fetchVouchers() {
+    fun fetchVouchers() {
         val token = TokenManager.getToken() ?: return
         screenModelScope.launch {
             isLoading = true
+            errorMessage = null
+
             try {
-                val umumDeferred = async { transactionService.getVoucherSaya(token) }
-                val kendaraanDeferred = async { transactionService.getVouchersByVehicle(idKendaraan) }
+                supervisorScope {
+                    val umumDeferred = async { transactionService.getVoucherSaya(token) }
+                    val kendaraanDeferred = async { transactionService.getVouchersByVehicle(idKendaraan) }
 
-                val umumRes = umumDeferred.await()
-                val kendaraanRes = kendaraanDeferred.await()
+                    val umumRes = umumDeferred.await()
+                    val kendaraanRes = kendaraanDeferred.await()
 
-                umumVouchers = (umumRes.data ?: emptyList()).map { it.toUIModel() }
-                kendaraanVouchers = (kendaraanRes.data ?: emptyList()).map { it.toUIModel() }
+                    umumVouchers = (umumRes.data ?: emptyList()).map { it.toUIModel() }
+                    kendaraanVouchers = (kendaraanRes.data ?: emptyList()).map { it.toUIModel() }
+                }
             } catch (e: Exception) {
-                validationMessage = "Gagal memuat voucher: ${e.message}"
+                val rawMsg = e.toUserMessage()
+                errorMessage = if (rawMsg.contains("null", ignoreCase = true)) {
+                    "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
+                } else {
+                    rawMsg
+                }
             } finally {
                 isLoading = false
             }
@@ -97,11 +107,6 @@ class VoucherScreenModel(
     }
 
     fun confirmSelection() {
-        println("🎫 [DEBUG 1 - VOUCHER SCREEN] Tombol Gunakan ditekan!")
-        println("🎫 [DEBUG 1] Jumlah voucher yang dikirim: ${selectedVouchers.size}")
-        selectedVouchers.forEach {
-            println("🎫 [DEBUG 1] Detail Voucher: ID=${it.idVoucher}, Nama=${it.namaVoucher}, ID_Produk=${it.idProduk}")
-        }
         VoucherManager.setVouchers(selectedVouchers)
     }
 }

@@ -280,9 +280,39 @@ class CartScreen : Screen {
                         )
 
                         when {
-                            screenModel.isHistoryLoading -> {
+                            screenModel.isHistoryLoading || screenModel.isLoadingVehicles -> {
                                 Box(Modifier.fillMaxSize(), Alignment.Center) {
                                     CircularProgressIndicator(color = redPrimer)
+                                }
+                            }
+
+                            screenModel.errorMessage != null -> {
+                                Column(
+                                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(Icons.Default.Close, null, Modifier.size(64.dp), Color(0xFFE0E0E0))
+                                    Text(
+                                        text = screenModel.errorMessage!!,
+                                        color = Color.Gray,
+                                        fontFamily = satoshiMedium,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
+                                    )
+                                    Button(
+                                        onClick = {
+                                            if (screenModel.selectedVehicle != null) {
+                                                screenModel.fetchHistory(screenModel.selectedVehicle?.idKendaraan)
+                                            } else {
+                                                screenModel.fetchVehicles()
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text("Coba Lagi", fontFamily = satoshiBold)
+                                    }
                                 }
                             }
 

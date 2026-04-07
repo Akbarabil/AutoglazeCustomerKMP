@@ -94,8 +94,6 @@ class TransactionScreen : Screen {
         val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
         val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
         val redPrimer = Color(0xFFD53B1E)
-
-
         var isPermissionDenied by remember { mutableStateOf(false) }
 
 
@@ -223,7 +221,7 @@ class TransactionScreen : Screen {
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = {
                             Text(
-                                "Cari cabang Autoglaze...",
+                                "Cari cabang Autoglaze",
                                 fontSize = 14.sp,
                                 fontFamily = satoshiMedium
                             )
