@@ -108,28 +108,33 @@ class HomeScreen : Screen {
 
         var showHomeServiceDialog by remember { mutableStateOf(false) }
         var showLocationDialog by remember { mutableStateOf(false) }
+        var isLocationButtonClicked by remember { mutableStateOf(false) }
 
         val redPrimer = Color(0xFFD53B1E)
         val deepRed = Color(0xFFA62B14)
         val headerGradient = listOf(redPrimer, deepRed)
 
         val permissionHandler = rememberPermissionHandler { isGranted ->
-            if (isGranted) {
-                scope.launch {
-                    screenModel.isCabangLoading = true
-                    showLocationDialog = true
+            if (isLocationButtonClicked) {
+                if (isGranted) {
+                    scope.launch {
+                        screenModel.isCabangLoading = true
+                        showLocationDialog = true
 
-                    val location = locationService.getCurrentLocation()
-                    if (location != null) {
-                        screenModel.fetchClosestCabang(location.latitude, location.longitude)
-                    } else {
-                        screenModel.isCabangLoading = false
-                        screenModel.cabangErrorMessage = "Gagal mendapat lokasi GPS. Pastikan GPS aktif."
+                        val location = locationService.getCurrentLocation()
+                        if (location != null) {
+                            screenModel.fetchClosestCabang(location.latitude, location.longitude)
+                        } else {
+                            screenModel.isCabangLoading = false
+                            screenModel.cabangErrorMessage = "Gagal mendapat lokasi GPS. Pastikan GPS aktif."
+                        }
                     }
+                } else {
+                    screenModel.cabangErrorMessage = "Akses lokasi ditolak. Tidak bisa mencari cabang."
+                    showLocationDialog = true
                 }
-            } else {
-                screenModel.cabangErrorMessage = "Akses lokasi ditolak. Tidak bisa mencari cabang."
-                showLocationDialog = true
+
+                isLocationButtonClicked = false
             }
         }
 
@@ -241,6 +246,8 @@ class HomeScreen : Screen {
                                 satoshiMedium,
                                 Modifier.weight(1f)
                             ) {
+                                isLocationButtonClicked = true
+
                                 if (permissionHandler.isPermissionGranted()) {
                                     scope.launch {
                                         screenModel.isCabangLoading = true
@@ -252,6 +259,7 @@ class HomeScreen : Screen {
                                             screenModel.isCabangLoading = false
                                             screenModel.cabangErrorMessage = "Gagal mengambil GPS."
                                         }
+                                        isLocationButtonClicked = false
                                     }
                                 } else {
                                     permissionHandler.askPermission()
