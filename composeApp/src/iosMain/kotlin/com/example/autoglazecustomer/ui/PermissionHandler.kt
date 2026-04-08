@@ -23,7 +23,6 @@ actual fun rememberPermissionHandler(onResult: (Boolean) -> Unit): PermissionHan
                 when (status) {
                     kCLAuthorizationStatusAuthorizedWhenInUse,
                     kCLAuthorizationStatusAuthorizedAlways -> onResult(true)
-
                     kCLAuthorizationStatusDenied,
                     kCLAuthorizationStatusRestricted -> onResult(false)
 
