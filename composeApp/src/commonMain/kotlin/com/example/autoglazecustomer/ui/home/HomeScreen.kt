@@ -75,10 +75,7 @@ import autoglazecustomer.composeapp.generated.resources.ic_home_layanan
 import autoglazecustomer.composeapp.generated.resources.ic_home_location
 import autoglazecustomer.composeapp.generated.resources.ic_home_service
 import autoglazecustomer.composeapp.generated.resources.ic_profile_white
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import autoglazecustomer.composeapp.generated.resources.sedan
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
@@ -87,13 +84,12 @@ import coil3.compose.SubcomposeAsyncImageContent
 import com.example.autoglazecustomer.data.model.BeritaItem
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItem
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.rememberLocationService
 import com.example.autoglazecustomer.ui.rememberPermissionHandler
 import com.example.autoglazecustomer.ui.tabs.TransactionTab
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.abs
 
@@ -106,8 +102,8 @@ class HomeScreen : Screen {
         val scope = rememberCoroutineScope()
         val locationService = rememberLocationService()
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         var selectedBerita by remember { mutableStateOf<BeritaItem?>(null) }
 
         var showHomeServiceDialog by remember { mutableStateOf(false) }

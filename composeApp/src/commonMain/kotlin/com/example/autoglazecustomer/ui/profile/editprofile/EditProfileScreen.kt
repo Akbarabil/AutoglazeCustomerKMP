@@ -48,27 +48,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.ic_profile_white
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.model.ProfileData
-import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.theme.AppFont
 import com.preat.peekaboo.image.picker.ResizeOptions
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
 class EditProfileScreen(
@@ -82,11 +77,15 @@ class EditProfileScreen(
         val screenModel = getScreenModel<EditProfileScreenModel>()
         val initialProfileData = remember {
             profileDataJson?.let {
-                try { Json.decodeFromString<ProfileData>(it) } catch (e: Exception) { null }
+                try {
+                    Json.decodeFromString<ProfileData>(it)
+                } catch (e: Exception) {
+                    null
+                }
             }
         }
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
 

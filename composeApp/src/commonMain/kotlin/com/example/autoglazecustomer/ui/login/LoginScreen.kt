@@ -46,12 +46,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -63,17 +61,14 @@ import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
 import autoglazecustomer.composeapp.generated.resources.ic_visibility
 import autoglazecustomer.composeapp.generated.resources.ic_visibility_off
 import autoglazecustomer.composeapp.generated.resources.img_hello
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.register.RegisterScreen
 import com.example.autoglazecustomer.ui.tabs.MainTabScreen
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlinx.coroutines.delay
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
 class LoginScreen(val initialEmail: String = "") : Screen {
@@ -83,7 +78,7 @@ class LoginScreen(val initialEmail: String = "") : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = getScreenModel<LoginScreenModel>()
 
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
         LaunchedEffect(initialEmail) {

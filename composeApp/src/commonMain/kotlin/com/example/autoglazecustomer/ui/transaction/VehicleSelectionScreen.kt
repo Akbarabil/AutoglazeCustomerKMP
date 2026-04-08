@@ -51,22 +51,18 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.Font
 import org.koin.core.parameter.parametersOf
 
 class VehicleSelectionScreen(
@@ -76,12 +72,13 @@ class VehicleSelectionScreen(
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val cabang = remember {Json.decodeFromString<CabangData>(cabangJson)}
-        val screenModel = getScreenModel<VehicleSelectionScreenModel> { parametersOf(cabang.kodeCabang) }
+        val cabang = remember { Json.decodeFromString<CabangData>(cabangJson) }
+        val screenModel =
+            getScreenModel<VehicleSelectionScreenModel> { parametersOf(cabang.kodeCabang) }
         val navigator = LocalNavigator.currentOrThrow
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
         LaunchedEffect(Unit) {
@@ -123,7 +120,7 @@ class VehicleSelectionScreen(
                                 val cabangJson = Json.encodeToString(cabang)
                                 val vehicelJson = Json.encodeToString(vehicleWithStatus)
 
-                                navigator.push(MenuTransactionScreen(cabangJson,vehicelJson))
+                                navigator.push(MenuTransactionScreen(cabangJson, vehicelJson))
                             }
                         },
                         enabled = screenModel.selectedVehicle != null,

@@ -66,7 +66,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -75,8 +74,6 @@ import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.ag_coin_small
 import autoglazecustomer.composeapp.generated.resources.ic_logout
 import autoglazecustomer.composeapp.generated.resources.ic_profile_white
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -90,9 +87,9 @@ import com.example.autoglazecustomer.ui.profile.editprofile.EditProfileScreen
 import com.example.autoglazecustomer.ui.profile.myvehicle.MyVehicleScreen
 import com.example.autoglazecustomer.ui.profile.myvoucher.MyVoucherScreen
 import com.example.autoglazecustomer.ui.tabs.HomeTab
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
 class ProfileScreen : Screen {
@@ -104,8 +101,8 @@ class ProfileScreen : Screen {
         val tabNavigator = LocalTabNavigator.current
         val uriHandler = LocalUriHandler.current
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
         val deepRed = Color(0xFFA62B14)
 

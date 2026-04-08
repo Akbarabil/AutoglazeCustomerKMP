@@ -58,7 +58,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,8 +65,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -79,10 +76,10 @@ import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.jasa.LayananItem
 import com.example.autoglazecustomer.ui.KmpBackHandler
+import com.example.autoglazecustomer.ui.theme.AppFont
 import com.example.autoglazecustomer.ui.transaction.checkout.CheckoutScreen
 import com.example.autoglazecustomer.ui.transaction.components.FloatingCheckoutBar
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.parameter.parametersOf
 
@@ -106,8 +103,8 @@ class JasaListScreen(
         }
         val snackbarHostState = remember { SnackbarHostState() }
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 

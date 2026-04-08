@@ -39,17 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import coil3.compose.AsyncImage
-import org.jetbrains.compose.resources.Font
+import com.example.autoglazecustomer.ui.theme.AppFont
 import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,16 +58,10 @@ fun AddToCartBottomSheet(
     onDismissRequest: () -> Unit,
     onAddToCart: (qty: Int) -> Unit
 ) {
-    val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-    FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+    val satoshiBold = AppFont.satoshiBold()
     val redPrimer = Color(0xFFD53B1E)
-
-
     var quantity by remember { mutableStateOf(1) }
-
-
     val subtotalPrice = finalPrice * quantity
-
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(

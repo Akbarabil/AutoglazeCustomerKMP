@@ -61,19 +61,15 @@ import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
 import autoglazecustomer.composeapp.generated.resources.ic_nomer_rangka
 import autoglazecustomer.composeapp.generated.resources.ic_plat_nomer
 import autoglazecustomer.composeapp.generated.resources.img_vehicle_check
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.WarnaKendaraanResponse
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.LoadingDialog
 import com.example.autoglazecustomer.ui.SearchableDropdown
+import com.example.autoglazecustomer.ui.theme.AppFont
 import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
 class AddVehicleScreen : Screen {
@@ -84,8 +80,8 @@ class AddVehicleScreen : Screen {
         val screenModel = getScreenModel<AddVehicleScreenModel>()
         val state = screenModel.state
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
         val yearList = remember { (2000..2026).map { it.toString() }.reversed() }

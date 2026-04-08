@@ -58,13 +58,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -75,10 +71,10 @@ import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.rememberLocationService
 import com.example.autoglazecustomer.ui.rememberPermissionHandler
 import com.example.autoglazecustomer.ui.tabs.HomeTab
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.Font
 
 class TransactionScreen : Screen {
 
@@ -91,8 +87,8 @@ class TransactionScreen : Screen {
         val locationService = rememberLocationService()
         val scope = rememberCoroutineScope()
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
         var isPermissionDenied by remember { mutableStateOf(false) }
 

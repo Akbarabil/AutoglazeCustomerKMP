@@ -79,6 +79,7 @@ import org.jetbrains.compose.resources.Font
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import cafe.adriel.voyager.koin.getScreenModel
+import com.example.autoglazecustomer.ui.theme.AppFont
 
 class CartScreen : Screen {
 
@@ -89,8 +90,8 @@ class CartScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val tabNavigator = LocalTabNavigator.current
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
         var showQrDialog by remember { mutableStateOf(false) }

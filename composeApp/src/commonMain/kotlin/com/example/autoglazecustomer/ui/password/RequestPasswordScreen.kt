@@ -58,7 +58,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
@@ -70,15 +69,13 @@ import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
 import autoglazecustomer.composeapp.generated.resources.img_catat
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
 class RequestPasswordScreen(val email: String, val phone: String) : Screen {
@@ -91,8 +88,8 @@ class RequestPasswordScreen(val email: String, val phone: String) : Screen {
         val screenModel = getScreenModel<RequestPasswordScreenModel>()
         val scope = rememberCoroutineScope()
 
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
+        val satoshiMedium = AppFont.satoshiMedium()
+        val satoshiBold = AppFont.satoshiBold()
         val redPrimer = Color(0xFFD53B1E)
         val greenSuccess = Color(0xFF2E7D32)
 

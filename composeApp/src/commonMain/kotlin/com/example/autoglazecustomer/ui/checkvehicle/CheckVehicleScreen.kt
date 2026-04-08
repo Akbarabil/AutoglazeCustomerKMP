@@ -63,6 +63,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.ui.login.LoginScreen
 import com.example.autoglazecustomer.ui.password.RequestPasswordScreen
 import com.example.autoglazecustomer.ui.register.RegisterScreen
+import com.example.autoglazecustomer.ui.theme.AppFont
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -74,8 +75,8 @@ class CheckVehicleScreen : Screen {
         val screenModel = getScreenModel<CheckVehicleScreenModel>()
 
         val redPrimer = Color(0xFFD53B1E)
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
+        val satoshiMedium = AppFont.satoshiMedium()
+        val satoshiBold = AppFont.satoshiBold()
 
         val commonTextFieldColors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.DarkGray,

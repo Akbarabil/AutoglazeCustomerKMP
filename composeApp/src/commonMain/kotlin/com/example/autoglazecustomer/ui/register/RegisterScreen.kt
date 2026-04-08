@@ -79,19 +79,16 @@ import androidx.compose.ui.window.Dialog
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
 import autoglazecustomer.composeapp.generated.resources.img_catat
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.register.Country
 import com.example.autoglazecustomer.data.model.register.allCountries
-import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
 class RegisterScreen : Screen {
@@ -102,7 +99,7 @@ class RegisterScreen : Screen {
         val screenModel = getScreenModel<RegisterScreenModel>()
         val state = screenModel.state
 
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
         val datePickerState = rememberDatePickerState()

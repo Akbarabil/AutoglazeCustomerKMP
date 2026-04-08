@@ -47,21 +47,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.manager.CartItem
 import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.Font
 import org.koin.core.parameter.parametersOf
 
 class VoucherScreen(
@@ -74,9 +70,10 @@ class VoucherScreen(
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = getScreenModel<VoucherScreenModel> { parametersOf(idKendaraan, cartItems) }
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val screenModel =
+            getScreenModel<VoucherScreenModel> { parametersOf(idKendaraan, cartItems) }
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
         val tabs = listOf("Voucher Umum", "Voucher Kendaraan")
@@ -89,10 +86,22 @@ class VoucherScreen(
                 Surface(color = Color.White, shadowElevation = 2.dp) {
                     Column {
                         CenterAlignedTopAppBar(
-                            title = { Text("Pilih Voucher", fontFamily = satoshiBold, fontSize = 18.sp, color = Color.Black) },
+                            title = {
+                                Text(
+                                    "Pilih Voucher",
+                                    fontFamily = satoshiBold,
+                                    fontSize = 18.sp,
+                                    color = Color.Black
+                                )
+                            },
                             navigationIcon = {
                                 IconButton(onClick = { navigator.pop() }) {
-                                    Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp), tint = Color.Black)
+                                    Icon(
+                                        Icons.Default.ArrowBackIosNew,
+                                        null,
+                                        Modifier.size(20.dp),
+                                        tint = Color.Black
+                                    )
                                 }
                             },
                             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -112,7 +121,13 @@ class VoucherScreen(
                             tabs.forEachIndexed { index, title ->
                                 Tab(
                                     selected = pagerState.currentPage == index,
-                                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            pagerState.animateScrollToPage(
+                                                index
+                                            )
+                                        }
+                                    },
                                     text = {
                                         Text(
                                             text = title,
@@ -132,14 +147,29 @@ class VoucherScreen(
                     shadowElevation = 16.dp, color = Color.White,
                     shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
                 ) {
-                    Column(modifier = Modifier.padding(20.dp).windowInsetsPadding(WindowInsets.navigationBars)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("${screenModel.selectedVouchers.size} Voucher Dipilih", fontFamily = satoshiBold, color = Color.Black)
+                    Column(
+                        modifier = Modifier.padding(20.dp)
+                            .windowInsetsPadding(WindowInsets.navigationBars)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                "${screenModel.selectedVouchers.size} Voucher Dipilih",
+                                fontFamily = satoshiBold,
+                                color = Color.Black
+                            )
                         }
 
                         if (!screenModel.validationMessage.isNullOrEmpty()) {
                             Spacer(Modifier.height(8.dp))
-                            Text(screenModel.validationMessage!!, fontFamily = satoshiMedium, fontSize = 12.sp, color = redPrimer)
+                            Text(
+                                screenModel.validationMessage!!,
+                                fontFamily = satoshiMedium,
+                                fontSize = 12.sp,
+                                color = redPrimer
+                            )
                         }
 
                         Spacer(Modifier.height(16.dp))
@@ -152,7 +182,12 @@ class VoucherScreen(
                             shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
                         ) {
-                            Text("Gunakan Voucher", fontFamily = satoshiBold, fontSize = 16.sp, color = Color.White)
+                            Text(
+                                "Gunakan Voucher",
+                                fontFamily = satoshiBold,
+                                fontSize = 16.sp,
+                                color = Color.White
+                            )
                         }
                     }
                 }
@@ -200,7 +235,8 @@ class VoucherScreen(
                     modifier = Modifier.fillMaxSize().padding(padding),
                     verticalAlignment = Alignment.Top
                 ) { page ->
-                    val voucherList = if (page == 0) screenModel.umumVouchers else screenModel.kendaraanVouchers
+                    val voucherList =
+                        if (page == 0) screenModel.umumVouchers else screenModel.kendaraanVouchers
 
                     if (voucherList.isEmpty()) {
                         EmptyVoucherState(satoshiMedium)
@@ -213,7 +249,8 @@ class VoucherScreen(
                                 items = voucherList,
                                 key = { it.idVoucher }
                             ) { voucher ->
-                                val isSelected = screenModel.selectedVouchers.any { it.idVoucher == voucher.idVoucher }
+                                val isSelected =
+                                    screenModel.selectedVouchers.any { it.idVoucher == voucher.idVoucher }
                                 VoucherCardItem(
                                     voucher = voucher,
                                     isSelected = isSelected,
@@ -239,7 +276,12 @@ class VoucherScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(Icons.Default.ConfirmationNumber, null, modifier = Modifier.size(64.dp), tint = Color.LightGray)
+            Icon(
+                Icons.Default.ConfirmationNumber,
+                null,
+                modifier = Modifier.size(64.dp),
+                tint = Color.LightGray
+            )
             Spacer(Modifier.height(16.dp))
             Text(
                 "Tidak ada voucher tersedia",
@@ -280,7 +322,10 @@ class VoucherScreen(
             color = if (isSelected) red.copy(alpha = 0.05f) else Color.White,
             border = BorderStroke(1.dp, if (isSelected) red else Color(0xFFE0E0E0))
         ) {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Surface(
                         color = if (isSelected) red else Color(0xFFF5F5F5),
@@ -295,13 +340,28 @@ class VoucherScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(voucher.namaVoucher, fontFamily = bold, fontSize = 15.sp, color = Color.Black)
+                    Text(
+                        voucher.namaVoucher,
+                        fontFamily = bold,
+                        fontSize = 15.sp,
+                        color = Color.Black
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     val expText = voucher.tglExpired ?: "Tanpa batas waktu"
-                    Text("Berlaku hingga: $expText", fontFamily = med, fontSize = 12.sp, color = Color.Gray)
+                    Text(
+                        "Berlaku hingga: $expText",
+                        fontFamily = med,
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
                     if (voucher.allowMultiple == 0) {
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = "Eksklusif (Tidak bisa digabung)", fontFamily = med, fontSize = 11.sp, color = Color(0xFFE67E22))
+                        Text(
+                            text = "Eksklusif (Tidak bisa digabung)",
+                            fontFamily = med,
+                            fontSize = 11.sp,
+                            color = Color(0xFFE67E22)
+                        )
                     }
                 }
                 Icon(
@@ -316,7 +376,8 @@ class VoucherScreen(
 
     private fun formatRupiah(amount: Double): String {
         val absoluteAmount = kotlin.math.abs(amount).toLong()
-        val formattedNumber = absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
+        val formattedNumber =
+            absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
         return "Rp $formattedNumber"
     }
 }

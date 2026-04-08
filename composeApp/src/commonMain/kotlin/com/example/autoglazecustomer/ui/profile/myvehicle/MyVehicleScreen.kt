@@ -50,13 +50,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import autoglazecustomer.composeapp.generated.resources.sedan
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
@@ -65,7 +62,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.ui.profile.myvehicle.addvehicle.AddVehicleScreen
-import org.jetbrains.compose.resources.Font
+import com.example.autoglazecustomer.ui.theme.AppFont
 import org.jetbrains.compose.resources.painterResource
 
 class MyVehicleScreen : Screen {
@@ -81,8 +78,8 @@ class MyVehicleScreen : Screen {
                 screenModel.fetchVehicles()
             }
         }
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
 
 
         val transition = rememberInfiniteTransition()
@@ -171,8 +168,7 @@ class MyVehicleScreen : Screen {
                                 Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
                             }
                         }
-                    }
-                    else if (screenModel.vehicleList.isEmpty()) {
+                    } else if (screenModel.vehicleList.isEmpty()) {
                         Column(
                             modifier = Modifier.align(Alignment.Center),
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -184,8 +180,7 @@ class MyVehicleScreen : Screen {
                                 fontSize = 16.sp
                             )
                         }
-                    }
-                    else {
+                    } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 16.dp)

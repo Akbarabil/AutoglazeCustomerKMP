@@ -53,25 +53,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.bg_pattern_grey
 import autoglazecustomer.composeapp.generated.resources.img_berpikir
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.DaftarData
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.login.LoginScreen
-import org.jetbrains.compose.resources.Font
+import com.example.autoglazecustomer.ui.theme.AppFont
 import org.jetbrains.compose.resources.painterResource
 
 class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
@@ -83,8 +77,8 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
         val screenModel = getScreenModel<SurveyScreenModel>()
         val state = screenModel.state
 
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
+        val satoshiMedium = AppFont.satoshiMedium()
+        val satoshiBold = AppFont.satoshiBold()
         val redPrimer = Color(0xFFD53B1E)
 
         var expanded by remember { mutableStateOf(false) }

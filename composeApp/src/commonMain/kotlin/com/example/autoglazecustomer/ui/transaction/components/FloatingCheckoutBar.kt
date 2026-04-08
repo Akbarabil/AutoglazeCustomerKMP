@@ -28,14 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import org.jetbrains.compose.resources.Font
+import com.example.autoglazecustomer.ui.theme.AppFont
 
 @Composable
 fun FloatingCheckoutBar(
@@ -44,8 +39,8 @@ fun FloatingCheckoutBar(
     totalPrice: Double,
     onClick: () -> Unit
 ) {
-    val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-    val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+    val satoshiBold = AppFont.satoshiBold()
+    val satoshiMedium = AppFont.satoshiMedium()
     val redPrimer = Color(0xFFD53B1E)
 
     AnimatedVisibility(

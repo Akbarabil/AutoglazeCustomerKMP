@@ -55,15 +55,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
 import autoglazecustomer.composeapp.generated.resources.dummy_promo_dark
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -75,10 +71,9 @@ import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
-import com.example.autoglazecustomer.data.network.AuthService
+import com.example.autoglazecustomer.ui.theme.AppFont
 import com.example.autoglazecustomer.ui.transaction.voucher.VoucherScreen
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.parameter.parametersOf
 import kotlin.math.abs
@@ -98,8 +93,8 @@ class CheckoutScreen(
         val cartItems by CartManager.cartItems.collectAsState()
         val selectedVouchers by VoucherManager.selectedVouchers.collectAsState()
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
         LaunchedEffect(cartItems) {
@@ -440,11 +435,13 @@ class CheckoutScreen(
                                 if (isMember) voucher.presentaseMember else voucher.presentaseNonMember
 
                             val idProdRaw = voucher.idProduk?.toString()?.trim() ?: ""
-                            val isSpecificProduct = idProdRaw.isNotEmpty() && idProdRaw != "0" && idProdRaw != "null"
+                            val isSpecificProduct =
+                                idProdRaw.isNotEmpty() && idProdRaw != "0" && idProdRaw != "null"
 
                             val targetedSubtotal = if (isSpecificProduct) {
                                 val allowedIds = idProdRaw.split(';').map { it.trim() }
-                                val matchedItems = cartItems.filter { it.idProduk.toString().trim() in allowedIds }
+                                val matchedItems =
+                                    cartItems.filter { it.idProduk.toString().trim() in allowedIds }
 
                                 if (matchedItems.isNotEmpty()) {
                                     matchedItems.maxOf { it.hargaUnit }.toDouble()

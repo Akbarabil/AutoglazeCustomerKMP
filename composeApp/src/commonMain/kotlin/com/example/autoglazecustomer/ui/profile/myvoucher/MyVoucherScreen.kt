@@ -51,20 +51,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItemId
-import org.jetbrains.compose.resources.Font
+import com.example.autoglazecustomer.ui.theme.AppFont
 import kotlin.math.abs
 
 class MyVoucherScreen : Screen {
@@ -75,8 +71,8 @@ class MyVoucherScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = getScreenModel<MyVoucherScreenModel>()
 
-        val satoshiBold = FontFamily(Font(Res.font.satoshi_bold, FontWeight.Bold))
-        val satoshiMedium = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Medium))
+        val satoshiBold = AppFont.satoshiBold()
+        val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
         var selectedId by remember { mutableStateOf<Int?>(null) }
@@ -111,7 +107,11 @@ class MyVoucherScreen : Screen {
                     title = { Text("Voucher Saya", fontFamily = satoshiBold, fontSize = 19.sp) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.Default.ArrowBackIosNew, null, modifier = Modifier.size(20.dp))
+                            Icon(
+                                Icons.Default.ArrowBackIosNew,
+                                null,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -146,7 +146,11 @@ class MyVoucherScreen : Screen {
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Close, "Clear", modifier = Modifier.size(20.dp))
+                                    Icon(
+                                        Icons.Default.Close,
+                                        "Clear",
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                 }
                             }
                         },
@@ -236,27 +240,43 @@ class MyVoucherScreen : Screen {
                                     CircularProgressIndicator(color = redPrimer)
                                 }
                             }
+
                             screenModel.vehicleErrorMessage != null -> {
-                                ErrorVoucherMsg(screenModel.vehicleErrorMessage!!, satoshiMedium, satoshiBold, redPrimer) {
+                                ErrorVoucherMsg(
+                                    screenModel.vehicleErrorMessage!!,
+                                    satoshiMedium,
+                                    satoshiBold,
+                                    redPrimer
+                                ) {
                                     screenModel.fetchVehicles()
                                 }
                             }
+
                             selectedId == null -> {
                                 EmptyVoucherModern(satoshiMedium)
                             }
+
                             isLoadingVouchers -> {
                                 Box(Modifier.fillMaxSize(), Alignment.Center) {
                                     CircularProgressIndicator(color = redPrimer)
                                 }
                             }
+
                             voucherError != null -> {
-                                ErrorVoucherMsg(voucherError, satoshiMedium, satoshiBold, redPrimer) {
+                                ErrorVoucherMsg(
+                                    voucherError,
+                                    satoshiMedium,
+                                    satoshiBold,
+                                    redPrimer
+                                ) {
                                     screenModel.retryFetchVouchers(selectedId!!)
                                 }
                             }
+
                             vouchers.isNullOrEmpty() -> {
                                 EmptyVoucherModern(satoshiMedium)
                             }
+
                             else -> {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxSize(),
@@ -323,8 +343,11 @@ class MyVoucherScreen : Screen {
         red: Color
     ) {
         val memberStatus = isMember ?: false
-        val persen = if (memberStatus) voucher.presentaseMember ?: 0.0 else voucher.presentaseNonMember ?: 0.0
-        val nominal = if (memberStatus) voucher.potHargaMember ?: 0.0 else voucher.potHargaNonMember ?: 0.0
+        val persen =
+            if (memberStatus) voucher.presentaseMember ?: 0.0 else voucher.presentaseNonMember
+                ?: 0.0
+        val nominal =
+            if (memberStatus) voucher.potHargaMember ?: 0.0 else voucher.potHargaNonMember ?: 0.0
 
         val discountLabel = when {
             persen > 0 -> "Diskon ${persen.toInt()}%"
@@ -431,7 +454,13 @@ class MyVoucherScreen : Screen {
     }
 
     @Composable
-    private fun ErrorVoucherMsg(msg: String, med: FontFamily, bold: FontFamily, red: Color, onRetry: () -> Unit) {
+    private fun ErrorVoucherMsg(
+        msg: String,
+        med: FontFamily,
+        bold: FontFamily,
+        red: Color,
+        onRetry: () -> Unit
+    ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
