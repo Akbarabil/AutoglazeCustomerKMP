@@ -29,6 +29,8 @@ object TokenManager {
 
 
     fun clearAll() {
-        settings.clear()
+        settings.remove(KEY_TOKEN)
+        settings.remove(KEY_CUSTOMER_ID)
+        settings.remove(KEY_USER_NAME)
     }
 }

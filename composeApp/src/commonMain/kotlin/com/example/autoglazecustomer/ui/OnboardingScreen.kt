@@ -61,11 +61,7 @@ class OnboardingScreen : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
-
-
         val settings = remember { Settings() }
-
-
         val satoshiBold = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Bold))
         val myRed = Color(0xFFE30613)
         val greyText = Color(0xFF9E9E9E)
@@ -98,7 +94,7 @@ class OnboardingScreen : Screen {
 
         fun finishOnboarding() {
             settings.putBoolean("is_first_time_onboarding", false)
-            navigator.replace(CheckVehicleScreen())
+            navigator.replaceAll(CheckVehicleScreen())
         }
 
         Box(modifier = Modifier.fillMaxSize().background(backgroundGrey)) {

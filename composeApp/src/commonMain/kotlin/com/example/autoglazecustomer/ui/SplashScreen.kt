@@ -32,7 +32,9 @@ import autoglazecustomer.composeapp.generated.resources.wave_black
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.ui.checkvehicle.CheckVehicleScreen
+import com.example.autoglazecustomer.ui.tabs.MainTabScreen
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.Font
@@ -46,17 +48,13 @@ class SplashScreen : Screen {
         val satoshiBold = FontFamily(Font(Res.font.satoshi_medium, FontWeight.Bold))
 
         val settings = remember { Settings() }
-
         val scale = remember { Animatable(1.2f) }
 
-
         LaunchedEffect(Unit) {
-
             scale.animateTo(
                 targetValue = 1.7f,
                 animationSpec = tween(durationMillis = 1500, easing = LinearOutSlowInEasing)
             )
-
 
             scale.animateTo(
                 targetValue = 1.4f,
@@ -65,34 +63,32 @@ class SplashScreen : Screen {
 
             delay(150)
 
-
             scale.animateTo(
                 targetValue = 15f,
                 animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing)
             )
 
-
             val isFirstTime = settings.getBoolean("is_first_time_onboarding", true)
+            val token = TokenManager.getToken()
 
             if (isFirstTime) {
-
-                navigator.replace(OnboardingScreen())
+                navigator.replaceAll(OnboardingScreen())
             } else {
-
-                navigator.replace(CheckVehicleScreen())
+                if (!token.isNullOrEmpty()) {
+                    navigator.replaceAll(MainTabScreen())
+                } else {
+                    navigator.replaceAll(CheckVehicleScreen())
+                }
             }
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-
-
             Image(
                 painter = painterResource(Res.drawable.bg_pattern_white),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-
 
             Image(
                 painter = painterResource(Res.drawable.wave_black),
@@ -106,7 +102,6 @@ class SplashScreen : Screen {
                     ),
                 contentScale = ContentScale.Fit
             )
-
 
             Column(
                 modifier = Modifier.align(Alignment.Center),
