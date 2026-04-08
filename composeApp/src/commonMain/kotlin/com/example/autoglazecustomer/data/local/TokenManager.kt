@@ -3,7 +3,7 @@ package com.example.autoglazecustomer.data.local
 import com.russhwolf.settings.Settings
 
 object TokenManager {
-    private val settings: Settings = Settings()
+    private val settings: Settings = createSecureSettings()
 
     private const val KEY_TOKEN = "auth_token"
     private const val KEY_CUSTOMER_ID = "customer_id"

@@ -6,11 +6,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.DialogProperties
@@ -24,8 +21,8 @@ import com.example.autoglazecustomer.data.local.TokenManager
 import com.example.autoglazecustomer.data.manager.CartManager
 import com.example.autoglazecustomer.data.manager.SessionManager
 import com.example.autoglazecustomer.data.manager.VoucherManager
+import com.example.autoglazecustomer.data.network.ApiClient
 import com.example.autoglazecustomer.ui.login.LoginScreen
-import io.ktor.client.HttpClient
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -33,22 +30,15 @@ fun App() {
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .components {
-                add(KtorNetworkFetcherFactory(HttpClient()))
+                add(KtorNetworkFetcherFactory(ApiClient.client))
             }
             .build()
     }
 
     MaterialTheme {
         Navigator(SplashScreen()) { navigator ->
-            var showSessionDialog by remember { mutableStateOf(false) }
-
-            LaunchedEffect(Unit) {
-                SessionManager.logoutEvent.collect {
-                    showSessionDialog = true
-                }
-            }
-
-            if (showSessionDialog) {
+            val isSessionExpired by SessionManager.sessionExpired.collectAsState()
+            if (isSessionExpired) {
                 AlertDialog(
                     onDismissRequest = {
                     },
@@ -73,15 +63,17 @@ fun App() {
                     confirmButton = {
                         Button(
                             onClick = {
-                                showSessionDialog = false
+                                SessionManager.resetLogout()
+
                                 TokenManager.clearAll()
                                 CartManager.clearCart()
                                 VoucherManager.clearVouchers()
+
                                 navigator.replaceAll(LoginScreen())
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD53B1E))
                         ) {
-                            Text("Login Ulang", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Login Kembali", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 )

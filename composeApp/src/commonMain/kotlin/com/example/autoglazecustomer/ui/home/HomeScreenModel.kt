@@ -28,7 +28,7 @@ class HomeScreenModel(
     private val cabangService: CabangService
 ) : ScreenModel {
 
-    var userName by mutableStateOf(TokenManager.getUserName() ?: "Sobat Glaze")
+    var userName by mutableStateOf(TokenManager.getUserName())
     var userAvatar by mutableStateOf<String?>(null)
     var vehicleList by mutableStateOf<List<VehicleData>>(emptyList())
     var sliderList by mutableStateOf<List<SliderItem>>(emptyList())
@@ -66,29 +66,40 @@ class HomeScreenModel(
                 val beritaJob = async { runCatching { homeService.getBerita() } }
                 val voucherJob = async { runCatching { transactionService.getVoucherUmum() } }
 
+
                 profileJob.await().onSuccess { res ->
                     if (res.success) {
                         userName = res.data?.nama ?: userName
                         userAvatar = res.data?.photo
                         res.data?.nama?.let { TokenManager.saveUserName(it) }
                     }
-                }.onFailure { throw it }
+                }.onFailure {
+                    println("Error loading profile: ${it.message}")
+                }
 
                 sliderJob.await().onSuccess { res ->
                     if (res.status == "ok") sliderList = res.data
-                }.onFailure { throw it }
+                }.onFailure {
+                    println("Error loading slider: ${it.message}")
+                }
 
                 vehicleJob.await().onSuccess { res ->
                     if (res.success) vehicleList = res.data
-                }.onFailure { throw it }
+                }.onFailure {
+                    errorMessage = it.toUserMessage()
+                }
 
                 beritaJob.await().onSuccess { res ->
                     if (res.statusCode == 200) beritaList = res.data
-                }.onFailure { throw it }
+                }.onFailure {
+                    println("Error loading berita: ${it.message}")
+                }
 
                 voucherJob.await().onSuccess { res ->
                     if (res.status == true) promoList = res.data ?: emptyList()
-                }.onFailure { throw it }
+                }.onFailure {
+                    println("Error loading voucher: ${it.message}")
+                }
 
             } catch (e: Exception) {
                 errorMessage = e.toUserMessage()

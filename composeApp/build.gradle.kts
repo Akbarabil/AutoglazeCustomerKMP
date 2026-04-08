@@ -34,6 +34,7 @@ kotlin {
             implementation(libs.play.services.location)
             implementation(libs.kotlinx.coroutines.play.services)
             implementation("io.insert-koin:koin-android:3.5.3")
+            implementation("androidx.security:security-crypto:1.1.0-alpha06")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
