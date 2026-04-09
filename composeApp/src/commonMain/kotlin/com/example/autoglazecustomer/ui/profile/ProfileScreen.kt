@@ -109,7 +109,6 @@ class ProfileScreen : Screen {
         var showLogoutDialog by remember { mutableStateOf(false) }
         val shimmerBrush = rememberShimmerBrush()
 
-
         LaunchedEffect(Unit) {
             screenModel.fetchProfileAndPoints()
         }
@@ -130,11 +129,7 @@ class ProfileScreen : Screen {
         }
 
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFBFBFB))) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-            ) {
+            Column(modifier = Modifier.fillMaxSize()) {
 
                 Box {
                     if (screenModel.isLoading && screenModel.profileData == null) {
@@ -149,7 +144,6 @@ class ProfileScreen : Screen {
                             medFont = satoshiMedium
                         )
                     }
-
 
                     IconButton(
                         onClick = {
@@ -174,7 +168,13 @@ class ProfileScreen : Screen {
                     }
                 }
 
-                Column(modifier = Modifier.padding(24.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp)
+                ) {
 
                     ProfileGroup(title = "Point Umum", font = satoshiBold) {
                         if (screenModel.isLoading && screenModel.points == 0) {
@@ -302,7 +302,6 @@ class ProfileScreen : Screen {
                 }
             }
         }
-
 
         if (showLogoutDialog) {
             AlertDialog(
