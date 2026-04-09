@@ -52,34 +52,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import autoglazecustomer.composeapp.generated.resources.Res
-import autoglazecustomer.composeapp.generated.resources.satoshi_bold
-import autoglazecustomer.composeapp.generated.resources.satoshi_medium
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.autoglazecustomer.data.model.HistoryItem
-import com.example.autoglazecustomer.data.network.AuthService
 import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.tabs.HomeTab
+import com.example.autoglazecustomer.ui.theme.AppFont
 import io.github.alexzhirkevich.qrose.options.QrBallShape
 import io.github.alexzhirkevich.qrose.options.QrPixelShape
 import io.github.alexzhirkevich.qrose.options.circle
 import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
-import org.jetbrains.compose.resources.Font
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import cafe.adriel.voyager.koin.getScreenModel
-import com.example.autoglazecustomer.ui.theme.AppFont
 
 class CartScreen : Screen {
 
@@ -293,7 +286,12 @@ class CartScreen : Screen {
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    Icon(Icons.Default.Close, null, Modifier.size(64.dp), Color(0xFFE0E0E0))
+                                    Icon(
+                                        Icons.Default.Close,
+                                        null,
+                                        Modifier.size(64.dp),
+                                        Color(0xFFE0E0E0)
+                                    )
                                     Text(
                                         text = screenModel.errorMessage!!,
                                         color = Color.Gray,
@@ -409,7 +407,13 @@ class CartScreen : Screen {
                         Image(painter, null, Modifier.fillMaxSize())
                     }
                     Spacer(Modifier.height(16.dp))
-                    Text(item.kodePenjualan, fontFamily = FontFamily.Monospace, fontSize = 15.sp)
+                    Text(
+                        text = item.kodePenjualan,
+                        fontFamily = med,
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                     Button(
                         onClick = onDismiss,
                         modifier = Modifier.fillMaxWidth().padding(top = 24.dp).height(50.dp),

@@ -137,7 +137,6 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
                                     .fillMaxSize()
                                     .windowInsetsPadding(WindowInsets.navigationBars)
                                     .padding(horizontal = 24.dp)
-                                    .verticalScroll(rememberScrollState())
                             ) {
                                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -150,82 +149,89 @@ class SurveyScreen(private val dataRegistrasi: DaftarData) : Screen {
 
                                 Spacer(modifier = Modifier.height(30.dp))
 
-                                ExposedDropdownMenuBox(
-                                    expanded = expanded,
-                                    onExpandedChange = { expanded = !expanded }
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .verticalScroll(rememberScrollState())
                                 ) {
-                                    OutlinedTextField(
-                                        value = state.selectedAsalTahu?.label ?: "",
-                                        onValueChange = {},
-                                        readOnly = true,
-                                        isError = state.errorField == "survey",
-                                        label = {
-                                            Text(
-                                                "Dapat info Autoglaze dari mana?",
-                                                fontFamily = satoshiMedium
-                                            )
-                                        },
-                                        trailingIcon = {
-                                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                                expanded = expanded
-                                            )
-                                        },
-                                        modifier = Modifier
-                                            .menuAnchor()
-                                            .fillMaxWidth(),
-                                        shape = RoundedCornerShape(10.dp),
-                                        colors = commonTextFieldColors
-                                    )
-
-                                    ExposedDropdownMenu(
+                                    ExposedDropdownMenuBox(
                                         expanded = expanded,
-                                        onDismissRequest = { expanded = false },
-                                        modifier = Modifier.background(Color.White)
+                                        onExpandedChange = { expanded = !expanded }
                                     ) {
-                                        state.asalTahuList.forEach { item ->
-                                            DropdownMenuItem(
-                                                text = {
-                                                    Text(
-                                                        item.label,
-                                                        fontFamily = satoshiMedium
-                                                    )
-                                                },
-                                                onClick = {
-                                                    screenModel.onAsalTahuSelected(item)
-                                                    expanded = false
-                                                }
+                                        OutlinedTextField(
+                                            value = state.selectedAsalTahu?.label ?: "",
+                                            onValueChange = {},
+                                            readOnly = true,
+                                            isError = state.errorField == "survey",
+                                            label = {
+                                                Text(
+                                                    "Dapat info Autoglaze dari mana?",
+                                                    fontFamily = satoshiMedium
+                                                )
+                                            },
+                                            trailingIcon = {
+                                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                                    expanded = expanded
+                                                )
+                                            },
+                                            modifier = Modifier
+                                                .menuAnchor()
+                                                .fillMaxWidth(),
+                                            shape = RoundedCornerShape(10.dp),
+                                            colors = commonTextFieldColors
+                                        )
+
+                                        ExposedDropdownMenu(
+                                            expanded = expanded,
+                                            onDismissRequest = { expanded = false },
+                                            modifier = Modifier.background(Color.White)
+                                        ) {
+                                            state.asalTahuList.forEach { item ->
+                                                DropdownMenuItem(
+                                                    text = {
+                                                        Text(
+                                                            item.label,
+                                                            fontFamily = satoshiMedium
+                                                        )
+                                                    },
+                                                    onClick = {
+                                                        screenModel.onAsalTahuSelected(item)
+                                                        expanded = false
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(32.dp))
+
+                                    Button(
+                                        onClick = { screenModel.registerFinal(dataRegistrasi) },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(56.dp),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                        enabled = !state.isLoading
+                                    ) {
+                                        if (state.isLoading) {
+                                            CircularProgressIndicator(
+                                                color = Color.White,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        } else {
+                                            Text(
+                                                text = "Daftar",
+                                                fontFamily = satoshiBold,
+                                                fontSize = 20.sp,
+                                                color = Color.White
                                             )
                                         }
                                     }
+
+                                    Spacer(modifier = Modifier.height(32.dp))
                                 }
-
-                                Spacer(modifier = Modifier.height(32.dp))
-
-                                Button(
-                                    onClick = { screenModel.registerFinal(dataRegistrasi) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(56.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
-                                    enabled = !state.isLoading
-                                ) {
-                                    if (state.isLoading) {
-                                        CircularProgressIndicator(
-                                            color = Color.White,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    } else {
-                                        Text(
-                                            text = "Daftar",
-                                            fontFamily = satoshiBold,
-                                            fontSize = 20.sp,
-                                            color = Color.White
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
                     }

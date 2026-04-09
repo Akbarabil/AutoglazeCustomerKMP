@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.AlertDialog
@@ -81,7 +84,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.koin.core.parameter.parametersOf
 
-
 class MembershipListScreen(
     private val cabangJson: String,
     private val vehicleJson: String
@@ -106,6 +108,7 @@ class MembershipListScreen(
 
         val cartItems by CartManager.cartItems.collectAsState()
         var showExitDialog by remember { mutableStateOf(false) }
+        var isSnackbarSuccess by remember { mutableStateOf(true) }
 
         LaunchedEffect(Unit) { screenModel.fetchData() }
 
@@ -127,7 +130,6 @@ class MembershipListScreen(
             Scaffold(
                 containerColor = bgLight,
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                snackbarHost = { SnackbarHost(snackbarHostState) },
                 topBar = {
                     Surface(
                         color = Color.White,
@@ -212,21 +214,14 @@ class MembershipListScreen(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     } else if (screenModel.errorMessage != null) {
-                        val isDataNotFound = screenModel.errorMessage?.contains(
-                            "tidak ditemukan",
-                            ignoreCase = true
-                        ) == true
-
-                        val safeErrorMsg = screenModel.errorMessage!!
-                            .replace("null", "Koneksi terputus", ignoreCase = true)
-                            .ifBlank { "Gagal memuat data" }
+                        val displayMsg = screenModel.errorMessage!!
 
                         Column(
                             modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                imageVector = if (isDataNotFound) Icons.Default.Search else Icons.Default.WorkspacePremium,
+                                imageVector = Icons.Default.WorkspacePremium,
                                 contentDescription = null,
                                 tint = Color.LightGray,
                                 modifier = Modifier.size(64.dp)
@@ -234,22 +229,20 @@ class MembershipListScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = if (isDataNotFound) "Belum ada paket membership yang tersedia untuk cabang ini" else safeErrorMsg,
+                                text = displayMsg,
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
                                 fontSize = 15.sp,
                                 textAlign = Center
                             )
 
-                            if (!isDataNotFound) {
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Button(
-                                    onClick = { screenModel.fetchData() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
-                                }
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Button(
+                                onClick = { screenModel.fetchData() },
+                                colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
                             }
                         }
                     } else if (screenModel.displayedMemberships.isEmpty()) {
@@ -296,30 +289,40 @@ class MembershipListScreen(
                                     med = satoshiMedium,
                                     brandRed = redPrimer,
                                     onClick = {
-                                        CartManager.clearCart()
-                                        VoucherManager.clearVouchers()
+                                        try {
+                                            CartManager.clearCart()
+                                            VoucherManager.clearVouchers()
 
-                                        val newCartItem = CartItem(
-                                            idProduk = item.idMembership,
-                                            idCabangItem = null,
-                                            idMembership = item.idMembership,
-                                            namaItem = item.namaMembership,
-                                            imageUrl = null,
-                                            qty = 1,
-                                            hargaUnit = item.hargaDaftar,
-                                            category = ItemCategory.MEMBERSHIP
-                                        )
-                                        CartManager.addItemToCart(newCartItem)
-
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar("Membuka Checkout untuk ${item.namaMembership}...")
-                                        }
-
-                                        navigator.push(
-                                            CheckoutScreen(
-                                                cabangJson, vehicleJson
+                                            val newCartItem = CartItem(
+                                                idProduk = item.idMembership,
+                                                idCabangItem = null,
+                                                idMembership = item.idMembership,
+                                                namaItem = item.namaMembership,
+                                                imageUrl = null,
+                                                qty = 1,
+                                                hargaUnit = item.hargaDaftar,
+                                                category = ItemCategory.MEMBERSHIP
                                             )
-                                        )
+                                            CartManager.addItemToCart(newCartItem)
+
+                                            isSnackbarSuccess = true
+                                            val formattedName = item.namaMembership.toTitleCase()
+
+                                            coroutineScope.launch {
+                                                snackbarHostState.showSnackbar("Memilih $formattedName...")
+                                            }
+
+                                            navigator.push(
+                                                CheckoutScreen(
+                                                    cabangJson, vehicleJson
+                                                )
+                                            )
+                                        } catch (e: Exception) {
+                                            isSnackbarSuccess = false
+                                            coroutineScope.launch {
+                                                snackbarHostState.showSnackbar("Gagal menambahkan ke keranjang")
+                                            }
+                                        }
                                     }
                                 )
                             }
@@ -368,6 +371,46 @@ class MembershipListScreen(
                     }
                 )
             }
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(top = 16.dp, start = 20.dp, end = 20.dp),
+                snackbar = { data ->
+                    val icon = if (isSnackbarSuccess) Icons.Default.CheckCircle else Icons.Default.Cancel
+                    val iconColor = if (isSnackbarSuccess) Color(0xFF4CAF50) else Color(0xFFE53935)
+
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF222222),
+                        shadowElevation = 10.dp
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = iconColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = data.visuals.message,
+                                fontFamily = satoshiMedium,
+                                fontSize = 14.sp,
+                                color = Color.White,
+                                lineHeight = 20.sp
+                            )
+                        }
+                    }
+                }
+            )
+
         }
     }
 
@@ -503,5 +546,11 @@ class MembershipListScreen(
             absoluteAmount.toString().reversed().chunked(3).joinToString(".").reversed()
         val sign = if (amount < 0) "-" else ""
         return "${sign}Rp $formattedNumber"
+    }
+
+    private fun String.toTitleCase(): String {
+        return this.lowercase().split(" ").joinToString(" ") { word ->
+            word.replaceFirstChar { it.uppercase() }
+        }
     }
 }

@@ -213,51 +213,33 @@ class ProdukListScreen(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     } else if (screenModel.errorMessage != null) {
-                        val isDataNotFound = screenModel.errorMessage?.contains(
-                            "Belum ada produk",
-                            ignoreCase = true
-                        ) == true ||
-                                screenModel.errorMessage?.contains(
-                                    "tidak ditemukan",
-                                    ignoreCase = true
-                                ) == true
-
-                        val safeErrorMsg = screenModel.errorMessage!!.let { msg ->
-                            if (msg.trim().equals("null", ignoreCase = true) || msg.isBlank()) {
-                                "Koneksi jaringan terputus. Silakan coba lagi. (Err: Offline)"
-                            } else {
-                                msg
-                            }
-                        }
+                        val displayMsg = screenModel.errorMessage!!
 
                         Column(
                             modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                imageVector = if (isDataNotFound) Icons.Default.Search else Icons.Default.ShoppingCart,
+                                Icons.Default.ShoppingCart,
                                 contentDescription = null,
                                 tint = Color.LightGray,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = safeErrorMsg,
+                                text = displayMsg,
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
                                 fontSize = 16.sp,
                                 textAlign = Center
                             )
-
-                            if (!isDataNotFound) {
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Button(
-                                    onClick = { screenModel.fetchData() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
-                                }
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Button(
+                                onClick = { screenModel.fetchData() },
+                                colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("Coba Lagi", fontFamily = satoshiBold, color = Color.White)
                             }
                         }
                     } else if (screenModel.displayedProducts.isEmpty()) {

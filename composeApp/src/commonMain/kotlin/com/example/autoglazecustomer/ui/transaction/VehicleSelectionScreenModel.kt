@@ -21,6 +21,7 @@ class VehicleSelectionScreenModel(
 ) : ScreenModel {
 
     var isLoading by mutableStateOf(false)
+    var isCheckingMembership by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
     var vehicleList by mutableStateOf<List<VehicleWithStatus>>(emptyList())
     var selectedVehicle by mutableStateOf<VehicleWithStatus?>(null)
@@ -37,6 +38,7 @@ class VehicleSelectionScreenModel(
     fun fetchVehicles() {
         screenModelScope.launch {
             isLoading = true
+            isCheckingMembership = true
             errorMessage = null
 
             try {
@@ -44,6 +46,7 @@ class VehicleSelectionScreenModel(
                 if (rawToken.isNullOrEmpty()) {
                     errorMessage = "Sesi anda telah berakhir. Silakan masuk kembali ke aplikasi."
                     isLoading = false
+                    isCheckingMembership = false
                     return@launch
                 }
 
@@ -53,6 +56,7 @@ class VehicleSelectionScreenModel(
 
                 if (vehicles.isEmpty()) {
                     isLoading = false
+                    isCheckingMembership = false
                     return@launch
                 }
 
@@ -77,9 +81,15 @@ class VehicleSelectionScreenModel(
                     VehicleWithStatus(vehicle, statusText, statusInt)
                 }
 
+                selectedVehicle?.let { currentSelected ->
+                    selectedVehicle = vehicleList.find { it.vehicle.idKendaraan == currentSelected.vehicle.idKendaraan }
+                }
+
             } catch (e: Exception) {
                 errorMessage = e.toUserMessage()
                 isLoading = false
+            } finally {
+                isCheckingMembership = false
             }
         }
     }

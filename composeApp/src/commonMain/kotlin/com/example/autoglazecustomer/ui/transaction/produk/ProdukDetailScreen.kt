@@ -24,6 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -91,58 +93,14 @@ class ProdukDetailScreen(
         val bgLight = Color(0xFFF8F9FA)
 
         var showBottomSheet by remember { mutableStateOf(false) }
+        var isSnackbarSuccess by remember { mutableStateOf(true) }
 
         val originalPrice = item.hargaNonMember
 
         val cleanDescription =
             parseHtml(item.deskripsi ?: "Tidak ada deskripsi tambahan untuk produk ini.")
 
-
         Scaffold(
-            snackbarHost = {
-                SnackbarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier.padding(bottom = 100.dp),
-                    snackbar = { data ->
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 8.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            color = Color.White,
-                            border = BorderStroke(1.dp, redPrimer.copy(alpha = 0.2f)),
-                            shadowElevation = 8.dp
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = redPrimer.copy(alpha = 0.1f),
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Default.ShoppingCart,
-                                            contentDescription = null,
-                                            tint = redPrimer,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = data.visuals.message,
-                                    fontFamily = satoshiMedium,
-                                    fontSize = 14.sp,
-                                    color = Color(0xFF1A1A1A)
-                                )
-                            }
-                        }
-                    }
-                )
-            },
             containerColor = bgLight,
             contentWindowInsets = WindowInsets(0, 0, 0, 0)
         ) { paddingValues ->
@@ -357,26 +315,78 @@ class ProdukDetailScreen(
                         onAddToCart = { quantity ->
                             showBottomSheet = false
 
-                            val newCartItem = CartItem(
-                                idProduk = item.idProduk,
-                                idCabangItem = item.idCabangItem,
-                                idMembership = null,
-                                namaItem = item.namaProduk,
-                                imageUrl = item.gambarUrl,
-                                qty = quantity,
-                                hargaUnit = finalPrice,
-                                category = ItemCategory.PRODUK
-                            )
-                            CartManager.addItemToCart(newCartItem)
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "$quantity ${item.namaProduk} masuk ke keranjang",
-                                    duration = SnackbarDuration.Short
+                            try {
+                                val newCartItem = CartItem(
+                                    idProduk = item.idProduk,
+                                    idCabangItem = item.idCabangItem,
+                                    idMembership = null,
+                                    namaItem = item.namaProduk,
+                                    imageUrl = item.gambarUrl,
+                                    qty = quantity,
+                                    hargaUnit = finalPrice,
+                                    category = ItemCategory.PRODUK
                                 )
+                                CartManager.addItemToCart(newCartItem)
+
+                                isSnackbarSuccess = true
+                                val formattedName = item.namaProduk.toTitleCase()
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "$quantity $formattedName berhasil masuk ke keranjang",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                isSnackbarSuccess = false
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Gagal menambahkan ke keranjang",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                             }
                         }
                     )
                 }
+
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .statusBarsPadding()
+                        .padding(top = 16.dp, start = 20.dp, end = 20.dp),
+                    snackbar = { data ->
+                        val icon = if (isSnackbarSuccess) Icons.Default.CheckCircle else Icons.Default.Cancel
+                        val iconColor = if (isSnackbarSuccess) Color(0xFF4CAF50) else Color(0xFFE53935)
+
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFF222222),
+                            shadowElevation = 10.dp
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = iconColor,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = data.visuals.message,
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 14.sp,
+                                    color = Color.White,
+                                    lineHeight = 20.sp
+                                )
+                            }
+                        }
+                    }
+                )
             }
         }
     }
@@ -393,5 +403,11 @@ class ProdukDetailScreen(
         return html.replace(Regex("<br\\s*?/?>", RegexOption.IGNORE_CASE), "\n")
             .replace(Regex("</p>\\s*<p>", RegexOption.IGNORE_CASE), "\n\n")
             .replace(Regex("<[^>]*>"), "").replace("&nbsp;", " ").replace("&amp;", "&").trim()
+    }
+
+    private fun String.toTitleCase(): String {
+        return this.lowercase().split(" ").joinToString(" ") { word ->
+            word.replaceFirstChar { it.uppercase() }
+        }
     }
 }

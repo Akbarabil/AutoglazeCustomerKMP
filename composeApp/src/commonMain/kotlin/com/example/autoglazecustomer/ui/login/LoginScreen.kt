@@ -54,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autoglazecustomer.composeapp.generated.resources.Res
@@ -144,7 +145,6 @@ class LoginScreen(val initialEmail: String = "") : Screen {
                                     .fillMaxSize()
                                     .windowInsetsPadding(WindowInsets.navigationBars)
                                     .padding(horizontal = 24.dp)
-                                    .verticalScroll(rememberScrollState())
                             ) {
                                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -165,118 +165,134 @@ class LoginScreen(val initialEmail: String = "") : Screen {
 
                                 Spacer(modifier = Modifier.height(32.dp))
 
-                                OutlinedTextField(
-                                    value = screenModel.email,
-                                    onValueChange = { screenModel.onEmailChange(it) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    label = { Text("Email", fontFamily = satoshiMedium) },
-                                    leadingIcon = {
-                                        Icon(
-                                            Icons.Outlined.Email,
-                                            contentDescription = "Email Icon",
-                                            Modifier.size(24.dp)
-                                        )
-                                    },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                                    shape = RoundedCornerShape(10.dp),
-                                    singleLine = true,
-                                    colors = commonTextFieldColors
-                                )
-
-                                Spacer(modifier = Modifier.height(14.dp))
-
-                                OutlinedTextField(
-                                    value = screenModel.password,
-                                    onValueChange = { screenModel.onPasswordChange(it) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    label = { Text("Password", fontFamily = satoshiMedium) },
-                                    visualTransformation = if (screenModel.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                    leadingIcon = {
-                                        Icon(
-                                            Icons.Outlined.Lock,
-                                            contentDescription = "Password Icon",
-                                            Modifier.size(24.dp)
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        IconButton(onClick = { screenModel.togglePasswordVisibility() }) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .verticalScroll(rememberScrollState())
+                                ) {
+                                    OutlinedTextField(
+                                        value = screenModel.email,
+                                        onValueChange = { screenModel.onEmailChange(it) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        label = { Text("Email", fontFamily = satoshiMedium) },
+                                        leadingIcon = {
                                             Icon(
-                                                painter = painterResource(
-                                                    if (screenModel.isPasswordVisible) Res.drawable.ic_visibility
-                                                    else Res.drawable.ic_visibility_off
-                                                ),
-                                                null, Modifier.size(24.dp)
-                                            )
-                                        }
-                                    },
-                                    shape = RoundedCornerShape(10.dp),
-                                    singleLine = true,
-                                    colors = commonTextFieldColors
-                                )
-
-                                Spacer(modifier = Modifier.height(24.dp))
-
-                                Button(
-                                    onClick = {
-                                        screenModel.login { _ ->
-                                            navigator.replaceAll(MainTabScreen())
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
-                                    enabled = !screenModel.isLoading
-                                ) {
-                                    if (screenModel.isLoading) {
-                                        CircularProgressIndicator(
-                                            color = Color.White,
-                                            modifier = Modifier.size(24.dp),
-                                            strokeWidth = 2.dp
-                                        )
-                                    } else {
-                                        Text(
-                                            "Masuk",
-                                            fontFamily = satoshiMedium,
-                                            color = Color.White,
-                                            fontSize = 20.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(12.dp))
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        "Belum punya akun? ",
-                                        fontFamily = satoshiMedium,
-                                        color = Color(0xFFBDBDBD),
-                                        fontSize = 16.sp
-                                    )
-                                    Text(
-                                        text = "Daftar",
-                                        modifier = Modifier.clickable {
-                                            navigator.push(
-                                                RegisterScreen()
+                                                Icons.Outlined.Email,
+                                                contentDescription = "Email Icon",
+                                                Modifier.size(24.dp)
                                             )
                                         },
-                                        fontFamily = satoshiMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = redPrimer,
-                                        fontSize = 16.sp
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                        shape = RoundedCornerShape(10.dp),
+                                        singleLine = true,
+                                        colors = commonTextFieldColors
                                     )
+
+                                    Spacer(modifier = Modifier.height(14.dp))
+
+                                    OutlinedTextField(
+                                        value = screenModel.password,
+                                        onValueChange = { screenModel.onPasswordChange(it) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        label = { Text("Password", fontFamily = satoshiMedium) },
+                                        visualTransformation = if (screenModel.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Outlined.Lock,
+                                                contentDescription = "Password Icon",
+                                                Modifier.size(24.dp)
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            IconButton(onClick = { screenModel.togglePasswordVisibility() }) {
+                                                Icon(
+                                                    painter = painterResource(
+                                                        if (screenModel.isPasswordVisible) Res.drawable.ic_visibility
+                                                        else Res.drawable.ic_visibility_off
+                                                    ),
+                                                    null, Modifier.size(24.dp)
+                                                )
+                                            }
+                                        },
+                                        shape = RoundedCornerShape(10.dp),
+                                        singleLine = true,
+                                        colors = commonTextFieldColors
+                                    )
+
+                                    Spacer(modifier = Modifier.height(24.dp))
+
+                                    Button(
+                                        onClick = {
+                                            screenModel.login { _ ->
+                                                navigator.replaceAll(MainTabScreen())
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                        enabled = !screenModel.isLoading
+                                    ) {
+                                        if (screenModel.isLoading) {
+                                            CircularProgressIndicator(
+                                                color = Color.White,
+                                                modifier = Modifier.size(24.dp),
+                                                strokeWidth = 2.dp
+                                            )
+                                        } else {
+                                            Text(
+                                                "Masuk",
+                                                fontFamily = satoshiMedium,
+                                                color = Color.White,
+                                                fontSize = 20.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            "Belum punya akun? ",
+                                            fontFamily = satoshiMedium,
+                                            color = Color(0xFFBDBDBD),
+                                            fontSize = 16.sp
+                                        )
+                                        Text(
+                                            text = "Daftar",
+                                            modifier = Modifier.clickable {
+                                                navigator.push(
+                                                    RegisterScreen()
+                                                )
+                                            },
+                                            fontFamily = satoshiMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = redPrimer,
+                                            fontSize = 16.sp
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(32.dp))
                                 }
 
-
-                                Spacer(modifier = Modifier.height(32.dp))
+                                Text(
+                                    text = "Versi 2.0.0",
+                                    fontFamily = satoshiMedium,
+                                    fontSize = 13.sp,
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 16.dp)
+                                )
                             }
                         }
                     }
-
 
                     IconButton(
                         onClick = { navigator.pop() },
@@ -294,7 +310,6 @@ class LoginScreen(val initialEmail: String = "") : Screen {
                     }
                 }
             }
-
 
             AnimatedVisibility(
                 visible = screenModel.errorMessage != null,

@@ -141,7 +141,6 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
                                     .fillMaxSize()
                                     .windowInsetsPadding(WindowInsets.navigationBars)
                                     .padding(horizontal = 24.dp)
-                                    .verticalScroll(rememberScrollState())
                             ) {
                                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -154,149 +153,166 @@ class RegisterVehicleScreen(private val dataRegistrasi: DaftarData) : Screen {
 
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                SearchableDropdown(
-                                    label = "Merk Mobil",
-                                    items = state.listMerek,
-                                    selectedItem = state.merekTerpilih,
-                                    getLabel = { it.namaMerek },
-                                    onItemSelected = { selected ->
-                                        screenModel.onMerekSelected(
-                                            selected.namaMerek
-                                        )
-                                    },
-                                    onTextChanged = { text -> if (text.isEmpty()) screenModel.clearMerek() },
-                                    satoshiMedium = satoshiMedium,
-                                    isLoading = state.isLoadingMerek,
-                                    isError = state.errorField == "merek"
-                                )
-
-                                Row(modifier = Modifier.fillMaxWidth()) {
-                                    Box(modifier = Modifier.weight(1.2f)) {
-                                        SearchableDropdown(
-                                            label = "Tipe",
-                                            items = state.listTipe,
-                                            selectedItem = state.tipeTerpilih,
-                                            getLabel = { it.namaTipeKendaraan },
-                                            onItemSelected = { selected ->
-                                                screenModel.onTipeSelected(
-                                                    selected.namaTipeKendaraan
-                                                )
-                                            },
-                                            satoshiMedium = satoshiMedium,
-                                            enabled = state.merekTerpilih != null,
-                                            isLoading = state.isLoadingTipe,
-                                            autoExpand = true,
-                                            isError = state.errorField == "tipe"
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Box(modifier = Modifier.weight(0.8f)) {
-                                        SearchableDropdown(
-                                            label = "Tahun",
-                                            items = yearList,
-                                            selectedItem = state.tahun.ifEmpty { null },
-                                            getLabel = { it },
-                                            onItemSelected = { selected ->
-                                                screenModel.onTahunSelected(
-                                                    selected
-                                                )
-                                            },
-                                            satoshiMedium = satoshiMedium,
-                                            enabled = state.tipeTerpilih != null,
-                                            isError = state.errorField == "tahun"
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(14.dp))
-
-                                OutlinedTextField(
-                                    value = state.nopol,
-                                    onValueChange = { screenModel.onNopolChange(it) },
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp),
-                                    label = { Text("Nomor Polisi", fontFamily = satoshiMedium) },
-                                    leadingIcon = {
-                                        Icon(
-                                            painterResource(Res.drawable.ic_plat_nomer),
-                                            null,
-                                            Modifier.size(24.dp)
-                                        )
-                                    },
-                                    placeholder = { Text("B1234ABC", color = Color.LightGray) },
-                                    isError = state.errorField == "nopol",
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = commonColors,
-                                    singleLine = true
-                                )
-
-                                OutlinedTextField(
-                                    value = state.noRangka,
-                                    onValueChange = { screenModel.onNoRangkaChange(it) },
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
-                                    label = { Text("Nomor Rangka", fontFamily = satoshiMedium) },
-                                    leadingIcon = {
-                                        Icon(
-                                            painterResource(Res.drawable.ic_nomer_rangka),
-                                            null,
-                                            Modifier.size(24.dp)
-                                        )
-                                    },
-                                    isError = state.errorField == "rangka",
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = commonColors,
-                                    singleLine = true
-                                )
-
-                                Text(
-                                    "Warna Kendaraan",
-                                    fontFamily = satoshiMedium,
-                                    fontSize = 16.sp
-                                )
-
-                                LazyRow(
-                                    contentPadding = PaddingValues(vertical = 12.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .verticalScroll(rememberScrollState())
                                 ) {
-                                    items(state.listWarna) { warna ->
-                                        WarnaItem(
-                                            warnaObj = warna,
-                                            isSelected = warna == state.warnaTerpilih,
-                                            onClick = { screenModel.onWarnaSelected(warna) },
-                                            satoshiMedium = satoshiMedium
-                                        )
+                                    SearchableDropdown(
+                                        label = "Merk Mobil",
+                                        items = state.listMerek,
+                                        selectedItem = state.merekTerpilih,
+                                        getLabel = { it.namaMerek },
+                                        onItemSelected = { selected ->
+                                            screenModel.onMerekSelected(
+                                                selected.namaMerek
+                                            )
+                                        },
+                                        onTextChanged = { text -> if (text.isEmpty()) screenModel.clearMerek() },
+                                        satoshiMedium = satoshiMedium,
+                                        isLoading = state.isLoadingMerek,
+                                        isError = state.errorField == "merek"
+                                    )
+
+                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                        Box(modifier = Modifier.weight(1.2f)) {
+                                            SearchableDropdown(
+                                                label = "Tipe",
+                                                items = state.listTipe,
+                                                selectedItem = state.tipeTerpilih,
+                                                getLabel = { it.namaTipeKendaraan },
+                                                onItemSelected = { selected ->
+                                                    screenModel.onTipeSelected(
+                                                        selected.namaTipeKendaraan
+                                                    )
+                                                },
+                                                satoshiMedium = satoshiMedium,
+                                                enabled = state.merekTerpilih != null,
+                                                isLoading = state.isLoadingTipe,
+                                                autoExpand = true,
+                                                isError = state.errorField == "tipe"
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Box(modifier = Modifier.weight(0.8f)) {
+                                            SearchableDropdown(
+                                                label = "Tahun",
+                                                items = yearList,
+                                                selectedItem = state.tahun.ifEmpty { null },
+                                                getLabel = { it },
+                                                onItemSelected = { selected ->
+                                                    screenModel.onTahunSelected(
+                                                        selected
+                                                    )
+                                                },
+                                                satoshiMedium = satoshiMedium,
+                                                enabled = state.tipeTerpilih != null,
+                                                isError = state.errorField == "tahun"
+                                            )
+                                        }
                                     }
-                                }
 
-                                Spacer(modifier = Modifier.height(30.dp))
+                                    Spacer(modifier = Modifier.height(14.dp))
 
-                                Button(
-                                    onClick = {
-                                        screenModel.validateAndCheckNopol(
-                                            onSuccess = { navigator.push(SurveyScreen(it)) },
-                                            dataRegistrasi = dataRegistrasi
-                                        )
-                                    },
-                                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
-                                    enabled = !state.isLoading
-                                ) {
-                                    if (state.isLoading) {
-                                        CircularProgressIndicator(
-                                            color = Color.White,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    } else {
-                                        Text(
-                                            "Selanjutnya",
-                                            fontFamily = satoshiMedium,
-                                            fontSize = 20.sp,
-                                            color = Color.White
-                                        )
+                                    OutlinedTextField(
+                                        value = state.nopol,
+                                        onValueChange = { screenModel.onNopolChange(it) },
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp),
+                                        label = {
+                                            Text(
+                                                "Nomor Polisi",
+                                                fontFamily = satoshiMedium
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                painterResource(Res.drawable.ic_plat_nomer),
+                                                null,
+                                                Modifier.size(24.dp)
+                                            )
+                                        },
+                                        placeholder = { Text("B1234ABC", color = Color.LightGray) },
+                                        isError = state.errorField == "nopol",
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = commonColors,
+                                        singleLine = true
+                                    )
+
+                                    OutlinedTextField(
+                                        value = state.noRangka,
+                                        onValueChange = { screenModel.onNoRangkaChange(it) },
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                                        label = {
+                                            Text(
+                                                "Nomor Rangka",
+                                                fontFamily = satoshiMedium
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                painterResource(Res.drawable.ic_nomer_rangka),
+                                                null,
+                                                Modifier.size(24.dp)
+                                            )
+                                        },
+                                        isError = state.errorField == "rangka",
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = commonColors,
+                                        singleLine = true
+                                    )
+
+                                    Text(
+                                        "Warna Kendaraan",
+                                        fontFamily = satoshiMedium,
+                                        fontSize = 16.sp
+                                    )
+
+                                    LazyRow(
+                                        contentPadding = PaddingValues(vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(state.listWarna) { warna ->
+                                            WarnaItem(
+                                                warnaObj = warna,
+                                                isSelected = warna == state.warnaTerpilih,
+                                                onClick = { screenModel.onWarnaSelected(warna) },
+                                                satoshiMedium = satoshiMedium
+                                            )
+                                        }
                                     }
-                                }
 
-                                Spacer(modifier = Modifier.height(32.dp))
+                                    Spacer(modifier = Modifier.height(30.dp))
+
+                                    Button(
+                                        onClick = {
+                                            screenModel.validateAndCheckNopol(
+                                                onSuccess = { navigator.push(SurveyScreen(it)) },
+                                                dataRegistrasi = dataRegistrasi
+                                            )
+                                        },
+                                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                        enabled = !state.isLoading
+                                    ) {
+                                        if (state.isLoading) {
+                                            CircularProgressIndicator(
+                                                color = Color.White,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        } else {
+                                            Text(
+                                                "Selanjutnya",
+                                                fontFamily = satoshiMedium,
+                                                fontSize = 20.sp,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(32.dp))
+                                }
                             }
                         }
                     }

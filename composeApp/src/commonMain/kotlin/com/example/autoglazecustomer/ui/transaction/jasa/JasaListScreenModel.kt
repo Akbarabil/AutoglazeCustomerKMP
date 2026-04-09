@@ -45,24 +45,20 @@ class JasaListScreenModel(
                 if (servicesResponse.status) {
                     val data = servicesResponse.data
                     if (data.isNullOrEmpty()) {
-                        errorMessage = "Belum ada layanan yang tersedia di cabang ini"
                         allServices = emptyList()
                     } else {
                         allServices = data
                     }
                 } else {
                     val msg = servicesResponse.message?.trim() ?: ""
-                    if (msg.isBlank() || msg.equals(
-                            "null",
-                            ignoreCase = true
-                        ) || msg.contains("failed", ignoreCase = true) || msg.contains(
-                            "host",
-                            ignoreCase = true
-                        ) || msg.contains("timeout", ignoreCase = true)
-                    ) {
-                        errorMessage =
-                            "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
-                    } else {
+
+                    if (msg.contains("tidak ditemukan", ignoreCase = true) || msg.contains("not found", ignoreCase = true)) {
+                        allServices = emptyList()
+                    }
+                    else if (msg.isBlank() || msg.equals("null", ignoreCase = true) || msg.contains("failed", ignoreCase = true) || msg.contains("host", ignoreCase = true) || msg.contains("timeout", ignoreCase = true)) {
+                        errorMessage = "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
+                    }
+                    else {
                         errorMessage = msg
                     }
                 }

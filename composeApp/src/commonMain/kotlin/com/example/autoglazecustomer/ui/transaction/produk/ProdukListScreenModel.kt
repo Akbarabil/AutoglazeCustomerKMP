@@ -31,24 +31,30 @@ class ProdukListScreenModel(
 
             try {
                 val response = productService.getProduk(kodeCabang)
+
                 if (response.status == true) {
                     allProducts = response.data ?: emptyList()
-
-                    if (allProducts.isEmpty()) {
-                        errorMessage = "Belum ada produk yang tersedia di cabang ini"
-                    } else {
+                    updateDisplayedList()
+                } else {
+                    val msg = response.message?.trim() ?: ""
+                    if (msg.contains("tidak ditemukan", ignoreCase = true) || msg.contains("not found", ignoreCase = true)) {
+                        allProducts = emptyList()
                         updateDisplayedList()
                     }
-                } else {
-                    val msg = response.message?.lowercase() ?: ""
-                    if (msg == "null" || msg.contains("failed") || msg.contains("host") || msg.contains("timeout")) {
-                        errorMessage = "Koneksi internet terputus. Mohon periksa koneksi jaringan anda. (Err: Offline)"
-                    } else {
-                        errorMessage = response.message?.takeIf { it != "null" } ?: "Gagal memuat produk."
+                    else if (msg.isBlank() || msg.equals("null", ignoreCase = true) || msg.contains("failed", ignoreCase = true) || msg.contains("host", ignoreCase = true) || msg.contains("timeout", ignoreCase = true)) {
+                        errorMessage = "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
+                    }
+                    else {
+                        errorMessage = msg
                     }
                 }
             } catch (e: Exception) {
-                errorMessage = e.toUserMessage()
+                val exMsg = e.toUserMessage().trim()
+                if (exMsg.isBlank() || exMsg.contains("null", ignoreCase = true)) {
+                    errorMessage = "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
+                } else {
+                    errorMessage = exMsg
+                }
             } finally {
                 isLoading = false
             }

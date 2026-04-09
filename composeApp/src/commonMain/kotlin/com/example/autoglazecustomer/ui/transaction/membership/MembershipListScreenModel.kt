@@ -32,26 +32,27 @@ class MembershipListScreenModel(
                 val response = productService.getMembership(kodeCabang)
 
                 if (response.status == true) {
-                    if (!response.data.isNullOrEmpty()) {
-                        allMemberships = response.data
-                        updateDisplayedList()
-                    } else {
-                        errorMessage = "Membership tidak tersedia di cabang ini"
-                    }
+                    allMemberships = response.data ?: emptyList()
+                    updateDisplayedList()
                 } else {
                     val msg = response.message?.trim() ?: ""
-                    if (msg.isBlank() || msg.equals("null", ignoreCase = true) || msg.contains("failed") || msg.contains("host")) {
+                    if (msg.contains("tidak ditemukan", ignoreCase = true) || msg.contains("not found", ignoreCase = true)) {
+                        allMemberships = emptyList()
+                        updateDisplayedList()
+                    }
+                    else if (msg.isBlank() || msg.equals("null", ignoreCase = true) || msg.contains("failed", ignoreCase = true) || msg.contains("host", ignoreCase = true) || msg.contains("timeout", ignoreCase = true)) {
                         errorMessage = "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
-                    } else {
+                    }
+                    else {
                         errorMessage = msg
                     }
                 }
             } catch (e: Exception) {
-                val msg = e.toUserMessage()
-                errorMessage = if (msg.contains("null", ignoreCase = true)) {
-                    "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
+                val exMsg = e.toUserMessage().trim()
+                if (exMsg.isBlank() || exMsg.contains("null", ignoreCase = true)) {
+                    errorMessage = "Koneksi internet terputus. Mohon periksa jaringan Anda. (Err: Offline)"
                 } else {
-                    msg
+                    errorMessage = exMsg
                 }
             } finally {
                 isLoading = false

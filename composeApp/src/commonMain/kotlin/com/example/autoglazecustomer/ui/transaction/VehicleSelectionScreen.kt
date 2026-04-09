@@ -114,16 +114,18 @@ class VehicleSelectionScreen(
                     shadowElevation = 16.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    val isButtonEnabled = screenModel.selectedVehicle != null && !screenModel.isCheckingMembership
+
                     Button(
                         onClick = {
                             screenModel.selectedVehicle?.let { vehicleWithStatus ->
-                                val cabangJson = Json.encodeToString(cabang)
-                                val vehicelJson = Json.encodeToString(vehicleWithStatus)
+                                val finalCabangJson = Json.encodeToString(cabang)
+                                val finalVehicelJson = Json.encodeToString(vehicleWithStatus)
 
-                                navigator.push(MenuTransactionScreen(cabangJson, vehicelJson))
+                                navigator.push(MenuTransactionScreen(finalCabangJson, finalVehicelJson))
                             }
                         },
-                        enabled = screenModel.selectedVehicle != null,
+                        enabled = isButtonEnabled,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = redPrimer,
                             disabledContainerColor = Color(0xFFE0E0E0)
@@ -134,12 +136,20 @@ class VehicleSelectionScreen(
                             .padding(horizontal = 24.dp, vertical = 20.dp)
                             .height(56.dp)
                     ) {
-                        Text(
-                            "Lanjutkan",
-                            fontFamily = satoshiBold,
-                            fontSize = 16.sp,
-                            color = if (screenModel.selectedVehicle != null) Color.White else Color.Gray
-                        )
+                        if (screenModel.isCheckingMembership && screenModel.selectedVehicle != null) {
+                            CircularProgressIndicator(
+                                color = Color.Gray,
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                "Lanjutkan",
+                                fontFamily = satoshiBold,
+                                fontSize = 16.sp,
+                                color = if (isButtonEnabled) Color.White else Color.Gray
+                            )
+                        }
                     }
                 }
             },

@@ -156,7 +156,6 @@ class RegisterScreen : Screen {
                                     .fillMaxSize()
                                     .windowInsetsPadding(WindowInsets.navigationBars)
                                     .padding(horizontal = 24.dp)
-                                    .verticalScroll(rememberScrollState())
                             ) {
                                 Spacer(modifier = Modifier.height(32.dp))
                                 Text(
@@ -167,151 +166,158 @@ class RegisterScreen : Screen {
                                 )
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                RegisterTextField(
-                                    value = state.nama,
-                                    onValueChange = { screenModel.onNamaChange(it) },
-                                    label = "Nama Lengkap",
-                                    icon = Icons.Default.Person,
-                                    satoshiMedium = satoshiMedium,
-                                    isError = state.errorField == "nama",
-                                    colors = commonTextFieldColors
-                                )
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .verticalScroll(rememberScrollState())
+                                ) {
+                                    RegisterTextField(
+                                        value = state.nama,
+                                        onValueChange = { screenModel.onNamaChange(it) },
+                                        label = "Nama Lengkap",
+                                        icon = Icons.Default.Person,
+                                        satoshiMedium = satoshiMedium,
+                                        isError = state.errorField == "nama",
+                                        colors = commonTextFieldColors
+                                    )
 
-                                RegisterTextField(
-                                    value = state.email,
-                                    onValueChange = { screenModel.onEmailChange(it) },
-                                    label = "Email",
-                                    icon = Icons.Default.Email,
-                                    keyboardType = KeyboardType.Email,
-                                    satoshiMedium = satoshiMedium,
-                                    isError = state.errorField == "email",
-                                    colors = commonTextFieldColors
-                                )
+                                    RegisterTextField(
+                                        value = state.email,
+                                        onValueChange = { screenModel.onEmailChange(it) },
+                                        label = "Email",
+                                        icon = Icons.Default.Email,
+                                        keyboardType = KeyboardType.Email,
+                                        satoshiMedium = satoshiMedium,
+                                        isError = state.errorField == "email",
+                                        colors = commonTextFieldColors
+                                    )
 
-                                Box(modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp)) {
+                                    Box(modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp)) {
+                                        OutlinedTextField(
+                                            value = state.tglLahir,
+                                            onValueChange = {},
+                                            isError = state.errorField == "tglLahir",
+                                            modifier = Modifier.fillMaxWidth(),
+                                            label = {
+                                                Text(
+                                                    "Tanggal Lahir",
+                                                    fontFamily = satoshiMedium
+                                                )
+                                            },
+                                            readOnly = true,
+                                            leadingIcon = { Icon(Icons.Default.DateRange, null) },
+                                            shape = RoundedCornerShape(10.dp),
+                                            colors = commonTextFieldColors
+                                        )
+                                        Box(
+                                            modifier = Modifier.matchParentSize()
+                                                .clickable { showDatePicker = true })
+                                    }
+
                                     OutlinedTextField(
-                                        value = state.tglLahir,
-                                        onValueChange = {},
-                                        isError = state.errorField == "tglLahir",
-                                        modifier = Modifier.fillMaxWidth(),
-                                        label = {
-                                            Text(
-                                                "Tanggal Lahir",
-                                                fontFamily = satoshiMedium
-                                            )
+                                        value = state.phone,
+                                        onValueChange = { screenModel.onPhoneChange(it) },
+                                        isError = state.errorField == "phone",
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp),
+                                        label = { Text("Nomor Telephone", fontFamily = satoshiMedium) },
+                                        leadingIcon = {
+                                            Row(
+                                                modifier = Modifier.clickable {
+                                                    showCountryPicker = true
+                                                }.padding(start = 12.dp, end = 8.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(state.selectedCountry.flag, fontSize = 20.sp)
+                                                Spacer(Modifier.width(4.dp))
+                                                Text(
+                                                    "+${state.selectedCountry.phoneCode}",
+                                                    fontWeight = FontWeight.Medium,
+                                                    fontFamily = satoshiMedium
+                                                )
+                                                Icon(
+                                                    Icons.Default.ArrowDropDown,
+                                                    null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Spacer(Modifier.width(8.dp))
+                                                Box(
+                                                    modifier = Modifier.width(1.dp).height(24.dp)
+                                                        .background(Color.LightGray)
+                                                )
+                                            }
                                         },
-                                        readOnly = true,
-                                        leadingIcon = { Icon(Icons.Default.DateRange, null) },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                                         shape = RoundedCornerShape(10.dp),
                                         colors = commonTextFieldColors
                                     )
-                                    Box(
-                                        modifier = Modifier.matchParentSize()
-                                            .clickable { showDatePicker = true })
+
+                                    OutlinedTextField(
+                                        value = state.password,
+                                        onValueChange = { screenModel.onPasswordChange(it) },
+                                        isError = state.errorField == "password",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        label = { Text("Kata Sandi", fontFamily = satoshiMedium) },
+                                        leadingIcon = { Icon(Icons.Default.Lock, null) },
+                                        trailingIcon = {
+                                            IconButton(onClick = { screenModel.togglePasswordVisibility() }) {
+                                                Icon(
+                                                    if (state.isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                                    null
+                                                )
+                                            }
+                                        },
+                                        visualTransformation = if (state.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = commonTextFieldColors
+                                    )
+
+                                    Spacer(modifier = Modifier.height(30.dp))
+
+                                    Button(
+                                        onClick = {
+                                            screenModel.validateAndCheckEmail {
+                                                navigator.push(RegisterVehicleScreen(it))
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
+                                        enabled = !state.isLoading
+                                    ) {
+                                        if (state.isLoading) CircularProgressIndicator(
+                                            color = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        else Text(
+                                            "Selanjutnya",
+                                            fontFamily = satoshiMedium,
+                                            fontSize = 20.sp,
+                                            color = Color.White
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            "Sudah punya akun? ",
+                                            fontFamily = satoshiMedium,
+                                            color = Color(0xFFBDBDBD)
+                                        )
+                                        Text(
+                                            "Masuk",
+                                            modifier = Modifier.clickable { navigator.pop() },
+                                            fontWeight = FontWeight.Bold,
+                                            color = redPrimer
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(32.dp))
                                 }
-
-                                OutlinedTextField(
-                                    value = state.phone,
-                                    onValueChange = { screenModel.onPhoneChange(it) },
-                                    isError = state.errorField == "phone",
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp),
-                                    label = { Text("Nomor Telephone", fontFamily = satoshiMedium) },
-                                    leadingIcon = {
-                                        Row(
-                                            modifier = Modifier.clickable {
-                                                showCountryPicker = true
-                                            }.padding(start = 12.dp, end = 8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(state.selectedCountry.flag, fontSize = 20.sp)
-                                            Spacer(Modifier.width(4.dp))
-                                            Text(
-                                                "+${state.selectedCountry.phoneCode}",
-                                                fontWeight = FontWeight.Medium,
-                                                fontFamily = satoshiMedium
-                                            )
-                                            Icon(
-                                                Icons.Default.ArrowDropDown,
-                                                null,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                            Spacer(Modifier.width(8.dp))
-                                            Box(
-                                                modifier = Modifier.width(1.dp).height(24.dp)
-                                                    .background(Color.LightGray)
-                                            )
-                                        }
-                                    },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = commonTextFieldColors
-                                )
-
-                                OutlinedTextField(
-                                    value = state.password,
-                                    onValueChange = { screenModel.onPasswordChange(it) },
-                                    isError = state.errorField == "password",
-                                    modifier = Modifier.fillMaxWidth(),
-                                    label = { Text("Kata Sandi", fontFamily = satoshiMedium) },
-                                    leadingIcon = { Icon(Icons.Default.Lock, null) },
-                                    trailingIcon = {
-                                        IconButton(onClick = { screenModel.togglePasswordVisibility() }) {
-                                            Icon(
-                                                if (state.isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                                null
-                                            )
-                                        }
-                                    },
-                                    visualTransformation = if (state.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = commonTextFieldColors
-                                )
-
-                                Spacer(modifier = Modifier.height(30.dp))
-
-                                Button(
-                                    onClick = {
-                                        screenModel.validateAndCheckEmail {
-                                            navigator.push(RegisterVehicleScreen(it))
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = redPrimer),
-                                    enabled = !state.isLoading
-                                ) {
-                                    if (state.isLoading) CircularProgressIndicator(
-                                        color = Color.White,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    else Text(
-                                        "Selanjutnya",
-                                        fontFamily = satoshiMedium,
-                                        fontSize = 20.sp,
-                                        color = Color.White
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        "Sudah punya akun? ",
-                                        fontFamily = satoshiMedium,
-                                        color = Color(0xFFBDBDBD)
-                                    )
-                                    Text(
-                                        "Masuk",
-                                        modifier = Modifier.clickable { navigator.pop() },
-                                        fontWeight = FontWeight.Bold,
-                                        color = redPrimer
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
                     }

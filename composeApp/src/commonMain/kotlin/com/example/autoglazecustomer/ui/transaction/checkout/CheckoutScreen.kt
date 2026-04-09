@@ -255,8 +255,7 @@ class CheckoutScreen(
                         color = Color.White,
                         fontFamily = bold,
                         fontSize = 18.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        lineHeight = 22.sp
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
