@@ -39,10 +39,11 @@ object ApiClient {
         }
 
         HttpResponseValidator {
-            handleResponseExceptionWithRequest { exception, _ ->
+            handleResponseExceptionWithRequest { exception, request ->
                 val clientException = exception as? ClientRequestException
                     ?: return@handleResponseExceptionWithRequest
-                if (clientException.response.status.value == 401) {
+                val isLoginEndpoint = request.url.encodedPath.contains("login", ignoreCase = true)
+                if (clientException.response.status.value == 401 && !isLoginEndpoint) {
                     SessionManager.forceLogout()
                 }
             }
