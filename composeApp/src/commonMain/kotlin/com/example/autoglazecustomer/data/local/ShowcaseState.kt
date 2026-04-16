@@ -1,6 +1,7 @@
 package com.example.autoglazecustomer.data.local
 
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -109,17 +110,15 @@ fun ShowcaseOverlay(
             .fillMaxSize()
             .graphicsLayer { alpha = 0.99f }
     ) {
-        val screenHeight = constraints.maxHeight.toFloat()
-
         if (targetBounds != null) {
             val animatedLeft by animateFloatAsState(targetValue = targetBounds.left, animationSpec = tween(400, easing = FastOutSlowInEasing), label = "left")
             val animatedTop by animateFloatAsState(targetValue = targetBounds.top, animationSpec = tween(400, easing = FastOutSlowInEasing), label = "top")
             val animatedRight by animateFloatAsState(targetValue = targetBounds.right, animationSpec = tween(400, easing = FastOutSlowInEasing), label = "right")
             val animatedBottom by animateFloatAsState(targetValue = targetBounds.bottom, animationSpec = tween(400, easing = FastOutSlowInEasing), label = "bottom")
 
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val isBottomNavTarget = state.currentStep >= 3
+            val isBottomNavTarget = state.currentStep >= 3
 
+            Canvas(modifier = Modifier.fillMaxSize()) {
                 val paddingX = if (isBottomNavTarget) 24.dp.toPx() else 16.dp.toPx()
                 val paddingTop = 16.dp.toPx()
                 val paddingBottom = if (isBottomNavTarget) 42.dp.toPx() else 16.dp.toPx()
@@ -140,19 +139,22 @@ fun ShowcaseOverlay(
                 drawPath(path = path, color = Color.Transparent, blendMode = BlendMode.Clear)
             }
 
-            val targetCenterY = (animatedTop + animatedBottom) / 2
-            val isTargetAtTop = targetCenterY < (screenHeight / 2)
-
             val verticalBias by animateFloatAsState(
-                targetValue = if (isTargetAtTop) 1f else 0f,
+                targetValue = if (isBottomNavTarget) 0f else 1f,
                 animationSpec = tween(400, easing = FastOutSlowInEasing),
                 label = "bias"
+            )
+
+            val dynamicBottomPadding by animateDpAsState(
+                targetValue = if (isBottomNavTarget) 24.dp else 96.dp,
+                animationSpec = tween(400, easing = FastOutSlowInEasing),
+                label = "paddingBottom"
             )
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(start = 24.dp, end = 24.dp, top = 72.dp, bottom = 120.dp),
+                    .padding(start = 24.dp, end = 24.dp, top = 72.dp, bottom = dynamicBottomPadding),
                 contentAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = verticalBias)
             ) {
                 Surface(
