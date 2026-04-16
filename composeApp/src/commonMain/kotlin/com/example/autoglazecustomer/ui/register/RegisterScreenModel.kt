@@ -90,9 +90,17 @@ class RegisterScreenModel(private val authService: AuthService) : ScreenModel {
                 val response = authService.cekEmail(s.email)
 
                 if (response.isSuccessful) {
-                    val fullPhone =
-                        if (s.selectedCountry.phoneCode.isEmpty()) s.phone else "+${s.selectedCountry.phoneCode}${s.phone}"
+                    val cleanPhone = if (s.phone.startsWith("0")) {
+                        s.phone.drop(1)
+                    } else {
+                        s.phone
+                    }
 
+                    val fullPhone = if (s.selectedCountry.phoneCode.isEmpty()) {
+                        s.phone
+                    } else {
+                        "+${s.selectedCountry.phoneCode}$cleanPhone"
+                    }
                     onSuccess(DaftarData(s.nama, s.email, s.tglLahir, fullPhone, s.password))
                 } else {
                     state = state.copy(

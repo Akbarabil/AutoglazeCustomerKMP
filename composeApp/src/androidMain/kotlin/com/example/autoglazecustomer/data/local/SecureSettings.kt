@@ -11,26 +11,48 @@ object AppContext {
     private var _contextRef: WeakReference<Context>? = null
 
     val context: Context
-        get() = _contextRef?.get() ?: throw IllegalStateException("AppContext belum diinisialisasi atau sudah di-reclaim oleh sistem!")
+        get() = _contextRef?.get()
+            ?: throw IllegalStateException("AppContext belum diinisialisasi atau sudah di-reclaim oleh sistem!")
 
     fun init(context: Context) {
-        // Tetap gunakan applicationContext agar aman dari leak
         _contextRef = WeakReference(context.applicationContext)
     }
 }
 
 actual fun createSecureSettings(): Settings {
-    val masterKey = MasterKey.Builder(AppContext.context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
+    val context = AppContext.context
+    val prefName = "secure_prefs"
 
-    val prefs = EncryptedSharedPreferences.create(
-        AppContext.context,
-        "secure_prefs",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+    return try {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
 
-    return SharedPreferencesSettings(prefs)
+        val prefs = EncryptedSharedPreferences.create(
+            context,
+            prefName,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        SharedPreferencesSettings(prefs)
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+
+        context.getSharedPreferences(prefName, Context.MODE_PRIVATE).edit().clear().apply()
+
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        val newPrefs = EncryptedSharedPreferences.create(
+            context,
+            prefName,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        SharedPreferencesSettings(newPrefs)
+    }
 }

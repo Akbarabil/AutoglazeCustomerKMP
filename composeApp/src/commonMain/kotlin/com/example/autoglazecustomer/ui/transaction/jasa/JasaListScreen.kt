@@ -281,7 +281,7 @@ class JasaListScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = displayMsg, // Pakai yang sudah diringkas
+                                text = displayMsg,
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
                                 fontSize = 16.sp,

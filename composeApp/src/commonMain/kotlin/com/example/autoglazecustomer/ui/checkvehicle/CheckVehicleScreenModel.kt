@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.example.autoglazecustomer.data.local.toUserMessage // JOSJIS: Import ini wajib!
+import com.example.autoglazecustomer.data.local.toUserMessage
 import com.example.autoglazecustomer.data.model.GetCekKendaraan
 import com.example.autoglazecustomer.data.network.VehicleService
 import io.ktor.client.plugins.ClientRequestException

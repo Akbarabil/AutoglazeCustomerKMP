@@ -81,6 +81,8 @@ import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import com.example.autoglazecustomer.data.local.LocalShowcaseState
+import com.example.autoglazecustomer.data.local.showcaseTarget
 import com.example.autoglazecustomer.data.model.BeritaItem
 import com.example.autoglazecustomer.data.model.VehicleData
 import com.example.autoglazecustomer.data.model.VoucherItem
@@ -97,6 +99,7 @@ class HomeScreen : Screen {
 
     @Composable
     override fun Content() {
+        val showcaseState = LocalShowcaseState.current
         val tabNavigator = LocalTabNavigator.current
         val screenModel = getScreenModel<HomeScreenModel>()
         val scope = rememberCoroutineScope()
@@ -226,7 +229,7 @@ class HomeScreen : Screen {
                                 Res.drawable.ic_home_service,
                                 "Home Service",
                                 satoshiMedium,
-                                Modifier.weight(1f)
+                                Modifier.weight(1f).showcaseTarget(0, showcaseState)
                             ) {
                                 showHomeServiceDialog = true
                             }
@@ -235,7 +238,7 @@ class HomeScreen : Screen {
                                 Res.drawable.ic_home_layanan,
                                 "Transaksi",
                                 satoshiMedium,
-                                Modifier.weight(1f)
+                                Modifier.weight(1f).showcaseTarget(1, showcaseState)
                             ) {
                                 tabNavigator.current = TransactionTab()
                             }
@@ -244,7 +247,7 @@ class HomeScreen : Screen {
                                 Res.drawable.ic_home_location,
                                 "Lokasi Cabang",
                                 satoshiMedium,
-                                Modifier.weight(1f)
+                                Modifier.weight(1f).showcaseTarget(2, showcaseState)
                             ) {
                                 isLocationButtonClicked = true
 

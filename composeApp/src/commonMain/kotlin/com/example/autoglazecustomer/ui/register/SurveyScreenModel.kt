@@ -58,7 +58,6 @@ class SurveyScreenModel(
                 val finalData = dataRegistrasi.copy(
                     sumberInfo = state.selectedAsalTahu?.idGeneral.toString()
                 )
-
                 val response = authService.registerCustomer(finalData)
 
                 if (response.success == true) {

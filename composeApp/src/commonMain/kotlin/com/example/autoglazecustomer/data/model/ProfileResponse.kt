@@ -11,9 +11,9 @@ data class ProfileResponse(
 
 @Serializable
 data class ProfileData(
-    @SerialName("id") val id: Int,
-    @SerialName("nama") val nama: String,
-    @SerialName("email") val email: String,
+    @SerialName("id") val id: Int? = 0,
+    @SerialName("nama") val nama: String? = "",
+    @SerialName("email") val email: String? = "",
     @SerialName("tgl_lahir") val tglLahir: String? = null,
     @SerialName("telepon") val telepon: String? = null,
     @SerialName("photo") val photo: String? = null

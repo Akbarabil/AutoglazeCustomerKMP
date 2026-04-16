@@ -281,7 +281,7 @@ class LoginScreen(val initialEmail: String = "") : Screen {
                                 }
 
                                 Text(
-                                    text = "Versi 2.0.0",
+                                    text = "Versi 2.0.1",
                                     fontFamily = satoshiMedium,
                                     fontSize = 13.sp,
                                     color = Color.Gray,

@@ -7,10 +7,10 @@ import kotlinx.serialization.Serializable
 data class PointResponse(
     val status: Boolean,
     val message: String,
-    val data: PointData?
+    val data: PointData
 )
 
 @Serializable
 data class PointData(
-    @SerialName("POINT") val point: Int
+    @SerialName("POINT") val point: Int? = 0
 )

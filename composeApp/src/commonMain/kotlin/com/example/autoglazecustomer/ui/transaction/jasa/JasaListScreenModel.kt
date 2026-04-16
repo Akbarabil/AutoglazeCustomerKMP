@@ -70,7 +70,6 @@ class JasaListScreenModel(
 
                 updateDisplayedList()
             } catch (e: Exception) {
-                // JOSJIS: Filter Super Ketat Anti-"null" dari Ktor/Exception
                 val exMsg = e.toUserMessage().trim()
                 if (exMsg.isBlank() || exMsg.contains("null", ignoreCase = true)) {
                     errorMessage =

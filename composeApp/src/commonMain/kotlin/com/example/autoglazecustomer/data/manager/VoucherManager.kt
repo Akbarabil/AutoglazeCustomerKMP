@@ -12,8 +12,6 @@ object VoucherManager {
 
     fun setVouchers(vouchers: List<VoucherUIModel>) {
         _selectedVouchers.value = vouchers
-        println("💾 [DEBUG 2 - VOUCHER MANAGER] Data berhasil disimpan ke StateFlow.")
-        println("💾 [DEBUG 2] Isi StateFlow sekarang: ${_selectedVouchers.value.size} voucher")
     }
 
     fun clearVouchers() {
