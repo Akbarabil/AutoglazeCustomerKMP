@@ -13,8 +13,12 @@ import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutDetailPayload
-import com.example.autoglazecustomer.data.model.transaction.checkout.CheckoutPayload
+import com.example.autoglazecustomer.data.model.transaction.checkout.DeleteDraftPayload
+import com.example.autoglazecustomer.data.model.transaction.checkout.InsertDraftPayload
+import com.example.autoglazecustomer.data.model.transaction.checkout.UpdateFinalPayload
 import com.example.autoglazecustomer.data.network.TransactionService
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlin.math.roundToLong
 
@@ -23,6 +27,10 @@ class CheckoutScreenModel(
     private val cabang: CabangData,
     private val vehicle: VehicleWithStatus
 ) : ScreenModel {
+
+    var isCreatingDraft by mutableStateOf(true)
+    var draftError by mutableStateOf<String?>(null)
+    var kodePenjualanDraft by mutableStateOf("")
 
     var isLoading by mutableStateOf(false)
     var isSuccess by mutableStateOf(false)
@@ -33,6 +41,64 @@ class CheckoutScreenModel(
     var pajakFinal by mutableStateOf(0.0)
     var nettFinal by mutableStateOf(0.0)
     var diskonFinal by mutableStateOf(0.0)
+
+    fun createDraftOrder(cartItems: List<CartItem>) {
+        if (cartItems.isEmpty() || kodePenjualanDraft.isNotEmpty()) return
+
+        val customerIdInt = TokenManager.getCustomerId()
+        val customerName = TokenManager.getUserName()
+
+        if (customerIdInt == -1) {
+            draftError = "Sesi login tidak valid. Silakan login kembali."
+            isCreatingDraft = false
+            return
+        }
+
+        screenModelScope.launch {
+            isCreatingDraft = true
+            draftError = null
+
+            try {
+                val isMembership = cartItems.any { it.category == ItemCategory.MEMBERSHIP }
+                val jenisPenjualan = if (isMembership) "Membership" else "Reguler"
+                val jenisTransaksi = "Reguler"
+
+                val detailPayload = cartItems.map { item ->
+                    CheckoutDetailPayload(
+                        idCabangItem = if (isMembership) null else item.idCabangItem,
+                        idMembership = if (isMembership) item.idMembership else null,
+                        qty = item.qty,
+                        subtotal = item.subtotal,
+                        satuan = item.hargaUnit
+                    )
+                }
+
+                val payload = InsertDraftPayload(
+                    idCustomer = customerIdInt,
+                    idKendaraan = vehicle.vehicle.idKendaraan?.toString() ?: "",
+                    jenisPenjualan = jenisPenjualan,
+                    jenisTransaksi = jenisTransaksi,
+                    namaPelanggan = customerName,
+                    kodeCabang = cabang.kodeCabang,
+                    namaCabang = cabang.namaCabang,
+                    detail = detailPayload
+                )
+
+                val response = transactionService.insertDraftPenjualan(payload, isMembership)
+
+                if (response.status && !response.kodePenjualan.isNullOrEmpty()) {
+                    kodePenjualanDraft = response.kodePenjualan
+                    calculateTotals(cartItems)
+                } else {
+                    draftError = response.message ?: "Gagal menyiapkan pesanan. Silakan coba lagi."
+                }
+            } catch (e: Exception) {
+                draftError = e.toUserMessage()
+            } finally {
+                isCreatingDraft = false
+            }
+        }
+    }
 
     fun calculateTotals(cartItems: List<CartItem>) {
         val totalBayarAsli = cartItems.sumOf { it.subtotal }
@@ -54,25 +120,13 @@ class CheckoutScreenModel(
             val targetedSubtotal = if (isSpecificProduct) {
                 val allowedIds = idProdRaw.split(';').map { it.trim() }
                 val matchedItems = cartItems.filter { it.idProduk.toString().trim() in allowedIds }
-
-                if (matchedItems.isNotEmpty()) {
-                    matchedItems.maxOf { it.hargaUnit }.toDouble()
-                } else {
-                    0.0
-                }
+                if (matchedItems.isNotEmpty()) matchedItems.maxOf { it.hargaUnit }.toDouble() else 0.0
             } else {
                 totalBayarAsli.toDouble()
             }
 
-            var currentDiscount = if (persen > 0) {
-                targetedSubtotal * (persen / 100.0)
-            } else {
-                potHarga
-            }
-
-            if (isSpecificProduct && currentDiscount > targetedSubtotal) {
-                currentDiscount = targetedSubtotal.toDouble()
-            }
+            var currentDiscount = if (persen > 0) targetedSubtotal * (persen / 100.0) else potHarga
+            if (isSpecificProduct && currentDiscount > targetedSubtotal) currentDiscount = targetedSubtotal.toDouble()
 
             tempTotalDiskon += currentDiscount
         }
@@ -92,14 +146,9 @@ class CheckoutScreenModel(
         subtotalFinal = if (finalAmount < 0) 0.0 else finalAmount
     }
 
-    fun processCheckout(cartItems: List<CartItem>) {
-        if (cartItems.isEmpty()) return
-
-        val customerIdInt = TokenManager.getCustomerId()
-        val customerName = TokenManager.getUserName()
-
-        if (customerIdInt == -1) {
-            errorMessage = "Sesi login tidak valid. Silakan login kembali."
+    fun processFinalCheckout() {
+        if (kodePenjualanDraft.isEmpty()) {
+            errorMessage = "Data pesanan tidak valid (Draft tidak ditemukan)."
             return
         }
 
@@ -108,52 +157,43 @@ class CheckoutScreenModel(
             errorMessage = null
 
             try {
-                val isMembership = cartItems.any { it.category == ItemCategory.MEMBERSHIP }
-                val jenisPenjualan = if (isMembership) "Membership" else "Reguler"
-
-                val detailPayload = cartItems.map { item ->
-                    CheckoutDetailPayload(
-                        idCabangItem = if (isMembership) null else item.idCabangItem,
-                        idMembership = if (isMembership) item.idMembership else null,
-                        qty = item.qty,
-                        subtotal = item.subtotal,
-                        satuan = item.hargaUnit
-                    )
-                }
-
                 val selectedVoucherIds = VoucherManager.selectedVouchers.value.map { it.idVoucher }
-                val idVoucherPayload =
-                    if (selectedVoucherIds.isEmpty()) "[]" else selectedVoucherIds.toString()
+                val idVoucherPayload = if (selectedVoucherIds.isEmpty()) "[]" else selectedVoucherIds.toString()
 
-                val payload = CheckoutPayload(
-                    idCustomer = customerIdInt,
-                    namaPelanggan = customerName,
-                    idKendaraan = vehicle.vehicle.idKendaraan?.toString() ?: "",
-                    jenisPenjualan = jenisPenjualan,
-                    jenisTransaksi = "Reguler",
-                    odometer = null,
-                    kodeCabang = cabang.kodeCabang,
-                    namaCabang = cabang.namaCabang,
-                    idVoucher = idVoucherPayload,
+                val payload = UpdateFinalPayload(
+                    kodePenjualan = kodePenjualanDraft,
                     subtotal = subtotalFinal.roundToLong().toString(),
                     pajak = pajakFinal.roundToLong().toString(),
-                    nett = nettFinal.roundToLong().toString(),
                     diskonNominal = diskonFinal.roundToLong().toString(),
-                    detail = detailPayload
+                    nett = nettFinal.roundToLong().toString(),
+                    idVoucher = idVoucherPayload
                 )
 
-                val response = transactionService.processCheckout(payload, isMembership)
+                val response = transactionService.updateFinalPenjualan(payload)
                 if (response.status) {
                     successKodePenjualan = response.kodePenjualan ?: "Sukses"
                     isSuccess = true
                 } else {
-                    errorMessage = response.message ?: "Gagal memproses. Silakan coba lagi."
+                    errorMessage = response.message ?: "Gagal memproses pembayaran. Silakan coba lagi."
                 }
-
             } catch (e: Exception) {
                 errorMessage = e.toUserMessage()
             } finally {
                 isLoading = false
+            }
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun cancelAndHapusDraft() {
+        if (kodePenjualanDraft.isNotEmpty() && !isSuccess) {
+            GlobalScope.launch {
+                try {
+                    val payload = DeleteDraftPayload(kodePenjualan = kodePenjualanDraft)
+                    transactionService.deleteDraftPenjualan(payload)
+                } catch (e: Exception) {
+                    // Fail silently, karena jika user sedang offline, cron-job server yang akan membersihkannya nanti
+                }
             }
         }
     }

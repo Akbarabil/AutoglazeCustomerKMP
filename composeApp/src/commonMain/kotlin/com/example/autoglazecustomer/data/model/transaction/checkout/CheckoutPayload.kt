@@ -13,19 +13,29 @@ data class CheckoutDetailPayload(
 )
 
 @Serializable
-data class CheckoutPayload(
+data class InsertDraftPayload(
     @SerialName("id_customer") val idCustomer: Int,
-    @SerialName("nama_pelanggan") val namaPelanggan: String,
     @SerialName("id_kendaraan") val idKendaraan: String,
     @SerialName("jenis_penjualan") val jenisPenjualan: String,
     @SerialName("jenis_transaksi") val jenisTransaksi: String,
-    @SerialName("odometer") val odometer: String?,
+    @SerialName("nama_pelanggan") val namaPelanggan: String,
     @SerialName("kode_cabang") val kodeCabang: String,
     @SerialName("nama_cabang") val namaCabang: String,
-    @SerialName("id_voucher") val idVoucher: String?,
+    @SerialName("detail") val detail: List<CheckoutDetailPayload>
+)
+
+
+@Serializable
+data class UpdateFinalPayload(
+    @SerialName("kode_penjualan") val kodePenjualan: String,
     @SerialName("subtotal") val subtotal: String,
     @SerialName("pajak") val pajak: String,
-    @SerialName("nett") val nett: String,
     @SerialName("diskon_nominal") val diskonNominal: String,
-    @SerialName("detail") val detail: List<CheckoutDetailPayload>
+    @SerialName("nett") val nett: String,
+    @SerialName("id_voucher") val idVoucher: String
+)
+
+@Serializable
+data class DeleteDraftPayload(
+    @SerialName("kode_penjualan") val kodePenjualan: String
 )

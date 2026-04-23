@@ -8,6 +8,7 @@ import com.example.autoglazecustomer.data.model.RegisterResponse
 import com.example.autoglazecustomer.data.model.UpdateProfileResponse
 import com.example.autoglazecustomer.data.model.password.RequestPasswordResponse
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
@@ -16,6 +17,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.parameters
@@ -33,23 +35,50 @@ class AuthService {
     }
 
     suspend fun registerCustomer(data: DaftarData): RegisterResponse {
-        return ApiClient.client.submitForm(
-            url = "register-customer",
-            formParameters = parameters {
-                append("nama", data.nama)
-                append("email", data.email)
-                append("tgl_lahir", data.tglLahir)
-                append("telepon", data.phone)
-                append("password", data.password)
-                append("asal_tahu", data.sumberInfo)
-                append("id_merek", data.idMerek.toString())
-                append("id_tipe", data.idTipe.toString())
-                append("tahun", data.tahun)
-                append("nopol", data.nopol)
-                append("no_rangka", data.noRangka ?: "")
-                append("id_warna", data.idWarna.toString())
-            }
-        ).body()
+        val formParams = parameters {
+            append("nama", data.nama)
+            append("email", data.email)
+            append("tgl_lahir", data.tglLahir)
+            append("telepon", data.phone)
+            append("password", data.password)
+            append("asal_tahu", data.sumberInfo)
+            append("id_merek", data.idMerek.toString())
+            append("id_tipe", data.idTipe.toString())
+            append("tahun", data.tahun)
+            append("nopol", data.nopol)
+            append("no_rangka", data.noRangka ?: "")
+
+            append("id_warna", data.idWarna.toString())
+        }
+
+        // 2. Cetak Log Payload (Yang dikirim)
+        println("=== [DEBUG PAYLOAD REGISTER] ===")
+        formParams.entries().forEach { (key, value) ->
+            println("PAYLOAD -> $key : ${value.joinToString()}")
+        }
+        println("================================")
+
+        // 3. Eksekusi dan Tangkap Response Server
+        return try {
+            ApiClient.client.submitForm(
+                url = "register-customer",
+                formParameters = formParams
+            ).body()
+        } catch (e: ClientRequestException) {
+            // JIKA GAGAL (SERVER MENOLAK, MISAL KARENA VALIDASI)
+            val errorBody = e.response.bodyAsText()
+            println("=== [DEBUG RESPONSE ERROR DARI SERVER] ===")
+            println("STATUS CODE: ${e.response.status.value}")
+            println("RAW ERROR BODY: $errorBody")
+            println("==========================================")
+
+            throw e // Lempar lagi ke ScreenModel agar UI loading-nya berhenti
+        } catch (e: Exception) {
+            // Error lain (misal koneksi putus)
+            println("=== [DEBUG ERROR LAIN] ===")
+            println("MESSAGE: ${e.message}")
+            throw e
+        }
     }
 
     suspend fun getProfileData(token: String): ProfileResponse {

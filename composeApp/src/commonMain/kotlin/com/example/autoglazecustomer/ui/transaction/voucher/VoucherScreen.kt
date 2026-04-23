@@ -63,7 +63,8 @@ import org.koin.core.parameter.parametersOf
 class VoucherScreen(
     private val idKendaraan: Int,
     private val cartItems: List<CartItem>,
-    private val isMember: Boolean
+    private val isMember: Boolean,
+    private val kodePenjualan: String
 ) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +72,7 @@ class VoucherScreen(
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val screenModel =
-            getScreenModel<VoucherScreenModel> { parametersOf(idKendaraan, cartItems) }
+            getScreenModel<VoucherScreenModel> { parametersOf(idKendaraan, cartItems, kodePenjualan) }
         val satoshiBold = AppFont.satoshiBold()
         val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)

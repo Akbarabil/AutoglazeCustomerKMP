@@ -30,11 +30,12 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
-            implementation("io.ktor:ktor-client-cio:2.3.12")
+            implementation("io.ktor:ktor-client-cio:3.4.3")
             implementation(libs.play.services.location)
             implementation(libs.kotlinx.coroutines.play.services)
             implementation("io.insert-koin:koin-android:3.5.3")
             implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -51,11 +52,11 @@ kotlin {
             implementation(libs.voyager.tab)
             implementation(libs.multiplatform.settings)
             // API & JSON (Gantinya Retrofit & Gson)
-            implementation("io.ktor:ktor-client-core:2.3.12")
+            implementation("io.ktor:ktor-client-core:3.4.3")
 
-            implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
-            implementation("io.ktor:ktor-client-logging:2.3.12")
+            implementation("io.ktor:ktor-client-content-negotiation:3.4.3")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.3")
+            implementation("io.ktor:ktor-client-logging:3.4.3")
 
             implementation("io.github.alexzhirkevich:qrose:1.0.1")
             // peekaboo-ui
@@ -79,11 +80,12 @@ kotlin {
 
             // 3. Voyager - Koin Integration (Ini yang bikin koinScreenModel() bisa jalan!)
             implementation("cafe.adriel.voyager:voyager-koin:1.0.0")
+            implementation("dev.skymansandy:wiretap-ktor:1.0.0-RC10")
 
         }
 
         iosMain.dependencies {
-            implementation("io.ktor:ktor-client-darwin:2.3.12")
+            implementation("io.ktor:ktor-client-darwin:3.4.3")
         }
 
         commonTest.dependencies {

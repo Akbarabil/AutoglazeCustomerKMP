@@ -113,11 +113,12 @@ val appModule = module {
         )
     }
 
-    factory { (idKendaraan: Int, cartItems: List<CartItem>) ->
+    factory { (idKendaraan: Int, cartItems: List<CartItem>, kodePenjualan: String) ->
         VoucherScreenModel(
             transactionService = get(),
             idKendaraan = idKendaraan,
-            cartItems = cartItems
+            cartItems = cartItems,
+            kodePenjualan = kodePenjualan
         )
     }
 

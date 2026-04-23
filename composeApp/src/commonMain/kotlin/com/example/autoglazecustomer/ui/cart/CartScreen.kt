@@ -456,7 +456,7 @@ class CartScreen : Screen {
                     Spacer(Modifier.height(8.dp))
                     Text("Total Pembayaran", fontSize = 10.sp, color = Color.Gray, fontFamily = med)
                     Text(
-                        formatRupiah(item.subtotal),
+                        formatRupiah(item.subtotal ?: 0.0),
                         color = accent,
                         fontFamily = bold,
                         fontSize = 18.sp

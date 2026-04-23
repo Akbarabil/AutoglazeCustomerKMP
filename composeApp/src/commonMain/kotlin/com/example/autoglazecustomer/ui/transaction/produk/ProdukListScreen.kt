@@ -1,5 +1,6 @@
 package com.example.autoglazecustomer.ui.transaction.produk
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
@@ -54,6 +58,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,7 +71,9 @@ import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.example.autoglazecustomer.data.manager.CartItem
 import com.example.autoglazecustomer.data.manager.CartManager
+import com.example.autoglazecustomer.data.manager.ItemCategory
 import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
@@ -101,12 +108,10 @@ class ProdukListScreen(
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 
-
         val cartItems by CartManager.cartItems.collectAsState()
         var showExitDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) { screenModel.fetchData() }
-
 
         val onLeaveAttempt = {
             if (cartItems.isNotEmpty()) {
@@ -118,10 +123,7 @@ class ProdukListScreen(
             }
         }
 
-
-        KmpBackHandler {
-            onLeaveAttempt()
-        }
+        KmpBackHandler { onLeaveAttempt() }
 
         Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
             Scaffold(
@@ -134,7 +136,6 @@ class ProdukListScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-
                             CenterAlignedTopAppBar(
                                 title = {
                                     Text(
@@ -145,7 +146,6 @@ class ProdukListScreen(
                                     )
                                 },
                                 navigationIcon = {
-
                                     IconButton(onClick = { onLeaveAttempt() }) {
                                         Icon(
                                             Icons.Default.ArrowBackIosNew,
@@ -160,7 +160,6 @@ class ProdukListScreen(
                                 ),
                                 windowInsets = WindowInsets.statusBars
                             )
-
 
                             TextField(
                                 value = screenModel.searchQuery,
@@ -181,11 +180,7 @@ class ProdukListScreen(
                                     )
                                 },
                                 leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Search,
-                                        null,
-                                        tint = Color.Gray
-                                    )
+                                    Icon(Icons.Default.Search, null, tint = Color.Gray)
                                 },
                                 shape = RoundedCornerShape(16.dp),
                                 singleLine = true,
@@ -214,7 +209,6 @@ class ProdukListScreen(
                         )
                     } else if (screenModel.errorMessage != null) {
                         val displayMsg = screenModel.errorMessage!!
-
                         Column(
                             modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -254,13 +248,11 @@ class ProdukListScreen(
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-
                             val emptyText = if (screenModel.searchQuery.isNotEmpty()) {
                                 "Produk '${screenModel.searchQuery}' tidak ditemukan"
                             } else {
                                 "Belum ada produk di cabang ini"
                             }
-
                             Text(
                                 text = emptyText,
                                 fontFamily = satoshiMedium,
@@ -270,7 +262,6 @@ class ProdukListScreen(
                             )
                         }
                     } else {
-
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             contentPadding = PaddingValues(
@@ -282,13 +273,17 @@ class ProdukListScreen(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(screenModel.displayedProducts) { item ->
+                            items(screenModel.displayedProducts, key = { it.idProduk }) { item ->
                                 val (original, final) = screenModel.calculatePrice(item)
+                                val currentCartItem =
+                                    cartItems.find { it.idProduk == item.idProduk }
+                                val currentQty = currentCartItem?.qty ?: 0
 
                                 ProductCardGridItem(
                                     item = item,
                                     originalPrice = original,
                                     finalPrice = final,
+                                    qtyInCart = currentQty,
                                     bold = satoshiBold,
                                     med = satoshiMedium,
                                     redPrimer = redPrimer,
@@ -301,6 +296,29 @@ class ProdukListScreen(
                                                 vehicleJson = vehicleJson
                                             )
                                         )
+                                    },
+                                    onAddClick = {
+                                        val newItem = CartItem(
+                                            idProduk = item.idProduk,
+                                            idCabangItem = item.idCabangItem,
+                                            idMembership = null,
+                                            namaItem = item.namaProduk,
+                                            imageUrl = item.gambarUrl,
+                                            qty = 1,
+                                            hargaUnit = final,
+                                            category = ItemCategory.PRODUK
+                                        )
+                                        CartManager.addItemToCart(newItem)
+                                    },
+                                    onDecreaseClick = {
+                                        if (currentQty == 1) {
+                                            CartManager.removeItem(item.idProduk)
+                                        } else if (currentQty > 1) {
+                                            CartManager.updateItemQty(item.idProduk, currentQty - 1)
+                                        }
+                                    },
+                                    onIncreaseClick = {
+                                        CartManager.updateItemQty(item.idProduk, currentQty + 1)
                                     }
                                 )
                             }
@@ -322,7 +340,6 @@ class ProdukListScreen(
                     }
                 )
             }
-
 
             if (showExitDialog) {
                 AlertDialog(
@@ -372,10 +389,14 @@ class ProdukListScreen(
         item: ProdukItem,
         originalPrice: Double,
         finalPrice: Double,
+        qtyInCart: Int,
         bold: FontFamily,
         med: FontFamily,
         redPrimer: Color,
-        onClick: () -> Unit
+        onClick: () -> Unit,
+        onAddClick: () -> Unit,
+        onDecreaseClick: () -> Unit,
+        onIncreaseClick: () -> Unit
     ) {
         Surface(
             modifier = Modifier
@@ -422,14 +443,12 @@ class ProdukListScreen(
                             color = Color.Gray,
                             textDecoration = TextDecoration.LineThrough
                         )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                formatRupiah(finalPrice),
-                                fontFamily = bold,
-                                fontSize = 15.sp,
-                                color = redPrimer
-                            )
-                        }
+                        Text(
+                            formatRupiah(finalPrice),
+                            fontFamily = bold,
+                            fontSize = 15.sp,
+                            color = redPrimer
+                        )
                     } else {
                         val priceText =
                             if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice)
@@ -440,6 +459,87 @@ class ProdukListScreen(
                             color = if (finalPrice == 0.0) Color(0xFF4CAF50) else Color.Black
                         )
                     }
+
+                    Spacer(Modifier.height(12.dp))
+                    CartStepperGrid(
+                        qty = qtyInCart,
+                        redPrimer = redPrimer,
+                        bold = bold,
+                        onAddClick = onAddClick,
+                        onDecreaseClick = onDecreaseClick,
+                        onIncreaseClick = onIncreaseClick
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun CartStepperGrid(
+        qty: Int,
+        redPrimer: Color,
+        bold: FontFamily,
+        onAddClick: () -> Unit,
+        onDecreaseClick: () -> Unit,
+        onIncreaseClick: () -> Unit
+    ) {
+        if (qty == 0) {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, redPrimer),
+                color = Color.White,
+                modifier = Modifier.fillMaxWidth().clickable { onAddClick() }
+            ) {
+                Text(
+                    text = "+ Tambah",
+                    fontFamily = bold,
+                    fontSize = 12.sp,
+                    color = redPrimer,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(vertical = 6.dp)
+                )
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, if (qty == 1) redPrimer else Color.Gray),
+                    color = if (qty == 1) redPrimer.copy(alpha = 0.05f) else Color.White,
+                    modifier = Modifier.size(28.dp).clip(RoundedCornerShape(8.dp))
+                        .clickable { onDecreaseClick() }
+                ) {
+                    Icon(
+                        imageVector = if (qty == 1) Icons.Default.DeleteOutline else Icons.Default.Remove,
+                        contentDescription = "Kurangi",
+                        tint = if (qty == 1) redPrimer else Color.DarkGray,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
+
+                Text(
+                    text = qty.toString(),
+                    fontFamily = bold,
+                    fontSize = 14.sp,
+                    color = Color.Black
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, redPrimer),
+                    color = redPrimer,
+                    modifier = Modifier.size(28.dp).clip(RoundedCornerShape(8.dp))
+                        .clickable { onIncreaseClick() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Tambah",
+                        tint = Color.White,
+                        modifier = Modifier.padding(4.dp)
+                    )
                 }
             }
         }

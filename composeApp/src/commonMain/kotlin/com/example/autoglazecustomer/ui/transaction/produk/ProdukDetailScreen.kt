@@ -2,9 +2,10 @@ package com.example.autoglazecustomer.ui.transaction.produk
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,9 +24,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,6 +43,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +57,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,7 +73,6 @@ import com.example.autoglazecustomer.data.manager.CartManager
 import com.example.autoglazecustomer.data.manager.ItemCategory
 import com.example.autoglazecustomer.data.model.transaction.produk.ProdukItem
 import com.example.autoglazecustomer.ui.theme.AppFont
-import com.example.autoglazecustomer.ui.transaction.components.AddToCartBottomSheet
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
@@ -92,13 +97,15 @@ class ProdukDetailScreen(
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 
-        var showBottomSheet by remember { mutableStateOf(false) }
         var isSnackbarSuccess by remember { mutableStateOf(true) }
 
         val originalPrice = item.hargaNonMember
-
         val cleanDescription =
             parseHtml(item.deskripsi ?: "Tidak ada deskripsi tambahan untuk produk ini.")
+
+        val cartItems by CartManager.cartItems.collectAsState()
+        val currentCartItem = cartItems.find { it.idProduk == item.idProduk }
+        val currentQty = currentCartItem?.qty ?: 0
 
         Scaffold(
             containerColor = bgLight,
@@ -208,7 +215,6 @@ class ProdukDetailScreen(
                     }
                 }
 
-
                 IconButton(
                     onClick = { if (navigator.canPop) navigator.pop() },
                     modifier = Modifier.statusBarsPadding().padding(start = 16.dp, top = 8.dp)
@@ -223,7 +229,6 @@ class ProdukDetailScreen(
                     )
                 }
 
-
                 Box(
                     modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(
                         Brush.verticalGradient(
@@ -231,7 +236,8 @@ class ProdukDetailScreen(
                                 Color.White.copy(alpha = 0f),
                                 Color.White.copy(alpha = 0.8f),
                                 Color.White
-                            ), startY = 0f, endY = 100f
+                            ),
+                            startY = 0f, endY = 100f
                         )
                     )
                 ) {
@@ -251,7 +257,8 @@ class ProdukDetailScreen(
                                 end = 12.dp,
                                 top = 14.dp,
                                 bottom = 14.dp
-                            ), verticalAlignment = Alignment.CenterVertically
+                            ),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                                 Text(
@@ -280,73 +287,56 @@ class ProdukDetailScreen(
                                     }
                                 }
                             }
-                            Button(
-                                onClick = { showBottomSheet = true },
-                                modifier = Modifier.height(52.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                contentPadding = PaddingValues(horizontal = 20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
-                            ) {
-                                Icon(
-                                    Icons.Default.ShoppingCart,
-                                    null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = Color.White
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(
-                                    "Tambah",
-                                    fontFamily = satoshiBold,
-                                    fontSize = 15.sp,
-                                    color = Color.White
-                                )
-                            }
+
+                            CartStepperDetail(
+                                qty = currentQty,
+                                redPrimer = redPrimer,
+                                bold = satoshiBold,
+                                onAddClick = {
+                                    try {
+                                        val newCartItem = CartItem(
+                                            idProduk = item.idProduk,
+                                            idCabangItem = item.idCabangItem,
+                                            idMembership = null,
+                                            namaItem = item.namaProduk,
+                                            imageUrl = item.gambarUrl,
+                                            qty = 1,
+                                            hargaUnit = finalPrice,
+                                            category = ItemCategory.PRODUK
+                                        )
+                                        CartManager.addItemToCart(newCartItem)
+
+                                        isSnackbarSuccess = true
+                                        val formattedName = item.namaProduk.toTitleCase()
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "1 $formattedName masuk ke keranjang",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    } catch (e: Exception) {
+                                        isSnackbarSuccess = false
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Gagal menambahkan ke keranjang",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    }
+                                },
+                                onDecreaseClick = {
+                                    if (currentQty == 1) {
+                                        CartManager.removeItem(item.idProduk)
+                                    } else if (currentQty > 1) {
+                                        CartManager.updateItemQty(item.idProduk, currentQty - 1)
+                                    }
+                                },
+                                onIncreaseClick = {
+                                    CartManager.updateItemQty(item.idProduk, currentQty + 1)
+                                }
+                            )
                         }
                     }
-                }
-
-                if (showBottomSheet) {
-                    AddToCartBottomSheet(
-                        namaProduk = item.namaProduk,
-                        gambarUrl = item.gambarUrl,
-                        finalPrice = finalPrice,
-                        isMultiple = true,
-                        onDismissRequest = { showBottomSheet = false },
-                        onAddToCart = { quantity ->
-                            showBottomSheet = false
-
-                            try {
-                                val newCartItem = CartItem(
-                                    idProduk = item.idProduk,
-                                    idCabangItem = item.idCabangItem,
-                                    idMembership = null,
-                                    namaItem = item.namaProduk,
-                                    imageUrl = item.gambarUrl,
-                                    qty = quantity,
-                                    hargaUnit = finalPrice,
-                                    category = ItemCategory.PRODUK
-                                )
-                                CartManager.addItemToCart(newCartItem)
-
-                                isSnackbarSuccess = true
-                                val formattedName = item.namaProduk.toTitleCase()
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = "$quantity $formattedName berhasil masuk ke keranjang",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                isSnackbarSuccess = false
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = "Gagal menambahkan ke keranjang",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            }
-                        }
-                    )
                 }
 
                 SnackbarHost(
@@ -356,8 +346,10 @@ class ProdukDetailScreen(
                         .statusBarsPadding()
                         .padding(top = 16.dp, start = 20.dp, end = 20.dp),
                     snackbar = { data ->
-                        val icon = if (isSnackbarSuccess) Icons.Default.CheckCircle else Icons.Default.Cancel
-                        val iconColor = if (isSnackbarSuccess) Color(0xFF4CAF50) else Color(0xFFE53935)
+                        val icon =
+                            if (isSnackbarSuccess) Icons.Default.CheckCircle else Icons.Default.Cancel
+                        val iconColor =
+                            if (isSnackbarSuccess) Color(0xFF4CAF50) else Color(0xFFE53935)
 
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
@@ -387,6 +379,81 @@ class ProdukDetailScreen(
                         }
                     }
                 )
+            }
+        }
+    }
+
+    @Composable
+    private fun CartStepperDetail(
+        qty: Int,
+        redPrimer: Color,
+        bold: FontFamily,
+        onAddClick: () -> Unit,
+        onDecreaseClick: () -> Unit,
+        onIncreaseClick: () -> Unit
+    ) {
+        if (qty == 0) {
+            Button(
+                onClick = onAddClick,
+                modifier = Modifier.height(48.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+            ) {
+                Icon(
+                    Icons.Default.ShoppingCart,
+                    null,
+                    modifier = Modifier.size(16.dp),
+                    tint = Color.White
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "+ Tambah",
+                    fontFamily = bold,
+                    fontSize = 14.sp,
+                    color = Color.White
+                )
+            }
+        } else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, if (qty == 1) redPrimer else Color.Gray),
+                    color = if (qty == 1) redPrimer.copy(alpha = 0.05f) else Color.White,
+                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                        .clickable { onDecreaseClick() }
+                ) {
+                    Icon(
+                        imageVector = if (qty == 1) Icons.Default.DeleteOutline else Icons.Default.Remove,
+                        contentDescription = "Kurangi",
+                        tint = if (qty == 1) redPrimer else Color.DarkGray,
+                        modifier = Modifier.padding(6.dp)
+                    )
+                }
+
+                Text(
+                    text = qty.toString(),
+                    fontFamily = bold,
+                    fontSize = 18.sp,
+                    color = Color.Black
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, redPrimer),
+                    color = redPrimer,
+                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                        .clickable { onIncreaseClick() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Tambah",
+                        tint = Color.White,
+                        modifier = Modifier.padding(6.dp)
+                    )
+                }
             }
         }
     }

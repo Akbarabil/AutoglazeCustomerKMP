@@ -379,7 +379,8 @@ class MembershipListScreen(
                     .statusBarsPadding()
                     .padding(top = 16.dp, start = 20.dp, end = 20.dp),
                 snackbar = { data ->
-                    val icon = if (isSnackbarSuccess) Icons.Default.CheckCircle else Icons.Default.Cancel
+                    val icon =
+                        if (isSnackbarSuccess) Icons.Default.CheckCircle else Icons.Default.Cancel
                     val iconColor = if (isSnackbarSuccess) Color(0xFF4CAF50) else Color(0xFFE53935)
 
                     Surface(

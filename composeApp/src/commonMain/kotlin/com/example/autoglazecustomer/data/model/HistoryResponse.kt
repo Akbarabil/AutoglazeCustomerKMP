@@ -14,8 +14,8 @@ data class HistoryResponse(
 data class HistoryItem(
     @SerialName("KODE_PENJUALAN") val kodePenjualan: String,
     @SerialName("NAMA_CABANG") val namaCabang: String,
-    @SerialName("NETT") val nett: Double,
-    @SerialName("SUBTOTAL") val subtotal: Double,
+    @SerialName("NETT") val nett: Double? = null,
+    @SerialName("SUBTOTAL") val subtotal: Double? = null,
     @SerialName("CREATED_AT") val createdAt: String,
     @SerialName("KODE_CABANG") val kodeCabang: String,
     @SerialName("NOMOR_POLISI") val nopol: String? = null

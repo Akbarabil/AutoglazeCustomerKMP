@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Assignment
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.LocalActivity
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -71,6 +70,7 @@ import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
 import com.example.autoglazecustomer.data.model.transaction.VoucherUIModel
+import com.example.autoglazecustomer.ui.KmpBackHandler
 import com.example.autoglazecustomer.ui.theme.AppFont
 import com.example.autoglazecustomer.ui.transaction.voucher.VoucherScreen
 import kotlinx.serialization.json.Json
@@ -97,106 +97,127 @@ class CheckoutScreen(
         val satoshiMedium = AppFont.satoshiMedium()
         val redPrimer = Color(0xFFD53B1E)
 
-        LaunchedEffect(cartItems) {
-            val currentProductIds = cartItems.map { it.idProduk.toString() }
-            VoucherManager.removeInvalidVouchers(currentProductIds)
+        LaunchedEffect(Unit) {
+            screenModel.createDraftOrder(cartItems)
         }
 
         LaunchedEffect(cartItems, selectedVouchers) {
-            screenModel.calculateTotals(cartItems)
-            if (cartItems.isEmpty() && !screenModel.isSuccess) {
-                VoucherManager.clearVouchers()
-                if (navigator.canPop) navigator.pop()
+            if (screenModel.kodePenjualanDraft.isNotEmpty()) {
+                screenModel.calculateTotals(cartItems)
             }
         }
 
+        val onBackPress = {
+            screenModel.cancelAndHapusDraft()
+            navigator.pop()
+        }
+        KmpBackHandler { onBackPress() }
+
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF8F9FA))) {
-            Scaffold(
-                containerColor = Color.Transparent,
-                topBar = {
-                    Surface(color = Color.White, shadowElevation = 2.dp) {
-                        CenterAlignedTopAppBar(
-                            title = {
-                                Text(
-                                    "Checkout",
-                                    fontFamily = satoshiBold,
-                                    fontSize = 18.sp
-                                )
-                            },
-                            navigationIcon = {
-                                IconButton(onClick = { navigator.pop() }) {
-                                    Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp))
-                                }
-                            },
-                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
-                        )
-                    }
-                }
-            ) { padding ->
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(top = 20.dp, bottom = 140.dp)
+            if (screenModel.isCreatingDraft) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-
-                    item {
-                        SectionTitle("Informasi Layanan", satoshiBold)
-                        Spacer(Modifier.height(10.dp))
-                        TransactionInfoBanner(
-                            cabang,
-                            vehicle,
-                            satoshiBold,
-                            satoshiMedium,
-                            redPrimer
-                        )
-                        Spacer(Modifier.height(20.dp))
-                    }
-
-                    item {
-                        SectionTitle("Pesanan Anda", satoshiBold)
-                        Spacer(Modifier.height(10.dp))
-                    }
-                    items(cartItems) { item ->
-                        CartItemRow(item, satoshiBold, satoshiMedium, redPrimer) {
-                            CartManager.removeItem(item.idProduk)
-                        }
-                        Spacer(Modifier.height(12.dp))
-                    }
-
-                    item {
-                        Spacer(Modifier.height(16.dp))
-                        SectionTitle("Promo & Voucher", satoshiBold)
-                        Spacer(Modifier.height(10.dp))
-
-                        val isMember = vehicle.vehicle.isMembership == 1
-
-                        VoucherCard(
-                            selectedVouchers = selectedVouchers,
-                            isMember = isMember,
-                            cartItems = cartItems,
-                            bold = satoshiBold,
-                            med = satoshiMedium,
-                            red = redPrimer
-                        ) {
-                            navigator.push(
-                                VoucherScreen(
-                                    idKendaraan = vehicle.vehicle.idKendaraan ?: -1,
-                                    cartItems = cartItems,
-                                    isMember = isMember
-                                )
+                    CircularProgressIndicator(color = redPrimer)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        "Menyiapkan Pesanan Anda...",
+                        fontFamily = satoshiMedium,
+                        color = Color.Gray,
+                        fontSize = 15.sp
+                    )
+                }
+            } else {
+                Scaffold(
+                    containerColor = Color.Transparent,
+                    topBar = {
+                        Surface(color = Color.White, shadowElevation = 2.dp) {
+                            CenterAlignedTopAppBar(
+                                title = {
+                                    Text(
+                                        "Checkout",
+                                        fontFamily = satoshiBold,
+                                        fontSize = 18.sp
+                                    )
+                                },
+                                navigationIcon = {
+                                    IconButton(onClick = { onBackPress() }) {
+                                        Icon(Icons.Default.ArrowBackIosNew, null, Modifier.size(20.dp))
+                                    }
+                                },
+                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
                             )
                         }
-                        Spacer(Modifier.height(20.dp))
                     }
+                ) { padding ->
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(padding),
+                        contentPadding = PaddingValues(top = 20.dp, bottom = 140.dp)
+                    ) {
 
-                    item {
-                        SectionTitle("Ringkasan Transaksi", satoshiBold)
-                        Spacer(Modifier.height(10.dp))
-                        PaymentDetailsCard(screenModel, satoshiBold, satoshiMedium, redPrimer)
+                        item {
+                            SectionTitle("Informasi Layanan", satoshiBold)
+                            Spacer(Modifier.height(10.dp))
+                            TransactionInfoBanner(
+                                cabang,
+                                vehicle,
+                                satoshiBold,
+                                satoshiMedium,
+                                redPrimer
+                            )
+                            Spacer(Modifier.height(20.dp))
+                        }
+
+                        item {
+                            SectionTitle("Pesanan Anda", satoshiBold)
+                            Spacer(Modifier.height(10.dp))
+                        }
+                        items(cartItems) { item ->
+                            CartItemRowStatic(item, satoshiBold, satoshiMedium, redPrimer)
+                            Spacer(Modifier.height(12.dp))
+                        }
+
+                        item {
+                            Spacer(Modifier.height(16.dp))
+                            SectionTitle("Promo & Voucher", satoshiBold)
+                            Spacer(Modifier.height(10.dp))
+
+                            val isMember = vehicle.vehicle.isMembership == 1
+
+                            VoucherCard(
+                                selectedVouchers = selectedVouchers,
+                                isMember = isMember,
+                                cartItems = cartItems,
+                                bold = satoshiBold,
+                                med = satoshiMedium,
+                                red = redPrimer
+                            ) {
+                                navigator.push(
+                                    VoucherScreen(
+                                        idKendaraan = vehicle.vehicle.idKendaraan ?: -1,
+                                        cartItems = cartItems,
+                                        isMember = isMember,
+                                        kodePenjualan = screenModel.kodePenjualanDraft
+
+                                    )
+                                )
+                            }
+                            Spacer(Modifier.height(20.dp))
+                        }
+
+                        item {
+                            SectionTitle("Ringkasan Transaksi", satoshiBold)
+                            Spacer(Modifier.height(10.dp))
+                            PaymentDetailsCard(screenModel, satoshiBold, satoshiMedium, redPrimer)
+                        }
                     }
                 }
+
+                CheckoutBottomBar(screenModel, cartItems, satoshiBold, satoshiMedium, redPrimer)
             }
 
-            CheckoutBottomBar(screenModel, cartItems, satoshiBold, satoshiMedium, redPrimer)
             HandleDialogs(screenModel, satoshiBold, satoshiMedium, redPrimer, navigator)
         }
     }
@@ -276,12 +297,11 @@ class CheckoutScreen(
     }
 
     @Composable
-    private fun CartItemRow(
+    private fun CartItemRowStatic(
         item: CartItem,
         bold: FontFamily,
         med: FontFamily,
-        red: Color,
-        onDelete: () -> Unit
+        red: Color
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
@@ -300,35 +320,15 @@ class CheckoutScreen(
                 )
                 Spacer(Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(
+                    Text(
+                        text = item.namaItem,
+                        fontFamily = bold,
+                        fontSize = 15.sp,
+                        color = Color.Black,
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Text(
-                            text = item.namaItem,
-                            fontFamily = bold,
-                            fontSize = 15.sp,
-                            color = Color.Black,
-                            modifier = Modifier.weight(1f),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(Modifier.width(8.dp))
-
-                        IconButton(
-                            onClick = onDelete,
-                            modifier = Modifier.background(Color(0xFFFFF0F0), CircleShape)
-                                .size(32.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.DeleteOutline,
-                                contentDescription = "Hapus",
-                                tint = red,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
                     Spacer(Modifier.height(6.dp))
                     Text(
@@ -346,7 +346,7 @@ class CheckoutScreen(
                     ) {
                         Surface(color = Color(0xFFF3F4F6), shape = RoundedCornerShape(6.dp)) {
                             Text(
-                                "Qty: ${item.qty}",
+                                "Jumlah: ${item.qty}",
                                 fontFamily = med,
                                 fontSize = 12.sp,
                                 color = Color.DarkGray,
@@ -561,7 +561,7 @@ class CheckoutScreen(
                     )
                 }
                 Button(
-                    onClick = { screenModel.processCheckout(cartItems) },
+                    onClick = { screenModel.processFinalCheckout() },
                     modifier = Modifier.height(54.dp).width(150.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = red)
@@ -585,6 +585,21 @@ class CheckoutScreen(
         red: Color,
         navigator: cafe.adriel.voyager.navigator.Navigator
     ) {
+        if (sm.draftError != null) {
+            AlertDialog(
+                onDismissRequest = { sm.draftError = null; navigator.pop() },
+                title = { Text("Pemberitahuan", fontFamily = bold) },
+                text = { Text(sm.draftError!!, fontFamily = med) },
+                confirmButton = {
+                    Button(
+                        onClick = { sm.draftError = null; navigator.pop() },
+                        colors = ButtonDefaults.buttonColors(containerColor = red)
+                    ) { Text("Kembali", fontFamily = bold) }
+                },
+                containerColor = Color.White
+            )
+        }
+
         if (sm.isSuccess) {
             AlertDialog(
                 onDismissRequest = {},
@@ -604,6 +619,8 @@ class CheckoutScreen(
                 containerColor = Color.White
             )
         }
+
+
         if (sm.errorMessage != null) {
             AlertDialog(
                 onDismissRequest = { sm.errorMessage = null },
@@ -611,11 +628,7 @@ class CheckoutScreen(
                 text = { Text(sm.errorMessage!!, fontFamily = med) },
                 confirmButton = {
                     TextButton(onClick = { sm.errorMessage = null }) {
-                        Text(
-                            "Tutup",
-                            color = red,
-                            fontFamily = bold
-                        )
+                        Text("Tutup", color = red, fontFamily = bold)
                     }
                 },
                 containerColor = Color.White

@@ -2,6 +2,8 @@ package com.example.autoglazecustomer.ui.transaction.jasa
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,9 +24,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
@@ -38,6 +43,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,7 +74,6 @@ import com.example.autoglazecustomer.data.manager.CartManager
 import com.example.autoglazecustomer.data.manager.ItemCategory
 import com.example.autoglazecustomer.data.model.transaction.jasa.LayananItem
 import com.example.autoglazecustomer.ui.theme.AppFont
-import com.example.autoglazecustomer.ui.transaction.components.AddToCartBottomSheet
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
@@ -92,12 +97,16 @@ class JasaDetailScreen(
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 
-        var showBottomSheet by remember { mutableStateOf(false) }
         var isSnackbarSuccess by remember { mutableStateOf(true) }
 
         val originalPrice = item.hargaJual
         val cleanDescription =
             parseHtml(item.deskripsi ?: "Tidak ada deskripsi tambahan untuk layanan ini.")
+
+        val cartItems by CartManager.cartItems.collectAsState()
+        val currentCartItem = cartItems.find { it.idProduk == item.idProduk }
+        val currentQty = currentCartItem?.qty ?: 0
+        val isMultiple = item.isMultiple == 1
 
         Scaffold(
             containerColor = bgLight,
@@ -119,20 +128,14 @@ class JasaDetailScreen(
                     Box(
                         modifier = Modifier.fillMaxWidth().height(120.dp).background(
                             Brush.verticalGradient(
-                                listOf(
-                                    Color.Black.copy(0.7f),
-                                    Color.Transparent
-                                )
+                                listOf(Color.Black.copy(0.7f), Color.Transparent)
                             )
                         ).align(Alignment.TopCenter)
                     )
                     Box(
                         modifier = Modifier.fillMaxWidth().height(80.dp).background(
                             Brush.verticalGradient(
-                                listOf(
-                                    Color.Transparent,
-                                    Color.Black.copy(0.3f)
-                                )
+                                listOf(Color.Transparent, Color.Black.copy(0.3f))
                             )
                         ).align(Alignment.BottomCenter)
                     )
@@ -148,10 +151,7 @@ class JasaDetailScreen(
                     ) {
                         Column(
                             modifier = Modifier.padding(
-                                top = 16.dp,
-                                start = 24.dp,
-                                end = 24.dp,
-                                bottom = 24.dp
+                                top = 16.dp, start = 24.dp, end = 24.dp, bottom = 24.dp
                             )
                         ) {
                             Box(
@@ -229,11 +229,8 @@ class JasaDetailScreen(
                 Box(
                     modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(
                         Brush.verticalGradient(
-                            listOf(
-                                Color.White.copy(alpha = 0f),
-                                Color.White.copy(alpha = 0.8f),
-                                Color.White
-                            ), startY = 0f, endY = 100f
+                            listOf(Color.White.copy(alpha = 0f), Color.White.copy(alpha = 0.8f), Color.White),
+                            startY = 0f, endY = 100f
                         )
                     )
                 ) {
@@ -241,20 +238,14 @@ class JasaDetailScreen(
                         modifier = Modifier.fillMaxWidth()
                             .padding(horizontal = 20.dp, vertical = 20.dp)
                             .windowInsetsPadding(WindowInsets.navigationBars).shadow(
-                                16.dp,
-                                RoundedCornerShape(24.dp),
-                                spotColor = Color.Black.copy(alpha = 0.15f)
+                                16.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.15f)
                             ),
                         shape = RoundedCornerShape(24.dp),
                         color = Color.White
                     ) {
                         Row(
-                            modifier = Modifier.padding(
-                                start = 20.dp,
-                                end = 12.dp,
-                                top = 14.dp,
-                                bottom = 14.dp
-                            ), verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.padding(start = 20.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                                 Text(
@@ -265,9 +256,7 @@ class JasaDetailScreen(
                                 )
                                 Row(verticalAlignment = Alignment.Bottom) {
                                     Text(
-                                        text = if (finalPrice == 0.0) "GRATIS" else formatRupiah(
-                                            finalPrice
-                                        ),
+                                        text = if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice),
                                         fontFamily = satoshiBold,
                                         color = if (finalPrice == 0.0) Color(0xFF4CAF50) else redPrimer,
                                         fontSize = 20.sp
@@ -285,65 +274,50 @@ class JasaDetailScreen(
                                     }
                                 }
                             }
-                            Button(
-                                onClick = { showBottomSheet = true },
-                                modifier = Modifier.height(52.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
-                            ) {
-                                Icon(
-                                    Icons.Default.ShoppingCart,
-                                    null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = Color.White
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(
-                                    "Tambah",
-                                    fontFamily = satoshiBold,
-                                    fontSize = 15.sp,
-                                    color = Color.White
-                                )
-                            }
+
+                            CartStepper(
+                                qty = currentQty,
+                                isMultiple = isMultiple,
+                                redPrimer = redPrimer,
+                                bold = satoshiBold,
+                                onAddClick = {
+                                    try {
+                                        val newCartItem = CartItem(
+                                            idProduk = item.idProduk,
+                                            idCabangItem = item.idCabangItem,
+                                            idMembership = null,
+                                            namaItem = item.namaProduk,
+                                            imageUrl = item.gambarUrl,
+                                            qty = 1,
+                                            hargaUnit = finalPrice,
+                                            category = ItemCategory.JASA
+                                        )
+                                        CartManager.addItemToCart(newCartItem)
+                                        isSnackbarSuccess = true
+                                        val formattedName = item.namaProduk.toTitleCase()
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(message = "1 $formattedName masuk ke keranjang")
+                                        }
+                                    } catch (e: Exception) {
+                                        isSnackbarSuccess = false
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(message = "Gagal menambahkan ke keranjang")
+                                        }
+                                    }
+                                },
+                                onDecreaseClick = {
+                                    if (currentQty == 1) {
+                                        CartManager.removeItem(item.idProduk)
+                                    } else if (currentQty > 1) {
+                                        CartManager.updateItemQty(item.idProduk, currentQty - 1)
+                                    }
+                                },
+                                onIncreaseClick = {
+                                    CartManager.updateItemQty(item.idProduk, currentQty + 1)
+                                }
+                            )
                         }
                     }
-                }
-
-                if (showBottomSheet) {
-                    AddToCartBottomSheet(
-                        namaProduk = item.namaProduk,
-                        gambarUrl = item.gambarUrl,
-                        finalPrice = finalPrice,
-                        isMultiple = (item.isMultiple == 1),
-                        onDismissRequest = { showBottomSheet = false },
-                        onAddToCart = { quantity ->
-                            showBottomSheet = false
-                            try {
-                                val newCartItem = CartItem(
-                                    idProduk = item.idProduk,
-                                    idCabangItem = item.idCabangItem,
-                                    idMembership = null,
-                                    namaItem = item.namaProduk,
-                                    imageUrl = item.gambarUrl,
-                                    qty = quantity,
-                                    hargaUnit = finalPrice,
-                                    category = ItemCategory.JASA
-                                )
-                                CartManager.addItemToCart(newCartItem)
-
-                                isSnackbarSuccess = true
-                                val formattedName = item.namaProduk.toTitleCase()
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(message = "$quantity $formattedName berhasil masuk ke keranjang")
-                                }
-                            } catch (e: Exception) {
-                                isSnackbarSuccess = false
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(message = "Gagal menambahkan ke keranjang")
-                                }
-                            }
-                        }
-                    )
                 }
 
                 SnackbarHost(
@@ -384,6 +358,87 @@ class JasaDetailScreen(
                         }
                     }
                 )
+            }
+        }
+    }
+
+    @Composable
+    private fun CartStepper(
+        qty: Int,
+        isMultiple: Boolean,
+        redPrimer: Color,
+        bold: FontFamily,
+        onAddClick: () -> Unit,
+        onDecreaseClick: () -> Unit,
+        onIncreaseClick: () -> Unit
+    ) {
+        if (qty == 0) {
+            Button(
+                onClick = onAddClick,
+                modifier = Modifier.height(48.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = redPrimer)
+            ) {
+                Icon(
+                    Icons.Default.ShoppingCart,
+                    null,
+                    modifier = Modifier.size(16.dp),
+                    tint = Color.White
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "+ Tambah",
+                    fontFamily = bold,
+                    fontSize = 14.sp,
+                    color = Color.White
+                )
+            }
+        } else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, if (qty == 1) redPrimer else Color.Gray),
+                    color = if (qty == 1) redPrimer.copy(alpha = 0.05f) else Color.White,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable { onDecreaseClick() }
+                ) {
+                    Icon(
+                        imageVector = if (qty == 1) Icons.Default.DeleteOutline else Icons.Default.Remove,
+                        contentDescription = "Kurangi",
+                        tint = if (qty == 1) redPrimer else Color.DarkGray,
+                        modifier = Modifier.padding(6.dp)
+                    )
+                }
+
+                Text(
+                    text = qty.toString(),
+                    fontFamily = bold,
+                    fontSize = 18.sp,
+                    color = Color.Black
+                )
+
+                val canIncrease = isMultiple || qty < 1
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, if (canIncrease) redPrimer else Color(0xFFE0E0E0)),
+                    color = if (canIncrease) redPrimer else Color(0xFFF5F5F5),
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable(enabled = canIncrease) { onIncreaseClick() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Tambah",
+                        tint = if (canIncrease) Color.White else Color.LightGray,
+                        modifier = Modifier.padding(6.dp)
+                    )
+                }
             }
         }
     }

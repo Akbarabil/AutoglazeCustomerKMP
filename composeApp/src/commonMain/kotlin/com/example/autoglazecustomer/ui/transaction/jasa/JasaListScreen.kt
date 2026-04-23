@@ -24,7 +24,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -70,7 +73,9 @@ import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.example.autoglazecustomer.data.manager.CartItem
 import com.example.autoglazecustomer.data.manager.CartManager
+import com.example.autoglazecustomer.data.manager.ItemCategory
 import com.example.autoglazecustomer.data.manager.VoucherManager
 import com.example.autoglazecustomer.data.model.transaction.CabangData
 import com.example.autoglazecustomer.data.model.transaction.VehicleWithStatus
@@ -108,12 +113,10 @@ class JasaListScreen(
         val redPrimer = Color(0xFFD53B1E)
         val bgLight = Color(0xFFF8F9FA)
 
-
         val cartItems by CartManager.cartItems.collectAsState()
         var showExitDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) { screenModel.fetchData() }
-
 
         val onLeaveAttempt = {
             if (cartItems.isNotEmpty()) {
@@ -124,7 +127,6 @@ class JasaListScreen(
                 }
             }
         }
-
 
         KmpBackHandler {
             onLeaveAttempt()
@@ -152,7 +154,6 @@ class JasaListScreen(
                                     )
                                 },
                                 navigationIcon = {
-
                                     IconButton(onClick = { onLeaveAttempt() }) {
                                         Icon(
                                             Icons.Default.ArrowBackIosNew,
@@ -187,11 +188,7 @@ class JasaListScreen(
                                     )
                                 },
                                 leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Search,
-                                        null,
-                                        tint = Color.Gray
-                                    )
+                                    Icon(Icons.Default.Search, null, tint = Color.Gray)
                                 },
                                 shape = RoundedCornerShape(16.dp),
                                 singleLine = true,
@@ -221,10 +218,7 @@ class JasaListScreen(
                                         modifier = Modifier.weight(1f),
                                         shape = CircleShape,
                                         color = if (isSelected) redPrimer else Color.White,
-                                        border = if (isSelected) null else BorderStroke(
-                                            1.dp,
-                                            Color(0xFFE0E0E0)
-                                        ),
+                                        border = if (isSelected) null else BorderStroke(1.dp, Color(0xFFE0E0E0)),
                                         shadowElevation = if (isSelected) 4.dp else 0.dp
                                     ) {
                                         Box(
@@ -320,7 +314,7 @@ class JasaListScreen(
                                 fontFamily = satoshiMedium,
                                 color = Color.Gray,
                                 fontSize = 16.sp,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = Center
                             )
                         }
                     } else {
@@ -333,13 +327,18 @@ class JasaListScreen(
                             ),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(screenModel.displayedServices) { item ->
+                            items(screenModel.displayedServices, key = { it.idProduk }) { item ->
                                 val (original, final) = screenModel.calculatePrice(item)
+                                val currentCartItem = cartItems.find { it.idProduk == item.idProduk }
+                                val currentQty = currentCartItem?.qty ?: 0
+                                val isMultiple = item.isMultiple == 1
 
                                 ServiceCardItem(
                                     item = item,
                                     originalPrice = original,
                                     finalPrice = final,
+                                    qtyInCart = currentQty,
+                                    isMultiple = isMultiple,
                                     bold = satoshiBold,
                                     med = satoshiMedium,
                                     redPrimer = redPrimer,
@@ -352,6 +351,31 @@ class JasaListScreen(
                                                 vehicleJson = vehicleJson
                                             )
                                         )
+                                    },
+                                    onAddClick = {
+                                        val newItem = CartItem(
+                                            idProduk = item.idProduk,
+                                            idCabangItem = item.idCabangItem,
+                                            idMembership = null,
+                                            namaItem = item.namaProduk,
+                                            imageUrl = item.gambarUrl,
+                                            qty = 1,
+                                            hargaUnit = final,
+                                            category = ItemCategory.JASA
+                                        )
+                                        CartManager.addItemToCart(newItem)
+                                    },
+                                    onIncreaseClick = {
+                                        if (currentCartItem != null) {
+                                            CartManager.updateItemQty(item.idProduk, currentQty + 1)
+                                        }
+                                    },
+                                    onDecreaseClick = {
+                                        if (currentQty == 1) {
+                                            CartManager.removeItem(item.idProduk)
+                                        } else if (currentQty > 1) {
+                                            CartManager.updateItemQty(item.idProduk, currentQty - 1)
+                                        }
                                     }
                                 )
                             }
@@ -373,7 +397,6 @@ class JasaListScreen(
                     }
                 )
             }
-
 
             if (showExitDialog) {
                 AlertDialog(
@@ -423,10 +446,15 @@ class JasaListScreen(
         item: LayananItem,
         originalPrice: Double,
         finalPrice: Double,
+        qtyInCart: Int,
+        isMultiple: Boolean,
         bold: FontFamily,
         med: FontFamily,
         redPrimer: Color,
-        onClick: () -> Unit
+        onClick: () -> Unit,
+        onAddClick: () -> Unit,
+        onDecreaseClick: () -> Unit,
+        onIncreaseClick: () -> Unit
     ) {
         Surface(
             modifier = Modifier
@@ -484,50 +512,140 @@ class JasaListScreen(
 
                     Spacer(Modifier.height(12.dp))
 
-                    if (finalPrice < originalPrice) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
                         Column {
-                            Text(
-                                text = formatRupiah(originalPrice),
-                                fontFamily = med,
-                                fontSize = 12.sp,
-                                color = Color.Gray,
-                                textDecoration = TextDecoration.LineThrough
-                            )
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (finalPrice < originalPrice) {
                                 Text(
-                                    formatRupiah(finalPrice),
+                                    text = formatRupiah(originalPrice),
+                                    fontFamily = med,
+                                    fontSize = 12.sp,
+                                    color = Color.Gray,
+                                    textDecoration = TextDecoration.LineThrough
+                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        formatRupiah(finalPrice),
+                                        fontFamily = bold,
+                                        fontSize = 17.sp,
+                                        color = redPrimer
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Surface(
+                                        color = redPrimer.copy(alpha = 0.1f),
+                                        shape = RoundedCornerShape(6.dp)
+                                    ) {
+                                        Text(
+                                            "Member",
+                                            fontFamily = bold,
+                                            fontSize = 10.sp,
+                                            color = redPrimer,
+                                            modifier = Modifier.padding(
+                                                horizontal = 6.dp,
+                                                vertical = 2.dp
+                                            )
+                                        )
+                                    }
+                                }
+                            } else {
+                                val priceText = if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice)
+                                Text(
+                                    text = priceText,
                                     fontFamily = bold,
                                     fontSize = 17.sp,
-                                    color = redPrimer
+                                    color = if (finalPrice == 0.0) Color(0xFF4CAF50) else Color.Black
                                 )
-                                Spacer(Modifier.width(8.dp))
-                                Surface(
-                                    color = redPrimer.copy(alpha = 0.1f),
-                                    shape = RoundedCornerShape(6.dp)
-                                ) {
-                                    Text(
-                                        "Member",
-                                        fontFamily = bold,
-                                        fontSize = 10.sp,
-                                        color = redPrimer,
-                                        modifier = Modifier.padding(
-                                            horizontal = 6.dp,
-                                            vertical = 2.dp
-                                        )
-                                    )
-                                }
                             }
                         }
-                    } else {
-                        val priceText =
-                            if (finalPrice == 0.0) "GRATIS" else formatRupiah(finalPrice)
-                        Text(
-                            text = priceText,
-                            fontFamily = bold,
-                            fontSize = 17.sp,
-                            color = if (finalPrice == 0.0) Color(0xFF4CAF50) else Color.Black
+
+                        CartStepper(
+                            qty = qtyInCart,
+                            isMultiple = isMultiple,
+                            redPrimer = redPrimer,
+                            bold = bold,
+                            onAddClick = onAddClick,
+                            onDecreaseClick = onDecreaseClick,
+                            onIncreaseClick = onIncreaseClick
                         )
                     }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun CartStepper(
+        qty: Int,
+        isMultiple: Boolean,
+        redPrimer: Color,
+        bold: FontFamily,
+        onAddClick: () -> Unit,
+        onDecreaseClick: () -> Unit,
+        onIncreaseClick: () -> Unit
+    ) {
+        if (qty == 0) {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, redPrimer),
+                color = Color.White,
+                modifier = Modifier.clickable { onAddClick() }
+            ) {
+                Text(
+                    text = "+ Tambah",
+                    fontFamily = bold,
+                    fontSize = 12.sp,
+                    color = redPrimer,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                )
+            }
+        } else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, if (qty == 1) redPrimer else Color.Gray),
+                    color = if (qty == 1) redPrimer.copy(alpha = 0.05f) else Color.White,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onDecreaseClick() }
+                ) {
+                    Icon(
+                        imageVector = if (qty == 1) Icons.Default.DeleteOutline else Icons.Default.Remove,
+                        contentDescription = "Kurangi",
+                        tint = if (qty == 1) redPrimer else Color.DarkGray,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
+
+                Text(
+                    text = qty.toString(),
+                    fontFamily = bold,
+                    fontSize = 14.sp,
+                    color = Color.Black
+                )
+
+                val canIncrease = isMultiple || qty < 1
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, if (canIncrease) redPrimer else Color(0xFFE0E0E0)),
+                    color = if (canIncrease) redPrimer else Color(0xFFF5F5F5),
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(enabled = canIncrease) { onIncreaseClick() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Tambah",
+                        tint = if (canIncrease) Color.White else Color.LightGray,
+                        modifier = Modifier.padding(4.dp)
+                    )
                 }
             }
         }

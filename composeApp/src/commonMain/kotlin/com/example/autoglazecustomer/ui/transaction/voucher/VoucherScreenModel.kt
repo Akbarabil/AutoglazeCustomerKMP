@@ -19,7 +19,8 @@ import kotlinx.coroutines.supervisorScope
 class VoucherScreenModel(
     private val transactionService: TransactionService,
     private val idKendaraan: Int,
-    private val cartItems: List<CartItem>
+    private val cartItems: List<CartItem>,
+    private val kodePenjualan: String
 ) : ScreenModel {
 
     var umumVouchers by mutableStateOf<List<VoucherUIModel>>(emptyList())
@@ -34,14 +35,13 @@ class VoucherScreenModel(
     }
 
     fun fetchVouchers() {
-        val token = TokenManager.getToken() ?: return
         screenModelScope.launch {
             isLoading = true
             errorMessage = null
 
             try {
                 supervisorScope {
-                    val umumDeferred = async { transactionService.getVoucherSaya(token) }
+                    val umumDeferred = async { transactionService.getVoucherUmum(kodePenjualan) }
                     val kendaraanDeferred = async { transactionService.getVouchersByVehicle(idKendaraan) }
 
                     val umumRes = umumDeferred.await()
